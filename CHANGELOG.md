@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/ripixel/skier/compare/v0.0.8...v0.0.9) (2023-01-04)
+
+
+### Bug Fixes
+
+* add bin to package.json ([5e4c30d](https://github.com/ripixel/skier/commit/5e4c30de1dafdfc3b3baa497131f5fc43b2cf543))
+
 ### [0.0.8](https://github.com/ripixel/skier/compare/v0.0.7...v0.0.8) (2023-01-04)
 
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/ripixel/skier/compare/v0.0.4...v0.0.5) (2023-01-04)
+
+
+### Features
+
+* enable circleci, github codeql, and renovate ([7d8c3b2](https://github.com/ripixel/skier/commit/7d8c3b276f5e334b48dac88893a4f0d47bdb08e4))
+
 ### [0.0.4](https://github.com/ripixel/skier/compare/v0.0.3...v0.0.4) (2023-01-04)
 
 

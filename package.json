@@ -1,6 +1,6 @@
 {
   "name": "skier",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The simplest static site generator there is",
   "main": "index.js",
   "scripts": {

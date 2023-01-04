@@ -1,0 +1,76 @@
+version: 2.1
+
+executors:
+  node-project:
+    working_directory: ~/tmp
+    docker:
+      - image: cimg/node:18.12.1
+
+jobs:
+  install_deps:
+    executor: node-project
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install NPM Dependencies if no cache
+          command: |
+            [ ! -d "/tmp/node_modules" ] && npm ci
+      - save_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/tmp/node_modules
+
+  lint:
+    executor: node-project
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Linting
+          command: npm run lint:ci
+      - store_test_results:
+          path: ~/tmp/reports/eslint
+
+  build_release:
+    executor: node-project
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Add Git User details
+          command: |
+            git config --global user.email "ripixel+ci@gmail.com"
+            git config --global user.name "CircleCi"
+      - run:
+          name: Build
+          command: npm run build
+      - store_artifacts:
+          path: dist
+      - run:
+          name: Bump version and generate changelog
+          command: npm run release:ci
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/rep
+      - run:
+          name: Publish to NPM
+          command: npm publish
+
+workflows:
+  build_and_deploy:
+    jobs:
+      - install_deps
+      - lint:
+          requires:
+            - install_deps
+      - build_release:
+          requires:
+            - lint
+          filters:
+            branches:
+              only: main
+# VS Code Extension Version: 1.5.1

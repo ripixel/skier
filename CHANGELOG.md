@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/ripixel/skier/compare/v0.0.5...v0.0.6) (2023-01-04)
+
+
+### Features
+
+* enable codeql analysis ([2b11468](https://github.com/ripixel/skier/commit/2b114680bc0d6a35f776be6062a98920ad5562fd))
+
 ### [0.0.5](https://github.com/ripixel/skier/compare/v0.0.4...v0.0.5) (2023-01-04)
 
 

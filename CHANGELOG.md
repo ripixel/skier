@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.10](https://github.com/ripixel/skier/compare/v0.0.9...v0.0.10) (2023-01-04)
+
+
+### Bug Fixes
+
+* add hashbang to index.ts rather than using package script ([afeb5ea](https://github.com/ripixel/skier/commit/afeb5eab8afa56d79a6f01b397f8c01ff2d867f7))
+
 ### [0.0.9](https://github.com/ripixel/skier/compare/v0.0.8...v0.0.9) (2023-01-04)
 
 

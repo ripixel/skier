@@ -2,6 +2,8 @@
 
 The simplest static site generator there is!
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ripixel/skier/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/ripixel/skier/tree/main)
+
 ## Why?
 
 Static site generators of today are all so complex! What if you just want to be able to take a bunch of HTML and CSS, and generate a site from them? With things like partials, variable setting, and asset copying and that's it?

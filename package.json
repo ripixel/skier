@@ -5,11 +5,17 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "release": "standard-version"
+    "lint": "eslint \"src/**/*{.js,.ts}\"",
+    "lint:ci": "eslint \"src/**/*{.js,.ts}\" --format junit -o reports/eslint/results.xml",
+    "release": "standard-version -m 'chore(release): %s [skip ci]'",
+    "release:ci": "npm run release && git push --follow-tags origin main --no-verify"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ripixel/skier.git"
+  },
+  "engines": {
+    "node": "^18"
   },
   "keywords": [
     "ssg",

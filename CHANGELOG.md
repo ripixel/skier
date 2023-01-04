@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/ripixel/skier/compare/v0.0.6...v0.0.7) (2023-01-04)
+
+
+### Bug Fixes
+
+* make package executable ([0f5b0f4](https://github.com/ripixel/skier/commit/0f5b0f4ca4dae00ec4be966e83afcfdcc46b68bf))
+
 ### [0.0.6](https://github.com/ripixel/skier/compare/v0.0.5...v0.0.6) (2023-01-04)
 
 

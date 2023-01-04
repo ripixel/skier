@@ -4,7 +4,7 @@
   "description": "The simplest static site generator there is",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && sed -i '1i#! /usr/bin/env node' ./dist/index.js",
     "lint": "eslint \"src/**/*{.js,.ts}\"",
     "lint:ci": "eslint \"src/**/*{.js,.ts}\" --format junit -o reports/eslint/results.xml",
     "release": "standard-version -m 'chore(release): %s [skip ci]'",

@@ -7,3 +7,5 @@ examples/
 renovate.json
 tsconfig.json
 .gitignore
+.circleci/
+.github/

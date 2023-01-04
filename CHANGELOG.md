@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/ripixel/skier/compare/v0.0.7...v0.0.8) (2023-01-04)
+
+
+### Bug Fixes
+
+* change permissions on dist index ([d82c916](https://github.com/ripixel/skier/commit/d82c9161d34e3a3b89c0735cf340ee63c19396f8))
+
 ### [0.0.7](https://github.com/ripixel/skier/compare/v0.0.6...v0.0.7) (2023-01-04)
 
 

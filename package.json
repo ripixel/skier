@@ -1,0 +1,49 @@
+{
+  "name": "skier",
+  "version": "0.0.1",
+  "description": "The simplest static site generator there is",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ripixel/skier.git"
+  },
+  "keywords": [
+    "ssg",
+    "static",
+    "site",
+    "generator",
+    "static-site-generator",
+    "simple"
+  ],
+  "author": "James King <ripixel@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ripixel/skier/issues"
+  },
+  "homepage": "https://github.com/ripixel/skier#readme",
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/prettier": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "clean-css-cli": "^5.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^8.0.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "execa": "^6.0.0",
+    "husky": "^8.0.0",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^3.0.0",
+    "standard-version": "^9.0.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "pretty-quick --staged"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+src/
+node_modules/
+examples/
+.eslint&
+.node-version
+.prettierrc
+renovate.json
+tsconfig.json
+.gitignore

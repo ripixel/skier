@@ -69,3 +69,6 @@ public/
 
 # Reports output
 reports/
+
+# Dist output
+dist/

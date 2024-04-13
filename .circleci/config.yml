@@ -4,7 +4,7 @@ executors:
   node-project:
     working_directory: ~/tmp
     docker:
-      - image: cimg/node:18.12.1
+      - image: cimg/node:21.7.3
 
 jobs:
   install_deps:

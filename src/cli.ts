@@ -25,15 +25,15 @@ function parseCliArgs(argv: string[]) : { only: string[]; skip: string[] } {
   return { only, skip };
 }
 
-export async function runHumble(argv: string[]) {
+export async function runSkier(argv: string[]) {
   // Look for humble.tasks.js or humble.tasks.ts in the current working directory
   const cwd = process.cwd();
-  let tasksPath = path.join(cwd, 'humble.tasks.js');
+  let tasksPath = path.join(cwd, 'skier.tasks.js');
   if (!fs.existsSync(tasksPath)) {
-    tasksPath = path.join(cwd, 'humble.tasks.ts');
+    tasksPath = path.join(cwd, 'skier.tasks.ts');
   }
   if (!fs.existsSync(tasksPath)) {
-    console.error('❌ Could not find a humble.tasks.js or humble.tasks.ts file in your project root.');
+    console.error('❌ Could not find a skier.tasks.js or skier.tasks.ts file in your project root.');
     process.exit(1);
   }
   // Dynamically import the user's tasks

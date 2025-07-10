@@ -6,7 +6,7 @@ exports.tasks = [
     title: 'Say hello',
     run: async () => {
       await new Promise(r => setTimeout(r, 800));
-      console.log('👋 Hello from Humble!');
+      console.log('👋 Hello from Skier!');
     }
   },
   {

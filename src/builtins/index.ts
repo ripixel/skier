@@ -4,3 +4,4 @@ export { processCssTask, ProcessCssConfig } from './processCssTask';
 export { generateSitemapTask, GenerateSitemapConfig } from './generateSitemapTask';
 export { generateHtmlTask, GenerateHtmlConfig } from './generateHtmlTask';
 export { generateItemisedTask, GenerateItemisedConfig } from './generateItemisedTask';
+export { cleanAndCreateOutputTask, CleanAndCreateOutputConfig } from './cleanAndCreateOutputTask';

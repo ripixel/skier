@@ -4,14 +4,16 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 
-function parseCliArgs(argv: string[]) : { only: string[]; skip: string[] } {
+function parseCliArgs(argv: string[]) : { only: string[]; skip: string[]; debug: boolean } {
   const args = minimist(argv.slice(2), {
     string: ['only', 'skip'],
+    boolean: ['debug'],
     alias: {},
     default: {},
   });
   let only: string[] = [];
   let skip: string[] = [];
+  const debug: boolean = !!args.debug;
   if (typeof args.only === 'string') {
     only = args.only.split(',').map((s: string) => s.trim()).filter(Boolean);
   } else if (Array.isArray(args.only)) {
@@ -22,8 +24,10 @@ function parseCliArgs(argv: string[]) : { only: string[]; skip: string[] } {
   } else if (Array.isArray(args.skip)) {
     skip = args.skip.flatMap((s: string) => s.split(',').map((x: string) => x.trim()));
   }
-  return { only, skip };
+  return { only, skip, debug };
 }
+
+import { Logger } from './logger';
 
 export async function runSkier(argv: string[]) {
   // Look for humble.tasks.js or humble.tasks.ts in the current working directory
@@ -48,7 +52,9 @@ export async function runSkier(argv: string[]) {
     console.error('❌ Failed to load tasks from', tasksPath, e);
     process.exit(1);
   }
-  const { only, skip } = parseCliArgs(argv);
+  const { only, skip, debug } = parseCliArgs(argv);
+  const logger = new Logger({ debug, taskName: 'runner' });
+  logger.always('Started');
   let tasksToRun: TaskDef[] = userTasks;
   if (only && only.length > 0) {
     tasksToRun = userTasks.filter((task: TaskDef) => only.includes(task.name));
@@ -58,36 +64,28 @@ export async function runSkier(argv: string[]) {
   // Shared context for variable propagation
   let skierContext: Record<string, any> = {};
   for (const task of tasksToRun) {
-    const ora = (await import('ora')).default;
-    const spinner = ora({
-      text: task.title,
-      spinner: 'dots',
-    }).start();
+    // Always use the config property from TaskDef
+    const userConfig = task.config;
+    const taskLogger = new Logger({ debug, taskName: task.name });
+    taskLogger.task(`Started task: ${task.name}`);
     try {
-      // Type guard for objects with a 'globals' property
-      function hasGlobals(obj: any): obj is { globals: Record<string, any> } {
-        return obj && typeof obj === 'object' && 'globals' in obj && typeof obj.globals === 'object';
-      }
-      if (hasGlobals(task)) {
-        task.globals = { ...skierContext, ...(task.globals || {}) };
-      }
-      // Run the task and capture output
-      const result = await task.run();
+      // Run the task and capture output with runtime context
+      const result = await task.run(userConfig, { logger: taskLogger, debug });
       // If the task returned an object, merge it into the context
       if (result && typeof result === 'object') {
         for (const key of Object.keys(result)) {
           if (key in skierContext) {
-            console.warn(`⚠️  Skier warning: outputVar/global '${key}' is being overwritten by a later task. This may indicate a configuration issue.`);
+            taskLogger.warn(`outputVar/global '${key}' is being overwritten by a later task. This may indicate a configuration issue.`);
           }
           skierContext[key] = result[key];
+          if (debug) taskLogger.task(`Added/updated variable: ${key} = ${JSON.stringify(result[key], null, 2)}`);
         }
       }
-      spinner.succeed(`${task.title} — done`);
+      taskLogger.always(`Finished task: ${task.name}`);
     } catch (err) {
-      spinner.fail(`${task.title} — failed`);
-      console.error('❌ Task failed:', err);
+      taskLogger.error('Task failed: ' + (err instanceof Error ? err.message : String(err)));
       process.exit(1);
     }
   }
-  console.log('\n✅ Site generation complete!');
+  logger.always('Completed');
 }

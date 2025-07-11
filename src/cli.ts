@@ -2,7 +2,7 @@ import minimist from 'minimist';
 import { TaskDef } from './taskRegistry';
 import * as path from 'path';
 import * as fs from 'fs';
-import ora from 'ora';
+
 
 function parseCliArgs(argv: string[]) : { only: string[]; skip: string[] } {
   const args = minimist(argv.slice(2), {
@@ -53,6 +53,7 @@ export async function runSkier(argv: string[]) {
     tasksToRun = userTasks.filter((task: TaskDef) => !skip.includes(task.name));
   }
   for (const task of tasksToRun) {
+    const ora = (await import('ora')).default;
     const spinner = ora({
       text: task.title,
       spinner: 'dots',

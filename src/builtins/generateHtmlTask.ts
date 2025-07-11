@@ -3,6 +3,27 @@ import fs from 'fs-extra';
 import path from 'path';
 import Handlebars from 'handlebars';
 
+// Patch Handlebars to warn on missing variables and undefined #each
+const origLookupProperty = (Handlebars as any).Utils.lookupProperty;
+(Handlebars as any).Utils.lookupProperty = function(this: any, parent: any, propertyName: string) {
+  if (parent == null || typeof parent !== 'object' || !(propertyName in parent)) {
+    if (typeof propertyName === 'string' && propertyName !== '__proto__') {
+      console.warn(`⚠️  Skier warning: Template references missing variable '{{${propertyName}}}'`);
+    }
+  }
+  return origLookupProperty.apply(this, arguments);
+};
+
+const origEachHelper = Handlebars.helpers.each;
+Handlebars.unregisterHelper('each');
+Handlebars.registerHelper('each', function(this: any, context, options) {
+  if (context == null || (typeof context !== 'object' && !Array.isArray(context))) {
+    console.warn(`⚠️  Skier warning: #each attempted on undefined or non-iterable variable.`);
+    return '';
+  }
+  return origEachHelper.call(this, context, options);
+});
+
 export type GenerateHtmlConfig = {
   pagesDir: string;
   partialsDir: string;

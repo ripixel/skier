@@ -8,6 +8,7 @@ export type GenerateItemisedConfig = {
   itemsDir: string; // e.g. 'items'
   partialsDir: string;
   outDir: string;
+  outputVar: string; // Name of the variable to output the item list as
   globals?: Record<string, any>;
 };
 
@@ -19,6 +20,7 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef {
     name: 'generate-itemised',
     title: `Generate itemised HTML (Markdown/HTML) from ${config.itemsDir}`,
     run: async () => {
+      const generatedItems: Array<Record<string, any>> = [];
       // Register all partials
       const partialFiles = await fs.readdir(config.partialsDir);
       for (const file of partialFiles) {
@@ -67,6 +69,13 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef {
             await fs.ensureDir(outDir);
             const outPath = path.join(outDir, itemName + '.html');
             await fs.writeFile(outPath, output, 'utf8');
+            generatedItems.push({
+              section,
+              itemName,
+              itemPath,
+              outPath,
+              type: 'md',
+            });
             console.log(`[skier] Generated ${outPath}`);
           }
         }
@@ -89,9 +98,17 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef {
           await fs.ensureDir(outDir);
           const outPath = path.join(outDir, itemName + '.html');
           await fs.writeFile(outPath, output, 'utf8');
+          generatedItems.push({
+            section,
+            itemName,
+            itemPath,
+            outPath,
+            type: 'html',
+          });
           console.log(`[skier] Generated ${outPath}`);
         }
       }
+      return { [config.outputVar]: generatedItems };
     }
   };
 }

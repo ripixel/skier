@@ -30,10 +30,13 @@ export async function runSkier(argv: string[]) {
   const cwd = process.cwd();
   let tasksPath = path.join(cwd, 'skier.tasks.js');
   if (!fs.existsSync(tasksPath)) {
+    tasksPath = path.join(cwd, 'skier.tasks.cjs');
+  }
+  if (!fs.existsSync(tasksPath)) {
     tasksPath = path.join(cwd, 'skier.tasks.ts');
   }
   if (!fs.existsSync(tasksPath)) {
-    console.error('❌ Could not find a skier.tasks.js or skier.tasks.ts file in your project root.');
+    console.error('❌ Could not find a skier.tasks.js, skier.tasks.cjs, or skier.tasks.ts file in your project root.');
     process.exit(1);
   }
   // Dynamically import the user's tasks
@@ -52,6 +55,8 @@ export async function runSkier(argv: string[]) {
   } else if (skip && skip.length > 0) {
     tasksToRun = userTasks.filter((task: TaskDef) => !skip.includes(task.name));
   }
+  // Shared context for variable propagation
+  let skierContext: Record<string, any> = {};
   for (const task of tasksToRun) {
     const ora = (await import('ora')).default;
     const spinner = ora({
@@ -59,7 +64,24 @@ export async function runSkier(argv: string[]) {
       spinner: 'dots',
     }).start();
     try {
-      await task.run();
+      // Type guard for objects with a 'globals' property
+      function hasGlobals(obj: any): obj is { globals: Record<string, any> } {
+        return obj && typeof obj === 'object' && 'globals' in obj && typeof obj.globals === 'object';
+      }
+      if (hasGlobals(task)) {
+        task.globals = { ...skierContext, ...(task.globals || {}) };
+      }
+      // Run the task and capture output
+      const result = await task.run();
+      // If the task returned an object, merge it into the context
+      if (result && typeof result === 'object') {
+        for (const key of Object.keys(result)) {
+          if (key in skierContext) {
+            console.warn(`⚠️  Skier warning: outputVar/global '${key}' is being overwritten by a later task. This may indicate a configuration issue.`);
+          }
+          skierContext[key] = result[key];
+        }
+      }
       spinner.succeed(`${task.title} — done`);
     } catch (err) {
       spinner.fail(`${task.title} — failed`);

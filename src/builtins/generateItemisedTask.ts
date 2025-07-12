@@ -83,7 +83,7 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
               type: 'md',
             });
             if (ctx.logger) {
-              ctx.logger.task(`Generated ${outPath}`);
+              ctx.logger.debugLog(`Generated ${outPath}`);
             }
           }
           // Handle .html files (copy as-is, or process with template if desired)
@@ -116,7 +116,7 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
               type: 'html',
             });
             if (ctx.logger) {
-              ctx.logger.task(`Generated ${outPath}`);
+              ctx.logger.debugLog(`Generated ${outPath}`);
             }
           }
         }

@@ -33,7 +33,7 @@ export function generateSitemapTask(config: GenerateSitemapConfig): TaskDef<Gene
         const outPath = path.join(cfg.outDir, 'sitemap.xml');
         await fs.writeFile(outPath, xml, 'utf8');
         if (ctx.logger) {
-          ctx.logger.task(`Generated sitemap.xml at ${outPath}`);
+          ctx.logger.debugLog(`Generated sitemap.xml at ${outPath}`);
         }
       } catch (err) {
         if (ctx.logger) {

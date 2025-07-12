@@ -10,7 +10,6 @@ const colorPalette = [
   chalk.magenta,
   chalk.yellow,
   chalk.green,
-  chalk.blue,
   chalk.white,
   chalk.gray,
   chalk.red,
@@ -43,35 +42,25 @@ export class Logger {
   }
 
   info(msg: string) {
-    if (this.debug) {
-      console.log(this.prefix() + ' ' + msg);
-    }
+    // ℹ️ Info icon
+    console.log(`ℹ️ ${this.prefix()} ${msg}`);
   }
 
   warn(msg: string) {
-    if (this.debug) {
-      console.warn(this.prefix() + ' ' + msg);
-    }
+    // ⚠️ Warning icon
+    console.warn(`⚠️ ${this.prefix()} ${msg}`);
   }
 
   error(msg: string) {
-    console.error(this.prefix() + ' ' + msg);
+    // ❌ Error icon
+    console.error(`❌ ${this.prefix()} ${msg}`);
   }
 
-  success(msg: string) {
+  debugLog(msg: string) {
+    // 🐞 Debug icon
     if (this.debug) {
-      console.log(this.prefix() + ' ' + msg);
+      console.log(`🐞 ${this.prefix()} ${msg}`);
     }
-  }
-
-  task(msg: string) {
-    if (this.debug && this.taskName) {
-      console.log(this.prefix() + ' ' + msg);
-    }
-  }
-
-  always(msg: string) {
-    console.log(this.prefix() + ' ' + msg);
   }
 
   private prefix() {

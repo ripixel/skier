@@ -89,7 +89,7 @@ export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHt
           const output = template(renderVars);
           await fs.writeFile(outPath, output, 'utf8');
           if (ctx.logger) {
-            ctx.logger.task(`Generated ${outPath}`);
+            ctx.logger.debugLog(`Generated ${outPath}`);
           }
         }
       }

@@ -54,7 +54,7 @@ export async function runSkier(argv: string[]) {
   }
   const { only, skip, debug } = parseCliArgs(argv);
   const logger = new Logger({ debug, taskName: 'runner' });
-  logger.always('Started');
+  logger.info('Started');
   let tasksToRun: TaskDef[] = userTasks;
   if (only && only.length > 0) {
     tasksToRun = userTasks.filter((task: TaskDef) => only.includes(task.name));
@@ -67,7 +67,7 @@ export async function runSkier(argv: string[]) {
     // Always use the config property from TaskDef
     const userConfig = task.config;
     const taskLogger = new Logger({ debug, taskName: task.name });
-    taskLogger.task('Started task');
+    taskLogger.info('Started task');
     try {
       // Run the task and capture output with runtime context
       const result = await task.run(userConfig, { logger: taskLogger, debug });
@@ -78,14 +78,14 @@ export async function runSkier(argv: string[]) {
             taskLogger.warn(`outputVar/global '${key}' is being overwritten by a later task. This may indicate a configuration issue.`);
           }
           skierContext[key] = result[key];
-          if (debug) taskLogger.task(`Added/updated variable: ${key} = ${JSON.stringify(result[key], null, 2)}`);
+          if (debug) taskLogger.info(`Added/updated variable: ${key} = ${JSON.stringify(result[key], null, 2)}`);
         }
       }
-      taskLogger.always('Finished task');
+      taskLogger.info('Finished task');
     } catch (err) {
       taskLogger.error('Task failed: ' + (err instanceof Error ? err.message : String(err)));
       process.exit(1);
     }
   }
-  logger.always('Completed');
+  logger.info('Completed');
 }

@@ -19,7 +19,7 @@ export function processCssTask(config: ProcessCssConfig): TaskDef<ProcessCssConf
     config,
     run: async (cfg: ProcessCssConfig, ctx) => {
       try {
-        if (ctx.logger) ctx.logger.info(`Processing CSS bundle: ${cfg.output}`);
+        if (ctx.logger) ctx.logger.debugLog(`Processing CSS bundle: ${cfg.output}`);
         await fs.ensureDir(cfg.to);
         const files = (await fs.readdir(cfg.from)).filter(f => path.extname(f) === '.css');
         let concatenated = '';
@@ -36,13 +36,13 @@ export function processCssTask(config: ProcessCssConfig): TaskDef<ProcessCssConf
           }
           outputCss = output.styles;
           if (ctx.logger) {
-            ctx.logger.task(`Minified CSS: ${cfg.output}`);
+            ctx.logger.debugLog(`Minified CSS: ${cfg.output}`);
           }
         }
         const outFile = path.join(cfg.to, cfg.output);
         await fs.writeFile(outFile, outputCss, 'utf8');
         if (ctx.logger) {
-          ctx.logger.task(`Processed CSS: ${outFile}`);
+          ctx.logger.debugLog(`Processed CSS: ${outFile}`);
         }
         return {};
       } catch (err) {

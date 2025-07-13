@@ -5,3 +5,4 @@ export { generateSitemapTask, GenerateSitemapConfig } from './generateSitemapTas
 export { generateHtmlTask, GenerateHtmlConfig } from './generateHtmlTask';
 export { generateItemisedTask, GenerateItemisedConfig } from './generateItemisedTask';
 export { cleanAndCreateOutputTask, CleanAndCreateOutputConfig } from './cleanAndCreateOutputTask';
+export { generateRssFeedTask, GenerateRssFeedConfig } from './generateRssFeedTask';

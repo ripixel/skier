@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import Handlebars from 'handlebars';
 import { marked } from 'marked';
+import { SkierItem } from '../types';
 
 import type { Logger } from '../logger';
 
@@ -12,6 +13,11 @@ export interface GenerateItemisedConfig {
   outDir: string;
   outputVar: string; // Name of the variable to output the item list as
   globals?: Record<string, any>;
+  /**
+   * Optional user override for date extraction. Receives (args: { section, itemName, itemPath, content, fileStat })
+   * and should return a Date, string, or undefined.
+   */
+  extractDate?: (args: { section: string, itemName: string, itemPath: string, content: string, fileStat: import('fs-extra').Stats }) => Date | string | undefined;
 }
 
 /**
@@ -23,7 +29,10 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
     title: `Generate itemised HTML (Markdown/HTML) from ${config.itemsDir}`,
     config,
     run: async (cfg: GenerateItemisedConfig, ctx) => {
-      const generatedItems: Array<Record<string, any>> = [];
+      // TODO: When extracting item metadata, ensure fields like date, dateObj, dateNum are included if available.
+      const generatedItems: SkierItem[] = [];
+
+
       // Register all partials
       const partialFiles = await fs.readdir(cfg.partialsDir);
       for (const file of partialFiles) {
@@ -75,12 +84,103 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
             await fs.ensureDir(outDir);
             const outPath = path.join(outDir, itemName + '.html');
             await fs.writeFile(outPath, output, 'utf8');
+            // --- Multi-source date extraction ---
+            let date: string | undefined = undefined;
+            let dateObj: Date | undefined = undefined;
+            let dateNum: number | undefined = undefined;
+            const fileStat = await fs.stat(itemPath);
+            // 1. User override
+            if (typeof cfg.extractDate === 'function') {
+              const userDate = cfg.extractDate({ section, itemName, itemPath, content, fileStat });
+              if (userDate instanceof Date && !isNaN(userDate.getTime())) {
+                dateObj = userDate;
+                date = userDate.toISOString();
+                
+              } else if (typeof userDate === 'string') {
+                const d = new Date(userDate);
+                if (!isNaN(d.getTime())) {
+                  dateObj = d;
+                  date = d.toISOString();
+                  
+                }
+              }
+            }
+            // 2. Markdown frontmatter (if not set by override)
+            if (!dateObj && content.startsWith('---')) {
+              const fmMatch = content.match(/^---\n([\s\S]*?)---/);
+              if (fmMatch) {
+                const fm = fmMatch[1];
+                const dateLine = fm.split('\n').find(line => line.trim().startsWith('date:'));
+                if (dateLine) {
+                  const dateVal = dateLine.split(':').slice(1).join(':').trim();
+                  const d = new Date(dateVal);
+                  if (!isNaN(d.getTime())) {
+                    dateObj = d;
+                    date = d.toISOString();
+                    
+                  }
+                }
+              }
+            }
+            // 3. Filename convention (YYYY-MM-DD)
+            if (!dateObj) {
+              const fileDateMatch = itemFile.match(/(\d{4}-\d{2}-\d{2})/);
+              if (fileDateMatch) {
+                const d = new Date(fileDateMatch[1]);
+                if (!isNaN(d.getTime())) {
+                  dateObj = d;
+                  date = d.toISOString();
+                  
+                }
+              }
+            }
+            // 4. Fallback to mtime
+            if (!dateObj && fileStat) {
+              dateObj = fileStat.mtime;
+              date = fileStat.mtime.toISOString();
+              
+            }
+            // Extract title from frontmatter if present, else prettify itemName
+            let title: string | undefined = undefined;
+            let excerpt: string | undefined = undefined;
+            let body: string = content;
+            if (content.startsWith('---')) {
+              const fmMatch = content.match(/^---\n([\s\S]*?)---/);
+              if (fmMatch) {
+                const fm = fmMatch[1];
+                const titleLine = fm.split('\n').find(line => line.trim().startsWith('title:'));
+                if (titleLine) {
+                  title = titleLine.split(':').slice(1).join(':').trim();
+                }
+                const excerptLine = fm.split('\n').find(line => line.trim().startsWith('excerpt:'));
+                if (excerptLine) {
+                  excerpt = excerptLine.split(':').slice(1).join(':').trim();
+                }
+              }
+            }
+            if (!title) {
+              // If date was extracted from filename, strip it from itemName before prettifying
+              let nameForTitle = itemName;
+              const datePrefixMatch = nameForTitle.match(/^(\d{4}-\d{2}-\d{2})[-_]?(.+)$/);
+              if (datePrefixMatch) {
+                nameForTitle = datePrefixMatch[2];
+              }
+              title = nameForTitle.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            }
+            // Link: output path relative to site root
+            const relLink = `/${section}/${itemName}.html`;
             generatedItems.push({
               section,
               itemName,
               itemPath,
               outPath,
               type: 'md',
+              date,
+              dateObj,
+              title,
+              excerpt,
+              body,
+              link: relLink,
             });
             if (ctx.logger) {
               ctx.logger.debugLog(`Generated ${outPath}`);
@@ -108,12 +208,70 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
             await fs.ensureDir(outDir);
             const outPath = path.join(outDir, itemName + '.html');
             await fs.writeFile(outPath, output, 'utf8');
+            // --- Multi-source date extraction for HTML ---
+            let date: string | undefined = undefined;
+            let dateObj: Date | undefined = undefined;
+            let dateNum: number | undefined = undefined;
+            const fileStat = await fs.stat(itemPath);
+            // 1. User override
+            if (typeof cfg.extractDate === 'function') {
+              const userDate = cfg.extractDate({ section, itemName, itemPath, content, fileStat });
+              if (userDate instanceof Date && !isNaN(userDate.getTime())) {
+                dateObj = userDate;
+                date = userDate.toISOString();
+                
+              } else if (typeof userDate === 'string') {
+                const d = new Date(userDate);
+                if (!isNaN(d.getTime())) {
+                  dateObj = d;
+                  date = d.toISOString();
+                  
+                }
+              }
+            }
+            // 2. Filename convention (YYYY-MM-DD)
+            if (!dateObj) {
+              const fileDateMatch = itemFile.match(/(\d{4}-\d{2}-\d{2})/);
+              if (fileDateMatch) {
+                const d = new Date(fileDateMatch[1]);
+                if (!isNaN(d.getTime())) {
+                  dateObj = d;
+                  date = d.toISOString();
+                  
+                }
+              }
+            }
+            // 3. Fallback to mtime
+            if (!dateObj && fileStat) {
+              dateObj = fileStat.mtime;
+              date = fileStat.mtime.toISOString();
+              
+            }
+            // Extract title from <title> tag if present, else prettify itemName
+            let title: string | undefined = undefined;
+            let body: string = content;
+            let excerpt: string | undefined = undefined;
+            const titleMatch = content.match(/<title>([^<]*)<\/title>/i);
+            if (titleMatch) {
+              title = titleMatch[1].trim();
+            }
+            if (!title) {
+              title = itemName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            }
+            // Link: output path relative to site root
+            const relLink = `/${section}/${itemName}.html`;
             generatedItems.push({
               section,
               itemName,
               itemPath,
               outPath,
               type: 'html',
+              date,
+              dateObj,
+              title,
+              excerpt,
+              body,
+              link: relLink,
             });
             if (ctx.logger) {
               ctx.logger.debugLog(`Generated ${outPath}`);

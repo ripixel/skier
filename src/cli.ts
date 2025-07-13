@@ -63,14 +63,39 @@ export async function runSkier(argv: string[]) {
   }
   // Shared context for variable propagation
   let skierContext: Record<string, any> = {};
+  function resolveConfigVars(config: any, context: Record<string, any>, logger: Logger): any {
+    if (typeof config === 'string' && config.startsWith('${') && config.endsWith('}')) {
+      const varName = config.slice(2, -1);
+      if (context[varName] !== undefined) {
+        logger.debugLog(`Resolved variable '\${${varName}}' to value of type '${typeof context[varName]}'`);
+        return context[varName];
+      } else {
+        logger.debugLog(`Variable '\${${varName}}' not found in context, leaving as undefined`);
+        return undefined;
+      }
+    } else if (Array.isArray(config)) {
+      return config.map(item => resolveConfigVars(item, context, logger));
+    } else if (typeof config === 'object' && config !== null) {
+      const resolved: any = {};
+      for (const key in config) {
+        resolved[key] = resolveConfigVars(config[key], context, logger);
+      }
+      return resolved;
+    }
+    return config;
+  }
+
+
+
   for (const task of tasksToRun) {
     // Always use the config property from TaskDef
     const userConfig = task.config;
     const taskLogger = new Logger({ debug, taskName: task.name });
     taskLogger.info('Started task');
+    const resolvedConfig = resolveConfigVars(userConfig, skierContext, taskLogger);
     try {
       // Run the task and capture output with runtime context
-      const result = await task.run(userConfig, { logger: taskLogger, debug });
+      const result = await task.run(resolvedConfig, { logger: taskLogger, debug, globals: skierContext });
       // If the task returned an object, merge it into the context
       if (result && typeof result === 'object') {
         for (const key of Object.keys(result)) {

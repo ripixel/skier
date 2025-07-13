@@ -30,6 +30,7 @@
     "clean-css": "^5.3.3",
     "enquirer": "^2.4.1",
     "execa": "^7.2.0",
+    "feed": "^5.1.0",
     "fs-extra": "^11.3.0",
     "listr2": "^4.0.5",
     "minimist": "^1.2.8",

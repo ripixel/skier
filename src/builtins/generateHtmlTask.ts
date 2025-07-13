@@ -11,7 +11,6 @@ export interface GenerateHtmlConfig {
   pagesDir: string;
   partialsDir: string;
   outDir: string;
-  globals?: Record<string, any>;
 }
 
 /**
@@ -80,10 +79,9 @@ export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHt
           // (Optional) TODO: parse frontmatter for per-page variables
           // Compose render context
           const renderVars = {
-            ...cfg.globals,
+            ...ctx.globals,
             currentPage: pageName,
             currentPagePath: file,
-            logger: ctx.logger,
           };
           const template = Handlebars.compile(pageContent);
           const output = template(renderVars);

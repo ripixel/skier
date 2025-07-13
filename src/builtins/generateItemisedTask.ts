@@ -53,9 +53,8 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
         const sectionPath = path.join(cfg.itemsDir, section);
         const templatePath = path.join(sectionPath, 'template.html');
         const hasTemplate = await fs.pathExists(templatePath);
-        const itemFiles = (await fs.readdir(sectionPath)).filter(f => f !== 'template.html' && (f.endsWith('.md') || f.endsWith('.html')));
-        const mdFiles = itemFiles.filter(f => f.endsWith('.md'));
-        const htmlFiles = itemFiles.filter(f => f.endsWith('.html'));
+        const itemFiles = (await fs.readdir(sectionPath)).filter(f => f !== 'template.html' && f.endsWith('.md'));
+        const mdFiles = itemFiles;
 
         if (!hasTemplate && mdFiles.length > 0) {
           throw new Error(`[skier] No template.html found in ${sectionPath}, but found Markdown files. Markdown items require a template.`);
@@ -172,17 +171,28 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
             }
             // Now render markdown to HTML for body
             let content = await marked(rawMarkdown);
-            const renderVars = {
-              ...ctx.globals,
-              currentSection: section,
-              itemName,
-              itemPath: itemFile,
-              content,
-            };
-            const output = template(renderVars);
             const outDir = path.join(cfg.outDir, section);
             await fs.ensureDir(outDir);
             const outPath = path.join(outDir, itemName + '.html');
+            const relativePath = path.relative(cfg.outDir, outPath);
+            const renderVars = {
+              ...ctx.globals,
+              section,
+              itemName,
+              itemPath,
+              outPath,
+              relativePath,
+              title,
+              date,
+              dateObj,
+              dateDisplay: dateObj ? dateObj.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) : undefined,
+              excerpt,
+              body,
+              link: `/${section}/${itemName}.html`,
+              content,
+            };
+
+            const output = template(renderVars);
             await fs.writeFile(outPath, output, 'utf8');
             if (!title) {
               // If date was extracted from filename, strip it from itemName before prettifying
@@ -229,96 +239,7 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
             });
             ctx.logger.debug(`Generated ${outPath}`);
           }
-          // Handle .html files (copy as-is, or process with template if desired)
-          for (const itemFile of htmlFiles) {
-            const itemName = path.basename(itemFile, '.html');
-            const itemPath = path.join(sectionPath, itemFile);
-            let content = await fs.readFile(itemPath, 'utf8');
-            // Optionally process with template, or just copy as-is
-            const renderVars = {
-              ...ctx.globals,
-              currentSection: section,
-              itemName,
-              itemPath: itemFile,
-              content,
-            };
-            // If you want to process .html files with the template, uncomment below:
-            // const output = template(renderVars);
-            // Otherwise, just use the content as is:
-            const output = content;
-            const outDir = path.join(cfg.outDir, section);
-            await fs.ensureDir(outDir);
-            const outPath = path.join(outDir, itemName + '.html');
-            await fs.writeFile(outPath, output, 'utf8');
-            // --- Multi-source date extraction for HTML ---
-            // Declare metadata variables for this item only once
-            let date: string | undefined;
-            let dateObj: Date | undefined;
-            let title: string | undefined;
-            let excerpt: string | undefined;
-            let body: string;
-            let fileStat: import('fs-extra').Stats;
-            date = undefined;
-            dateObj = undefined;
-            title = undefined;
-            excerpt = undefined;
-            body = content;
-            fileStat = await fs.stat(itemPath);
-            // 1. User override
-            if (typeof cfg.extractDate === 'function') {
-              const userDate = cfg.extractDate({ section, itemName, itemPath, content, fileStat });
-              if (userDate instanceof Date && !isNaN(userDate.getTime())) {
-                dateObj = userDate;
-                date = userDate.toISOString();
-              } else if (typeof userDate === 'string') {
-                const d = new Date(userDate);
-                if (!isNaN(d.getTime())) {
-                  dateObj = d;
-                  date = d.toISOString();
-                }
-              }
-            }
-            // 2. Filename convention (YYYY-MM-DD)
-            if (!dateObj) {
-              const fileDateMatch = itemFile.match(/(\d{4}-\d{2}-\d{2})/);
-              if (fileDateMatch) {
-                const d = new Date(fileDateMatch[1]);
-                if (!isNaN(d.getTime())) {
-                  dateObj = d;
-                  date = d.toISOString();
-                }
-              }
-            }
-            // 3. Fallback to mtime
-            if (!dateObj && fileStat) {
-              dateObj = fileStat.mtime;
-              date = fileStat.mtime.toISOString();
-            }
-            // Extract title from <title> tag if present, else prettify itemName
-            const titleMatch = content.match(/<title>([^<]*)<\/title>/i);
-            if (titleMatch) {
-              title = titleMatch[1].trim();
-            }
-            if (!title) {
-              title = itemName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-            }
-            // Link: output path relative to site root
-            const relLink = `/${section}/${itemName}.html`;
-            generatedItems.push({
-              section,
-              itemName,
-              itemPath,
-              outPath,
-              type: 'html',
-              date,
-              dateObj,
-              title,
-              excerpt,
-              body,
-              link: relLink,
-            });
-            ctx.logger.debug(`Generated ${outPath}`);
-          }
+
         }
       }
       return { [cfg.outputVar]: generatedItems };

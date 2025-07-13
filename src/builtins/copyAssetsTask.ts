@@ -1,8 +1,6 @@
-import { TaskDef } from '../taskRegistry';
+import { TaskDef } from '../types';
 import fs from 'fs-extra';
-import path from 'path';
 
-import type { Logger } from '../logger';
 
 export interface CopyAssetsConfig {
   from: string;
@@ -16,7 +14,7 @@ export function copyAssetsTask(config: CopyAssetsConfig): TaskDef<CopyAssetsConf
     config,
     run: async (cfg: CopyAssetsConfig, ctx) => {
       try {
-        if (ctx.logger) ctx.logger.debugLog(`Copying assets from ${cfg.from} to ${cfg.to}`);
+        if (ctx.logger) ctx.logger.debug(`Copying assets from ${cfg.from} to ${cfg.to}`);
         await fs.ensureDir(cfg.to);
         await fs.copy(cfg.from, cfg.to, {
           overwrite: true,
@@ -27,7 +25,7 @@ export function copyAssetsTask(config: CopyAssetsConfig): TaskDef<CopyAssetsConf
           },
         });
         if (ctx.logger && ctx.debug) {
-          ctx.logger.debugLog(`Copied assets from ${cfg.from} to ${cfg.to}`);
+          ctx.logger.debug(`Copied assets from ${cfg.from} to ${cfg.to}`);
         }
         return {};
       } catch (err) {

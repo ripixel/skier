@@ -6,12 +6,38 @@ export interface SkierItem {
   itemPath: string;
   outPath: string;
   type: string; // 'html', 'md', etc.
-  title?: string;
-  link?: string;
-  excerpt?: string;
-  body?: string;
+  relativePath?: string;
+  title: string;
+  link: string;
+  body: string;
   date?: string;
   dateObj?: Date;
-  dateNum?: number;
-  [key: string]: any; // Allow extension by user/frontmatter
+  dateDisplay?: string;
+  excerpt?: string;
+  // If you want to extend with custom fields, extend this interface in your own project.
 }
+
+export interface SkierGlobals {
+  [key: string]: unknown;
+}
+
+export interface Logger {
+  info(msg: string): void;
+  warn(msg: string): void;
+  error(msg: string): void;
+  debug(msg: string): void;
+}
+
+export interface TaskContext {
+  logger: Logger;
+  debug: boolean;
+  globals: SkierGlobals;
+}
+
+export interface TaskDef<Config = unknown, Output = unknown> {
+  name: string;
+  title?: string;
+  config: Config;
+  run: (config: Config, ctx: TaskContext) => Promise<Output>;
+}
+

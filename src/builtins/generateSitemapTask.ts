@@ -1,4 +1,4 @@
-import { TaskDef } from '../taskRegistry';
+import { TaskDef } from '../types';
 import fs from 'fs-extra';
 import path from 'path';
 
@@ -33,7 +33,7 @@ export function generateSitemapTask(config: GenerateSitemapConfig): TaskDef<Gene
         const outPath = path.join(cfg.outDir, 'sitemap.xml');
         await fs.writeFile(outPath, xml, 'utf8');
         if (ctx.logger) {
-          ctx.logger.debugLog(`Generated sitemap.xml at ${outPath}`);
+          ctx.logger.debug(`Generated sitemap.xml at ${outPath}`);
         }
       } catch (err) {
         if (ctx.logger) {

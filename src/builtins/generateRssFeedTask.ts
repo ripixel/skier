@@ -1,8 +1,7 @@
 import * as fs from 'fs-extra';
 import { Feed } from 'feed';
 import path from 'path';
-import type { Logger } from '../logger';
-import type { SkierItem } from '../types';
+import type { Logger, SkierItem, TaskContext, TaskDef } from '../types';
 
 export interface GenerateRssFeedConfig {
   articles: SkierItem[];
@@ -27,14 +26,13 @@ export interface GenerateRssFeedConfig {
   };
 }
 
-export function generateRssFeedTask(config: GenerateRssFeedConfig) {
+export function generateRssFeedTask(config: GenerateRssFeedConfig): TaskDef<GenerateRssFeedConfig, { rssPath: string; jsonPath: string; atomPath: string }> {
   return {
     name: 'generateRssFeed',
     title: 'Generate RSS/Atom/JSON Feeds',
     config,
-    run: async (cfg: GenerateRssFeedConfig, ctx: { logger: Logger; debug: boolean }) => {
+    run: async (cfg: GenerateRssFeedConfig, ctx: TaskContext) => {
       const logger = ctx.logger;
-      logger.debugLog('Starting RSS/Atom/JSON feed generation...');
       const feed = new Feed({
         title: cfg.site.title,
         description: cfg.site.description,
@@ -75,9 +73,9 @@ export function generateRssFeedTask(config: GenerateRssFeedConfig) {
       await fs.writeFile(rssPath, feed.rss2(), 'utf8');
       await fs.writeFile(jsonPath, feed.json1(), 'utf8');
       await fs.writeFile(atomPath, feed.atom1(), 'utf8');
-      logger.debugLog(`Wrote RSS feed to ${rssPath}`);
-      logger.debugLog(`Wrote JSON feed to ${jsonPath}`);
-      logger.debugLog(`Wrote Atom feed to ${atomPath}`);
+      logger.debug(`Wrote RSS feed to ${rssPath}`);
+      logger.debug(`Wrote JSON feed to ${jsonPath}`);
+      logger.debug(`Wrote Atom feed to ${atomPath}`);
       return {
         rssPath,
         jsonPath,

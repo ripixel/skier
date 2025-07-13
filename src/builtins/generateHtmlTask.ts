@@ -1,4 +1,3 @@
-import { TaskDef } from '../taskRegistry';
 import fs from 'fs-extra';
 import path from 'path';
 import Handlebars from 'handlebars';
@@ -16,12 +15,14 @@ export interface GenerateHtmlConfig {
 /**
  * Built-in HTML generation task for Skier: supports partials, variables, and per-page metadata.
  */
-export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHtmlConfig> {
+import type { TaskContext, TaskDef } from '../types';
+
+export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHtmlConfig, { [outputVar: string]: string[] }> {
   return {
     name: 'generate-html',
     title: `Generate HTML from ${config.pagesDir} with partials from ${config.partialsDir}`,
     config,
-    run: async (cfg: GenerateHtmlConfig, ctx) => {
+    run: async (cfg: GenerateHtmlConfig, ctx: TaskContext) => {
       // Defensive checks for required config fields
       if (!cfg.pagesDir || !cfg.partialsDir || !cfg.outDir) {
         const msg = `[skier/generate-html] Missing required config: pagesDir, partialsDir, and outDir are required. Received: pagesDir=${cfg.pagesDir}, partialsDir=${cfg.partialsDir}, outDir=${cfg.outDir}`;
@@ -36,6 +37,7 @@ export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHt
           if (typeof propertyName === 'string' && propertyName !== '__proto__') {
             if (logger && typeof logger.warn === 'function') {
               logger.warn(`Template references missing variable '{{${propertyName}}}'`);
+              logger.WARN(`Template references missing variable '{{${propertyName}}}'`);
             } else {
               console.warn(`⚠️  Skier warning: Template references missing variable '{{${propertyName}}}'`);
             }
@@ -49,7 +51,7 @@ export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHt
         const logger = options.data && options.data.root && options.data.root.logger || (ctx && ctx.logger);
         if (context == null || (typeof context !== 'object' && !Array.isArray(context))) {
           if (logger && typeof logger.warn === 'function') {
-            logger.warn(`#each attempted on undefined or non-iterable variable.`);
+            logger.WARN(`#each attempted on undefined or non-iterable variable.`);
           } else {
             console.warn(`⚠️  Skier warning: #each attempted on undefined or non-iterable variable.`);
           }
@@ -87,7 +89,7 @@ export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHt
           const output = template(renderVars);
           await fs.writeFile(outPath, output, 'utf8');
           if (ctx.logger) {
-            ctx.logger.debugLog(`Generated ${outPath}`);
+            ctx.logger.debug(`Generated ${outPath}`);
           }
         }
       }

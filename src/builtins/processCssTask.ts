@@ -1,9 +1,7 @@
-import { TaskDef } from '../taskRegistry';
+import { TaskDef } from '../types';
 import fs from 'fs-extra';
 import path from 'path';
 import CleanCSS from 'clean-css';
-
-import type { Logger } from '../logger';
 
 export interface ProcessCssConfig {
   from: string; // source directory
@@ -19,7 +17,7 @@ export function processCssTask(config: ProcessCssConfig): TaskDef<ProcessCssConf
     config,
     run: async (cfg: ProcessCssConfig, ctx) => {
       try {
-        if (ctx.logger) ctx.logger.debugLog(`Processing CSS bundle: ${cfg.output}`);
+        if (ctx.logger) ctx.logger.debug(`Processing CSS bundle: ${cfg.output}`);
         await fs.ensureDir(cfg.to);
         const files = (await fs.readdir(cfg.from)).filter(f => path.extname(f) === '.css');
         let concatenated = '';
@@ -36,13 +34,13 @@ export function processCssTask(config: ProcessCssConfig): TaskDef<ProcessCssConf
           }
           outputCss = output.styles;
           if (ctx.logger) {
-            ctx.logger.debugLog(`Minified CSS: ${cfg.output}`);
+            ctx.logger.debug(`Minified CSS: ${cfg.output}`);
           }
         }
         const outFile = path.join(cfg.to, cfg.output);
         await fs.writeFile(outFile, outputCss, 'utf8');
         if (ctx.logger) {
-          ctx.logger.debugLog(`Processed CSS: ${outFile}`);
+          ctx.logger.debug(`Processed CSS: ${outFile}`);
         }
         return {};
       } catch (err) {

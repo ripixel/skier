@@ -33,11 +33,11 @@ function getTaskColor(taskName: string) {
 }
 
 export class Logger {
-  private debug: boolean;
+  private debugFlag: boolean;
   private taskName?: string;
 
   constructor(options: LoggerOptions) {
-    this.debug = options.debug;
+    this.debugFlag = options.debug;
     this.taskName = options.taskName;
   }
 
@@ -56,9 +56,9 @@ export class Logger {
     console.error(`❌ ${this.prefix()} ${msg}`);
   }
 
-  debugLog(msg: string) {
+  debug(msg: string) {
     // 🐞 Debug icon
-    if (this.debug) {
+    if (this.debugFlag) {
       console.log(`🐞 ${this.prefix()} ${msg}`);
     }
   }

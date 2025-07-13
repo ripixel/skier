@@ -1,5 +1,5 @@
 import minimist from 'minimist';
-import { TaskDef } from './taskRegistry';
+import type { TaskDef } from './types';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -67,10 +67,10 @@ export async function runSkier(argv: string[]) {
     if (typeof config === 'string' && config.startsWith('${') && config.endsWith('}')) {
       const varName = config.slice(2, -1);
       if (context[varName] !== undefined) {
-        logger.debugLog(`Resolved variable '\${${varName}}' to value of type '${typeof context[varName]}'`);
+        logger.debug(`Resolved variable '\${${varName}}' to value of type '${typeof context[varName]}'`);
         return context[varName];
       } else {
-        logger.debugLog(`Variable '\${${varName}}' not found in context, leaving as undefined`);
+        logger.debug(`Variable '\${${varName}}' not found in context, leaving as undefined`);
         return undefined;
       }
     } else if (Array.isArray(config)) {
@@ -102,8 +102,8 @@ export async function runSkier(argv: string[]) {
           if (key in skierContext) {
             taskLogger.warn(`outputVar/global '${key}' is being overwritten by a later task. This may indicate a configuration issue.`);
           }
-          skierContext[key] = result[key];
-          if (debug) taskLogger.info(`Added/updated variable: ${key} = ${JSON.stringify(result[key], null, 2)}`);
+          skierContext[key] = (result as { [key: string]: any })[key];
+          taskLogger.debug(`Added/updated variable: ${key} = ${JSON.stringify((result as { [key: string]: any })[key], null, 2)}`);
         }
       }
       taskLogger.info('Finished task');

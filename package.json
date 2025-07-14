@@ -2,15 +2,15 @@
   "name": "skier",
   "version": "1.0.0",
   "description": "Opinionated static site generator CLI framework.",
-  "main": "dist/index.js",
+  "main": "dist/bin/skier.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "skier": "bin/skier.js"
+    "skier": "dist/bin/skier.js"
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "cli": "node bin/humble.js",
+    "start": "node dist/bin/skier.js",
+    "cli": "node dist/bin/skier.js",
     "prepare": "npm run build",
     "test": "echo \"No tests yet\"",
     "release": "semantic-release"
@@ -28,14 +28,10 @@
   },
   "dependencies": {
     "clean-css": "^5.3.3",
-    "enquirer": "^2.4.1",
-    "execa": "^7.2.0",
     "feed": "^5.1.0",
     "fs-extra": "^11.3.0",
     "highlight.js": "^11.11.1",
-    "listr2": "^4.0.5",
-    "minimist": "^1.2.8",
-    "ora": "^8.2.0"
+    "minimist": "^1.2.8"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",

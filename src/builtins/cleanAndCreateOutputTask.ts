@@ -1,5 +1,4 @@
 import fs from 'fs-extra';
-import type { Logger } from '../logger';
 import { TaskDef } from '../types';
 
 export interface CleanAndCreateOutputConfig {

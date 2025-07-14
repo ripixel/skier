@@ -27,10 +27,13 @@
     ]
   },
   "dependencies": {
+    "chalk": "^5.4.1",
     "clean-css": "^5.3.3",
     "feed": "^5.1.0",
     "fs-extra": "^11.3.0",
+    "handlebars": "^4.7.8",
     "highlight.js": "^11.11.1",
+    "marked": "^12.0.2",
     "minimist": "^1.2.8"
   },
   "devDependencies": {

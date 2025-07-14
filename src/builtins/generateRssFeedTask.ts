@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import { Feed } from 'feed';
 import path from 'path';
-import type { Logger, SkierItem, TaskContext, TaskDef } from '../types';
+import type { SkierItem, TaskContext, TaskDef } from '../types';
 
 export interface GenerateRssFeedConfig {
   articles: SkierItem[];

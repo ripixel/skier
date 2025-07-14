@@ -2,9 +2,54 @@ import fs from 'fs-extra';
 import path from 'path';
 import Handlebars from 'handlebars';
 import { marked } from 'marked';
+import hljs from 'highlight.js';
+
+const renderer = new marked.Renderer();
+renderer.code = (code, infostring, escaped) => {
+  const lang = (infostring || '').match(/\S*/)?.[0];
+  if (lang && hljs.getLanguage(lang)) {
+    const highlighted = hljs.highlight(code, { language: lang }).value;
+    return `<pre><code class="hljs language-${lang}">${highlighted}</code></pre>`;
+  }
+  const auto = hljs.highlightAuto(code).value;
+  return `<pre><code class="hljs">${auto}</code></pre>`;
+};
+marked.setOptions({ renderer });
 import { SkierItem } from '../types';
 
-import type { Logger } from '../logger';
+/**
+ * The default variables provided to every item template in generateItemisedTask
+ */
+export interface ItemisedRenderVars {
+  /** Section name (e.g. 'thoughts', 'blog', etc) */
+  section: string;
+  /** Item name (filename without extension) */
+  itemName: string;
+  /** Absolute path to the item file */
+  itemPath: string;
+  /** Output HTML path for this item */
+  outPath: string;
+  /** Path to output relative to outDir */
+  relativePath: string;
+  /** Title (from frontmatter, filename, or user logic) */
+  title?: string;
+  /** Date (ISO string, from frontmatter, filename, or file stat) */
+  date?: string;
+  /** Date object, if available */
+  dateObj?: Date;
+  /** Human-readable date string, if available */
+  dateDisplay?: string;
+  /** Excerpt, if available */
+  excerpt?: string;
+  /** Raw markdown body (HTML) */
+  body: string;
+  /** Link to this item (relative to site root) */
+  link: string;
+  /** Rendered HTML content */
+  content: string;
+  /** Any global variables injected by context globals or pipeline additionalVarsFn */
+  [key: string]: any;
+}
 
 export interface GenerateItemisedConfig {
   itemsDir: string; // e.g. 'items'
@@ -16,6 +61,11 @@ export interface GenerateItemisedConfig {
    * and should return a Date, string, or undefined.
    */
   extractDate?: (args: { section: string, itemName: string, itemPath: string, content: string, fileStat: import('fs-extra').Stats }) => Date | string | undefined;
+  /**
+   * Optional function to inject additional variables into the render context for each item.
+   * Receives all innate ItemisedRenderVars.
+   */
+  additionalVarsFn?: (args: ItemisedRenderVars) => Record<string, any> | Promise<Record<string, any>>;
 }
 
 /**
@@ -175,7 +225,7 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
             await fs.ensureDir(outDir);
             const outPath = path.join(outDir, itemName + '.html');
             const relativePath = path.relative(cfg.outDir, outPath);
-            const renderVars = {
+            let renderVars: ItemisedRenderVars = {
               ...ctx.globals,
               section,
               itemName,
@@ -191,7 +241,15 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
               link: `/${section}/${itemName}.html`,
               content,
             };
-
+            // If user provided, call additionalVarsFn with all innate fields and ctx
+            if (typeof cfg.additionalVarsFn === 'function') {
+              const additional = await cfg.additionalVarsFn({
+                ...renderVars,
+              });
+              if (additional && typeof additional === 'object') {
+                renderVars = { ...renderVars, ...additional };
+              }
+            }
             const output = template(renderVars);
             await fs.writeFile(outPath, output, 'utf8');
             if (!title) {
@@ -202,23 +260,6 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
                 nameForTitle = datePrefixMatch[1];
               }
               title = nameForTitle.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-            }
-            // Fallback: auto-excerpt from first two non-empty paragraphs if not provided in frontmatter
-            if (!excerpt) {
-              // Remove frontmatter if present
-              let mdForExcerpt = content;
-              if (mdForExcerpt.startsWith('---')) {
-                const fmEnd = mdForExcerpt.indexOf('---', 3);
-                if (fmEnd !== -1) {
-                  mdForExcerpt = mdForExcerpt.slice(fmEnd + 3);
-                }
-              }
-              // Find first two non-empty paragraphs
-              const paragraphs = mdForExcerpt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-              if (paragraphs.length > 0) {
-                // Take first two, strip leading markdown formatting
-                excerpt = paragraphs.slice(0, 2).map(p => p.replace(/^#+\s*/, '').replace(/^>+\s*/, '').replace(/^\*+\s*/, '')).join('\n\n');
-              }
             }
             // Link: output path relative to site root
             const relLink = `/${section}/${itemName}.html`;
@@ -242,6 +283,11 @@ export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<Ge
 
         }
       }
+      // Sort items reverse chronologically (most recent first)
+      generatedItems.sort((a, b) => {
+        if (!a.dateObj || !b.dateObj) return 0;
+        return b.dateObj.getTime() - a.dateObj.getTime();
+      });
       return { [cfg.outputVar]: generatedItems };
     }
   };

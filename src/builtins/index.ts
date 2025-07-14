@@ -6,3 +6,6 @@ export { generateHtmlTask, GenerateHtmlConfig } from './generateHtmlTask';
 export { generateItemisedTask, GenerateItemisedConfig } from './generateItemisedTask';
 export { cleanAndCreateOutputTask, CleanAndCreateOutputConfig } from './cleanAndCreateOutputTask';
 export { generateRssFeedTask, GenerateRssFeedConfig } from './generateRssFeedTask';
+export { generateChangelogTask, GenerateChangelogConfig } from './generateChangelogTask';
+export { readMarkdownTask, ReadMarkdownConfig } from './readMarkdownTask';
+export { setGlobalsTask, SetGlobalsConfig } from './setGlobalsTask';

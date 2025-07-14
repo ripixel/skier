@@ -1,15 +1,42 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { marked } from 'marked';
+import hljs from 'highlight.js';
 import Handlebars from 'handlebars';
 
+const renderer = new marked.Renderer();
+renderer.code = (code, infostring, escaped) => {
+  const lang = (infostring || '').match(/\S*/)?.[0];
+  if (lang && hljs.getLanguage(lang)) {
+    const highlighted = hljs.highlight(code, { language: lang }).value;
+    return `<pre><code class="hljs language-${lang}">${highlighted}</code></pre>`;
+  }
+  const auto = hljs.highlightAuto(code).value;
+  return `<pre><code class="hljs">${auto}</code></pre>`;
+};
+marked.setOptions({ renderer });
 
-
-import type { Logger } from '../logger';
+/**
+ * The default variables provided to every page template in generateHtmlTask
+ */
+export interface HtmlRenderVars {
+  /** The filename of the page (without extension) */
+  currentPage: string;
+  /** The filename of the page (with extension) */
+  currentPagePath: string;
+  /** Any global variables injected by context globals or pipeline additionalVarsFn */
+  [key: string]: any;
+}
 
 export interface GenerateHtmlConfig {
   pagesDir: string;
   partialsDir: string;
   outDir: string;
+  /**
+   * Optional function to inject additional variables into the render context for each page.
+   * Receives all innate HtmlRenderVars.
+   */
+  additionalVarsFn?: (args: HtmlRenderVars) => Record<string, any> | Promise<Record<string, any>>;
 }
 
 /**
@@ -80,11 +107,20 @@ export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHt
           let pageContent = await fs.readFile(pagePath, 'utf8');
           // (Optional) TODO: parse frontmatter for per-page variables
           // Compose render context
-          const renderVars = {
+          let renderVars: HtmlRenderVars = {
             ...ctx.globals,
             currentPage: pageName,
             currentPagePath: file,
           };
+          if (typeof cfg.additionalVarsFn === 'function') {
+            const additional = await cfg.additionalVarsFn({
+              ...renderVars,
+            });
+            if (additional && typeof additional === 'object') {
+              renderVars = { ...renderVars, ...additional };
+            }
+          }
+
           const template = Handlebars.compile(pageContent);
           const output = template(renderVars);
           await fs.writeFile(outPath, output, 'utf8');

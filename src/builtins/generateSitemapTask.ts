@@ -4,11 +4,7 @@ import path from 'path';
 
 export interface GenerateSitemapConfig {
   /**
-   * Array of URLs to include in the sitemap (e.g. ['/about', '/blog/post-1'])
-   */
-  urls: string[];
-  /**
-   * Output directory for sitemap.xml
+   * Output directory for sitemap.xml and where to scan for .html files
    */
   outDir: string;
   /**
@@ -25,7 +21,26 @@ export function generateSitemapTask(config: GenerateSitemapConfig): TaskDef<Gene
     run: async (cfg: GenerateSitemapConfig, ctx) => {
       try {
         await fs.ensureDir(cfg.outDir);
-        const sitemapEntries = cfg.urls.map(url => {
+        // Recursively find all .html files in outDir
+        const htmlFiles: string[] = [];
+        async function findHtmlFiles(dir: string, relBase: string) {
+          const entries = await fs.readdir(dir, { withFileTypes: true });
+          for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            const relPath = path.join(relBase, entry.name);
+            if (entry.isDirectory()) {
+              await findHtmlFiles(fullPath, relPath);
+            } else if (entry.isFile() && entry.name.endsWith('.html')) {
+              htmlFiles.push(relPath.replace(/\\/g, '/'));
+            }
+          }
+        }
+        await findHtmlFiles(cfg.outDir, '');
+        if (htmlFiles.length === 0) {
+          if (ctx.logger) ctx.logger.warn('No HTML files found in outDir for sitemap generation.');
+        }
+        const sitemapEntries = htmlFiles.map(relPath => {
+          const url = '/' + relPath.replace(/^\/+/, '');
           const loc = cfg.siteUrl ? `${cfg.siteUrl.replace(/\/$/, '')}${url}` : url;
           return `<url><loc>${loc}</loc></url>`;
         }).join('\n    ');

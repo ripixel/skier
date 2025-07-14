@@ -36,6 +36,12 @@
     "marked": "^12.0.2",
     "minimist": "^1.2.8"
   },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^11.0.0",

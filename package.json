@@ -2,7 +2,7 @@
   "name": "skier",
   "version": "1.0.0",
   "description": "Opinionated static site generator CLI framework.",
-  "main": "dist/bin/skier.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "skier": "dist/bin/skier.js"

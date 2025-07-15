@@ -1,6 +1,6 @@
-import fs from 'fs-extra';
+import { readFileUtf8 } from '../../utils/fileHelpers';
 import { marked } from 'marked';
-import type { TaskDef, TaskContext } from '../../types';
+import type { TaskDef } from '../../types';
 
 export interface SetGlobalFromMarkdownConfig {
   mdPath: string; // Path to markdown file
@@ -17,7 +17,7 @@ export function setGlobalFromMarkdownTask(config: SetGlobalFromMarkdownConfig): 
     title: `Set global from markdown from ${config.mdPath}`,
     config,
     run: async (cfg, ctx) => {
-      const md = await fs.readFile(cfg.mdPath, 'utf8');
+      const md = await readFileUtf8(cfg.mdPath);
       const html = await marked.parse(md);
       ctx.logger.debug(`Set global from markdown: ${cfg.mdPath}`);
       return {

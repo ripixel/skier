@@ -32,6 +32,10 @@ function getTaskColor(taskName: string) {
   return colorPalette[Math.abs(hash) % colorPalette.length];
 }
 
+export function createTaskLogger(taskName: string, debug: boolean): Logger {
+  return new Logger({ debug, taskName });
+}
+
 export class Logger {
   private debugFlag: boolean;
   private taskName?: string;

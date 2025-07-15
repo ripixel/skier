@@ -1,5 +1,5 @@
 import { TaskDef } from '../../types';
-import fs from 'fs-extra';
+import { ensureDir, copyDir } from '../../utils/fileHelpers';
 
 
 export interface CopyStaticConfig {
@@ -15,15 +15,8 @@ export function copyStaticTask(config: CopyStaticConfig): TaskDef<CopyStaticConf
     run: async (cfg, ctx) => {
       try {
         if (ctx.logger) ctx.logger.debug(`Copying assets from ${cfg.from} to ${cfg.to}`);
-        await fs.ensureDir(cfg.to);
-        await fs.copy(cfg.from, cfg.to, {
-          overwrite: true,
-          errorOnExist: false,
-          filter: (src) => {
-            // Optionally skip dotfiles or certain patterns here
-            return true;
-          },
-        });
+        await ensureDir(cfg.to);
+        await copyDir(cfg.from, cfg.to);
         if (ctx.logger && ctx.debug) {
           ctx.logger.debug(`Copied assets from ${cfg.from} to ${cfg.to}`);
         }

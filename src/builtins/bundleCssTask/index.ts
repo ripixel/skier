@@ -1,6 +1,6 @@
 import { TaskDef } from '../../types';
-import fs from 'fs-extra';
-import path from 'path';
+import { ensureDir, readdir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers';
+import { extname, join } from '../../utils/pathHelpers';
 import CleanCSS from 'clean-css';
 
 export interface BundleCssConfig {
@@ -18,12 +18,12 @@ export function bundleCssTask(config: BundleCssConfig): TaskDef<BundleCssConfig>
     run: async (cfg, ctx) => {
       try {
         if (ctx.logger) ctx.logger.debug(`Processing CSS bundle: ${cfg.output}`);
-        await fs.ensureDir(cfg.to);
-        const files = (await fs.readdir(cfg.from)).filter(f => path.extname(f) === '.css');
+        await ensureDir(cfg.to);
+        const files = (await readdir(cfg.from)).filter((f: string) => extname(f) === '.css');
         let concatenated = '';
         for (const file of files) {
-          const filePath = path.join(cfg.from, file);
-          const css = await fs.readFile(filePath, 'utf8');
+          const filePath = join(cfg.from, file);
+          const css = await readFileUtf8(filePath);
           concatenated += css + '\n';
         }
         let outputCss = concatenated;
@@ -37,8 +37,8 @@ export function bundleCssTask(config: BundleCssConfig): TaskDef<BundleCssConfig>
             ctx.logger.debug(`Minified CSS: ${cfg.output}`);
           }
         }
-        const outFile = path.join(cfg.to, cfg.output);
-        await fs.writeFile(outFile, outputCss, 'utf8');
+        const outFile = join(cfg.to, cfg.output);
+        await writeFileUtf8(outFile, outputCss);
         if (ctx.logger) {
           ctx.logger.debug(`Processed CSS: ${outFile}`);
         }

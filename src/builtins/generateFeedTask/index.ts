@@ -1,6 +1,6 @@
-import * as fs from 'fs-extra';
 import { Feed } from 'feed';
-import path from 'path';
+import { ensureDir, writeFileUtf8 } from '../../utils/fileHelpers';
+import { join } from '../../utils/pathHelpers';
 import type { SkierItem, TaskDef } from '../../types';
 
 export interface GenerateFeedConfig {
@@ -66,13 +66,13 @@ export function generateFeedTask(config: GenerateFeedConfig): TaskDef<GenerateFe
           author: [cfg.site.author],
         });
       });
-      const rssPath = path.join(cfg.outDir, 'rss.xml');
-      const jsonPath = path.join(cfg.outDir, 'json.json');
-      const atomPath = path.join(cfg.outDir, 'atom.xml');
-      await fs.ensureDir(cfg.outDir);
-      await fs.writeFile(rssPath, feed.rss2(), 'utf8');
-      await fs.writeFile(jsonPath, feed.json1(), 'utf8');
-      await fs.writeFile(atomPath, feed.atom1(), 'utf8');
+      const rssPath = join(cfg.outDir, 'rss.xml');
+      const jsonPath = join(cfg.outDir, 'json.json');
+      const atomPath = join(cfg.outDir, 'atom.xml');
+      await ensureDir(cfg.outDir);
+      await writeFileUtf8(rssPath, feed.rss2());
+      await writeFileUtf8(jsonPath, feed.json1());
+      await writeFileUtf8(atomPath, feed.atom1());
       logger.debug(`Wrote RSS feed to ${rssPath}`);
       logger.debug(`Wrote JSON feed to ${jsonPath}`);
       logger.debug(`Wrote Atom feed to ${atomPath}`);

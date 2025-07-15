@@ -1,6 +1,5 @@
-import { Logger } from '../logger';
+import { createTaskLogger } from '../logger';
 import { resolveConfigVars } from './resolveConfigVars';
-import { createTaskLogger } from './logger';
 import type { TaskDef } from '../types';
 
 export async function runTask(task: TaskDef, context: Record<string, any>, debug: boolean): Promise<Record<string, any>> {

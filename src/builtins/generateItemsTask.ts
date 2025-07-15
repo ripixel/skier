@@ -51,7 +51,7 @@ export interface ItemisedRenderVars {
   [key: string]: any;
 }
 
-export interface GenerateItemisedConfig {
+export interface GenerateItemsConfig {
   itemsDir: string; // e.g. 'items'
   partialsDir: string;
   outDir: string;
@@ -73,12 +73,12 @@ export interface GenerateItemisedConfig {
  */
 import type { TaskContext, TaskDef } from '../types';
 
-export function generateItemisedTask(config: GenerateItemisedConfig): TaskDef<GenerateItemisedConfig, { [outputVar: string]: SkierItem[] }> {
+export function generateItemsTask(config: GenerateItemsConfig): TaskDef<GenerateItemsConfig, { [outputVar: string]: SkierItem[] }> {
   return {
-    name: 'generate-itemised',
-    title: `Generate itemised HTML (Markdown/HTML) from ${config.itemsDir}`,
+    name: 'generate-items',
+    title: `Generate HTML items (Markdown/HTML) from ${config.itemsDir}`,
     config,
-    run: async (cfg: GenerateItemisedConfig, ctx: TaskContext) => {
+    run: async (cfg, ctx) => {
       // TODO: When extracting item metadata, ensure fields like date, dateObj, dateNum are included if available.
       const generatedItems: SkierItem[] = [];
 

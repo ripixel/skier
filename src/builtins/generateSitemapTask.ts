@@ -18,7 +18,7 @@ export function generateSitemapTask(config: GenerateSitemapConfig): TaskDef<Gene
     name: 'generate-sitemap',
     title: `Generate sitemap.xml in ${config.outDir}`,
     config,
-    run: async (cfg: GenerateSitemapConfig, ctx) => {
+    run: async (cfg, ctx) => {
       try {
         await fs.ensureDir(cfg.outDir);
         // Recursively find all .html files in outDir

@@ -16,7 +16,7 @@ export function setGlobalsTask(config: SetGlobalsConfig): TaskDef<SetGlobalsConf
     name: 'set-globals',
     title: 'Set global template variables',
     config,
-    run: async (cfg: SetGlobalsConfig, ctx: TaskContext) => {
+    run: async (cfg, ctx) => {
       let out: Record<string, any> = {};
       if (cfg.values) {
         ctx.logger.debug(`Setting globals: ${Object.keys(cfg.values).join(', ')}`);

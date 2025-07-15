@@ -17,7 +17,7 @@ export function generateChangelogTask(config: GenerateChangelogConfig): TaskDef<
     name: 'generate-changelog',
     title: `Generate changelog HTML from ${config.changelogPath}`,
     config,
-    run: async (cfg: GenerateChangelogConfig, ctx: TaskContext) => {
+    run: async (cfg, ctx) => {
       // Register partials if provided
       if (cfg.partialsDir) {
         const partialFiles = await fs.readdir(cfg.partialsDir);

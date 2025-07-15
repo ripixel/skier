@@ -28,7 +28,7 @@ export interface HtmlRenderVars {
   [key: string]: any;
 }
 
-export interface GenerateHtmlConfig {
+export interface GeneratePagesConfig {
   pagesDir: string;
   partialsDir: string;
   outDir: string;
@@ -44,12 +44,12 @@ export interface GenerateHtmlConfig {
  */
 import type { TaskContext, TaskDef } from '../types';
 
-export function generateHtmlTask(config: GenerateHtmlConfig): TaskDef<GenerateHtmlConfig, { [outputVar: string]: string[] }> {
+export function generatePagesTask(config: GeneratePagesConfig): TaskDef<GeneratePagesConfig, { [outputVar: string]: string[] }> {
   return {
-    name: 'generate-html',
-    title: `Generate HTML from ${config.pagesDir} with partials from ${config.partialsDir}`,
+    name: 'generate-pages',
+    title: `Generate HTML pages from ${config.pagesDir} with partials from ${config.partialsDir}`,
     config,
-    run: async (cfg: GenerateHtmlConfig, ctx: TaskContext) => {
+    run: async (cfg, ctx) => {
       // Defensive checks for required config fields
       if (!cfg.pagesDir || !cfg.partialsDir || !cfg.outDir) {
         const msg = `[skier/generate-html] Missing required config: pagesDir, partialsDir, and outDir are required. Received: pagesDir=${cfg.pagesDir}, partialsDir=${cfg.partialsDir}, outDir=${cfg.outDir}`;

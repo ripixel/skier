@@ -1,5 +1,17 @@
 import fs from 'fs-extra';
-import path from 'path';
+import { extname, join } from './pathHelpers';
+
+export async function readdir(dir: string): Promise<string[]> {
+  return fs.readdir(dir);
+}
+
+export async function stat(path: string): Promise<fs.Stats> {
+  return fs.stat(path);
+}
+
+export async function pathExists(path: string): Promise<boolean> {
+  return fs.pathExists(path);
+}
 
 export async function ensureDir(dir: string) {
   return fs.ensureDir(dir);
@@ -17,7 +29,7 @@ export async function findFilesRecursive(dir: string, ext: string): Promise<stri
   let results: string[] = [];
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
+    const fullPath = join(dir, entry.name);
     if (entry.isDirectory()) {
       results = results.concat(await findFilesRecursive(fullPath, ext));
     } else if (entry.isFile() && entry.name.endsWith(ext)) {
@@ -36,5 +48,5 @@ export async function removeDir(dir: string) {
 }
 
 export function filterByExtension(files: string[], ext: string): string[] {
-  return files.filter(f => path.extname(f) === ext);
+  return files.filter(f => extname(f) === ext);
 }

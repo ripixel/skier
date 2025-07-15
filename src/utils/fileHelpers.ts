@@ -48,5 +48,5 @@ export async function removeDir(dir: string) {
 }
 
 export function filterByExtension(files: string[], ext: string): string[] {
-  return files.filter(f => extname(f) === ext);
+  return files.filter((f) => extname(f) === ext);
 }

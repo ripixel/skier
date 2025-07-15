@@ -1,8 +1,10 @@
 import minimist from 'minimist';
 import type { TaskDef } from './types';
+import { createTaskLogger } from './logger';
+import { runTasks } from './cli/runTasks';
+import { loadTasks } from './cli/loadTasks';
 
-
-function parseCliArgs(argv: string[]) : { only: string[]; skip: string[]; debug: boolean } {
+function parseCliArgs(argv: string[]): { only: string[]; skip: string[]; debug: boolean } {
   const args = minimist(argv.slice(2), {
     string: ['only', 'skip'],
     boolean: ['debug'],
@@ -13,22 +15,23 @@ function parseCliArgs(argv: string[]) : { only: string[]; skip: string[]; debug:
   let skip: string[] = [];
   const debug: boolean = !!args.debug;
   if (typeof args.only === 'string') {
-    only = args.only.split(',').map((s: string) => s.trim()).filter(Boolean);
+    only = args.only
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
   } else if (Array.isArray(args.only)) {
     only = args.only.flatMap((s: string) => s.split(',').map((x: string) => x.trim()));
   }
   if (typeof args.skip === 'string') {
-    skip = args.skip.split(',').map((s: string) => s.trim()).filter(Boolean);
+    skip = args.skip
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
   } else if (Array.isArray(args.skip)) {
     skip = args.skip.flatMap((s: string) => s.split(',').map((x: string) => x.trim()));
   }
   return { only, skip, debug };
 }
-
-import { createTaskLogger } from './logger';
-import { runTasks } from './cli/runTasks';
-
-import { loadTasks } from './cli/loadTasks';
 
 export async function runSkier(argv: string[]) {
   const cwd = process.cwd();

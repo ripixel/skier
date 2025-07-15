@@ -14,7 +14,7 @@ export function resolveConfigVars(config: any, context: Record<string, any>, log
       }
     }
   } else if (Array.isArray(config)) {
-    return config.map(item => resolveConfigVars(item, context, logger));
+    return config.map((item) => resolveConfigVars(item, context, logger));
   } else if (typeof config === 'object' && config !== null) {
     const resolved: any = {};
     for (const key in config) {

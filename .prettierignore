@@ -1,0 +1,10 @@
+node_modules
+public
+dist
+coverage
+*.snap
+*.log
+*.lock
+*.md
+package-lock.json
+yarn.lock

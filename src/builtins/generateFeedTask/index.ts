@@ -26,7 +26,9 @@ export interface GenerateFeedConfig {
   };
 }
 
-export function generateFeedTask(config: GenerateFeedConfig): TaskDef<GenerateFeedConfig, { rssPath: string; jsonPath: string; atomPath: string }> {
+export function generateFeedTask(
+  config: GenerateFeedConfig,
+): TaskDef<GenerateFeedConfig, { rssPath: string; jsonPath: string; atomPath: string }> {
   return {
     name: 'generate-feed',
     title: 'Generate RSS/Atom/JSON Feeds',
@@ -51,10 +53,18 @@ export function generateFeedTask(config: GenerateFeedConfig): TaskDef<GenerateFe
       });
       sortedArticles.forEach((article, i) => {
         if (!article.title || !article.link || !article.body) {
-          throw new Error(`[skier/generateRssFeed] Article at index ${i} is missing required fields (title, link, body)`);
+          throw new Error(
+            `[skier/generateRssFeed] Article at index ${i} is missing required fields (title, link, body)`,
+          );
         }
-        if (!article.dateObj || !(article.dateObj instanceof Date) || isNaN(article.dateObj.getTime())) {
-          throw new Error(`[skier/generateRssFeed] Article '${article.title}' is missing a valid dateObj. Ensure your itemised task outputs a valid dateObj for each item.`);
+        if (
+          !article.dateObj ||
+          !(article.dateObj instanceof Date) ||
+          isNaN(article.dateObj.getTime())
+        ) {
+          throw new Error(
+            `[skier/generateRssFeed] Article '${article.title}' is missing a valid dateObj. Ensure your itemised task outputs a valid dateObj for each item.`,
+          );
         }
         feed.addItem({
           title: article.title,

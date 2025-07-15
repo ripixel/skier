@@ -2,7 +2,11 @@ import { createTaskLogger } from '../logger';
 import { resolveConfigVars } from './resolveConfigVars';
 import type { TaskDef } from '../types';
 
-export async function runTask(task: TaskDef, context: Record<string, any>, debug: boolean): Promise<Record<string, any>> {
+export async function runTask(
+  task: TaskDef,
+  context: Record<string, any>,
+  debug: boolean,
+): Promise<Record<string, any>> {
   const userConfig = task.config;
   const taskLogger = createTaskLogger(task.name, debug);
   taskLogger.info('Started task');
@@ -12,10 +16,14 @@ export async function runTask(task: TaskDef, context: Record<string, any>, debug
     if (result && typeof result === 'object') {
       for (const key of Object.keys(result)) {
         if (key in context) {
-          taskLogger.warn(`outputVar/global '${key}' is being overwritten by a later task. This may indicate a configuration issue.`);
+          taskLogger.warn(
+            `outputVar/global '${key}' is being overwritten by a later task. This may indicate a configuration issue.`,
+          );
         }
         context[key] = (result as Record<string, any>)[key];
-        taskLogger.debug(`Added/updated variable: ${key} = ${JSON.stringify((result as Record<string, any>)[key], null, 2)}`);
+        taskLogger.debug(
+          `Added/updated variable: ${key} = ${JSON.stringify((result as Record<string, any>)[key], null, 2)}`,
+        );
       }
     }
     taskLogger.info('Finished task');

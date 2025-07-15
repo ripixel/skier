@@ -11,7 +11,9 @@ export interface SetGlobalFromMarkdownConfig {
  * Reads a markdown file, converts to HTML, and outputs it as a variable for downstream tasks.
  * Example: outputVar: 'changelogHtml' => { changelogHtml: '<h1>...</h1>' }
  */
-export function setGlobalFromMarkdownTask(config: SetGlobalFromMarkdownConfig): TaskDef<SetGlobalFromMarkdownConfig, { [outputVar: string]: string }> {
+export function setGlobalFromMarkdownTask(
+  config: SetGlobalFromMarkdownConfig,
+): TaskDef<SetGlobalFromMarkdownConfig, { [outputVar: string]: string }> {
   return {
     name: 'set-global-from-markdown',
     title: `Set global from markdown from ${config.mdPath}`,
@@ -23,6 +25,6 @@ export function setGlobalFromMarkdownTask(config: SetGlobalFromMarkdownConfig): 
       return {
         [cfg.outputVar]: html,
       };
-    }
+    },
   };
 }

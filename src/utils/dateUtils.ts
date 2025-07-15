@@ -11,5 +11,7 @@ export function parseDateFromFilename(filename: string): Date | undefined {
 
 export function formatDateDisplay(date: Date): string {
   // Output format: '2 January 2024' (day first, full month, year, no commas)
-  return date.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }).replace(/,/g, '');
+  return date
+    .toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })
+    .replace(/,/g, '');
 }

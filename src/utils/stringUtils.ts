@@ -6,7 +6,10 @@ export function titleFromFilename(filename: string): string {
     name = datePrefix[1];
   }
   // Replace dashes/underscores with spaces and capitalize
-  return name.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+  return name
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
 }
 
 export function excerptFromMarkdown(md: string, maxLength = 200): string {

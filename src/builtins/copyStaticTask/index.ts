@@ -1,7 +1,6 @@
 import { TaskDef } from '../../types';
 import { ensureDir, copyDir } from '../../utils/fileHelpers';
 
-
 export interface CopyStaticConfig {
   from: string;
   to: string;
@@ -27,6 +26,6 @@ export function copyStaticTask(config: CopyStaticConfig): TaskDef<CopyStaticConf
         }
         throw new Error(`[skier] Failed to copy assets: ${err}`);
       }
-    }
+    },
   };
 }

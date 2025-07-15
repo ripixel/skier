@@ -9,12 +9,18 @@ describe('runTasks', () => {
       {
         name: 'a',
         config: {},
-        run: async () => { calls.push('a'); return { a: 1 }; },
+        run: async () => {
+          calls.push('a');
+          return { a: 1 };
+        },
       },
       {
         name: 'b',
         config: {},
-        run: async () => { calls.push('b'); return { b: 2 }; },
+        run: async () => {
+          calls.push('b');
+          return { b: 2 };
+        },
       },
     ];
     await runTasks(tasks as any, context, false);
@@ -25,7 +31,13 @@ describe('runTasks', () => {
 
   it('propagates errors from runTask', async () => {
     const tasks = [
-      { name: 'fail', config: {}, run: async () => { throw new Error('fail!'); } },
+      {
+        name: 'fail',
+        config: {},
+        run: async () => {
+          throw new Error('fail!');
+        },
+      },
     ];
     await expect(runTasks(tasks as any, {}, false)).rejects.toThrow('fail!');
   });

@@ -39,4 +39,3 @@ export function relativePath(fromPath: string, toPath: string): string {
   while (i < fromPath.length && fromPath[i] === toPath[i]) i++;
   return toPath.slice(i).replace(/^\//, '');
 }
-

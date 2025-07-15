@@ -10,7 +10,10 @@ describe('runTask', () => {
       run: jest.fn(async (cfg, ctx) => ({ result: 42, foo: 2 })),
     };
     const result = await runTask(task as any, context, false);
-    expect(task.run).toHaveBeenCalledWith({ bar: 'baz' }, expect.objectContaining({ logger: expect.anything(), debug: false, globals: context }));
+    expect(task.run).toHaveBeenCalledWith(
+      { bar: 'baz' },
+      expect.objectContaining({ logger: expect.anything(), debug: false, globals: context }),
+    );
     expect(result).toEqual({ result: 42, foo: 2 });
     expect(context.foo).toBe(2);
     expect(context.result).toBe(42);
@@ -36,7 +39,9 @@ describe('runTask', () => {
     const task = {
       name: 'task',
       config: {},
-      run: async () => { throw new Error('fail'); },
+      run: async () => {
+        throw new Error('fail');
+      },
     };
     await expect(runTask(task as any, {}, false)).rejects.toThrow('fail');
     expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('fail'));

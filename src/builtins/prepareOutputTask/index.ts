@@ -25,6 +25,6 @@ export function prepareOutputTask(config: PrepareOutputConfig): TaskDef<PrepareO
         ctx.logger.debug(`Ensured directory "${cfg.outDir}" exists`);
       }
       return {};
-    }
+    },
   };
 }

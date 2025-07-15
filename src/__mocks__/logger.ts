@@ -5,5 +5,5 @@ export function createTaskLogger(taskName: string, debug: boolean) {
     warn: jest.fn(),
     error: jest.fn(),
     debug: jest.fn(),
-  }
+  };
 }

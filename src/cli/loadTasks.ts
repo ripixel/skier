@@ -15,7 +15,9 @@ export async function loadTasks(cwd: string): Promise<TaskDef[]> {
     tasksPath = join(cwd, 'skier.tasks.ts');
   }
   if (!(await pathExists(tasksPath))) {
-    throw new Error('❌ Could not find a skier.tasks.js, skier.tasks.cjs, or skier.tasks.ts file in your project root.');
+    throw new Error(
+      '❌ Could not find a skier.tasks.js, skier.tasks.cjs, or skier.tasks.ts file in your project root.',
+    );
   }
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const mod = require(tasksPath);

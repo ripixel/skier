@@ -48,7 +48,9 @@ export interface GeneratePagesConfig {
  */
 import type { TaskDef } from '../../types';
 
-export function generatePagesTask(config: GeneratePagesConfig): TaskDef<GeneratePagesConfig, { [outputVar: string]: string[] }> {
+export function generatePagesTask(
+  config: GeneratePagesConfig,
+): TaskDef<GeneratePagesConfig, { [outputVar: string]: string[] }> {
   return {
     name: 'generate-pages',
     title: `Generate HTML pages from ${config.pagesDir} with partials from ${config.partialsDir}`,
@@ -62,7 +64,11 @@ export function generatePagesTask(config: GeneratePagesConfig): TaskDef<Generate
       }
       // Patch Handlebars to warn on missing variables and undefined #each, using the logger for this run
       const origLookupProperty = (Handlebars as any).Utils.lookupProperty;
-      (Handlebars as any).Utils.lookupProperty = function(this: any, parent: any, propertyName: string) {
+      (Handlebars as any).Utils.lookupProperty = function (
+        this: any,
+        parent: any,
+        propertyName: string,
+      ) {
         const logger = (this && this.logger) || (ctx && ctx.logger);
         if (parent == null || typeof parent !== 'object' || !(propertyName in parent)) {
           if (typeof propertyName === 'string' && propertyName !== '__proto__') {
@@ -70,7 +76,9 @@ export function generatePagesTask(config: GeneratePagesConfig): TaskDef<Generate
               logger.warn(`Template references missing variable '{{${propertyName}}}'`);
               logger.WARN(`Template references missing variable '{{${propertyName}}}'`);
             } else {
-              console.warn(`⚠️  Skier warning: Template references missing variable '{{${propertyName}}}'`);
+              console.warn(
+                `⚠️  Skier warning: Template references missing variable '{{${propertyName}}}'`,
+              );
             }
           }
         }
@@ -78,13 +86,16 @@ export function generatePagesTask(config: GeneratePagesConfig): TaskDef<Generate
       };
       const origEachHelper = Handlebars.helpers.each;
       Handlebars.unregisterHelper('each');
-      Handlebars.registerHelper('each', function(this: any, context, options) {
-        const logger = options.data && options.data.root && options.data.root.logger || (ctx && ctx.logger);
+      Handlebars.registerHelper('each', function (this: any, context, options) {
+        const logger =
+          (options.data && options.data.root && options.data.root.logger) || (ctx && ctx.logger);
         if (context == null || (typeof context !== 'object' && !Array.isArray(context))) {
           if (logger && typeof logger.warn === 'function') {
             logger.WARN(`#each attempted on undefined or non-iterable variable.`);
           } else {
-            console.warn(`⚠️  Skier warning: #each attempted on undefined or non-iterable variable.`);
+            console.warn(
+              `⚠️  Skier warning: #each attempted on undefined or non-iterable variable.`,
+            );
           }
           return '';
         }
@@ -133,6 +144,6 @@ export function generatePagesTask(config: GeneratePagesConfig): TaskDef<Generate
         }
       }
       return {};
-    }
+    },
   };
 }

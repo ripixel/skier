@@ -5,7 +5,7 @@ import CleanCSS from 'clean-css';
 
 export interface BundleCssConfig {
   from: string; // source directory
-  to: string;   // output directory
+  to: string; // output directory
   output: string; // output filename (e.g. styles.min.css)
   minify?: boolean;
 }
@@ -30,7 +30,9 @@ export function bundleCssTask(config: BundleCssConfig): TaskDef<BundleCssConfig>
         if (cfg.minify) {
           const output = new CleanCSS({}).minify(concatenated);
           if (output.errors.length) {
-            throw new Error(`[skier] CSS minification errors for ${cfg.output}: ${output.errors.join(', ')}`);
+            throw new Error(
+              `[skier] CSS minification errors for ${cfg.output}: ${output.errors.join(', ')}`,
+            );
           }
           outputCss = output.styles;
           if (ctx.logger) {
@@ -46,6 +48,6 @@ export function bundleCssTask(config: BundleCssConfig): TaskDef<BundleCssConfig>
       } catch (err) {
         throw new Error(`[skier] Failed to process CSS: ${err}`);
       }
-    }
+    },
   };
 }

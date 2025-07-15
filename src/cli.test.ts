@@ -1,4 +1,4 @@
-jest.mock('./logger')
+jest.mock('./logger');
 
 jest.mock('./cli/loadTasks');
 import { runSkier } from './cli';
@@ -25,7 +25,9 @@ describe('CLI runner', () => {
   let exitSpy: jest.SpyInstance;
   let origCwd: string;
   beforeAll(() => {
-    exitSpy = jest.spyOn(process, 'exit').mockImplementation(((code?: number) => { throw new Error(`process.exit: ${code}`); }) as any);
+    exitSpy = jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+      throw new Error(`process.exit: ${code}`);
+    }) as any);
     origCwd = process.cwd();
     process.chdir(__dirname);
   });

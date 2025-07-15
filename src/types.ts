@@ -40,4 +40,3 @@ export interface TaskDef<Config = unknown, Output = unknown> {
   config: Config;
   run: (config: Config, ctx: TaskContext) => Promise<Output>;
 }
-

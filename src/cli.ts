@@ -1,10 +1,10 @@
 import minimist from 'minimist';
 import type { TaskDef } from './types';
-import * as path from 'path';
-import * as fs from 'fs';
+import { createTaskLogger } from './logger';
+import { runTasks } from './cli/runTasks';
+import { loadTasks } from './cli/loadTasks';
 
-
-function parseCliArgs(argv: string[]) : { only: string[]; skip: string[]; debug: boolean } {
+function parseCliArgs(argv: string[]): { only: string[]; skip: string[]; debug: boolean } {
   const args = minimist(argv.slice(2), {
     string: ['only', 'skip'],
     boolean: ['debug'],
@@ -15,46 +15,35 @@ function parseCliArgs(argv: string[]) : { only: string[]; skip: string[]; debug:
   let skip: string[] = [];
   const debug: boolean = !!args.debug;
   if (typeof args.only === 'string') {
-    only = args.only.split(',').map((s: string) => s.trim()).filter(Boolean);
+    only = args.only
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
   } else if (Array.isArray(args.only)) {
     only = args.only.flatMap((s: string) => s.split(',').map((x: string) => x.trim()));
   }
   if (typeof args.skip === 'string') {
-    skip = args.skip.split(',').map((s: string) => s.trim()).filter(Boolean);
+    skip = args.skip
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
   } else if (Array.isArray(args.skip)) {
     skip = args.skip.flatMap((s: string) => s.split(',').map((x: string) => x.trim()));
   }
   return { only, skip, debug };
 }
 
-import { Logger } from './logger';
-import { runTasks } from './cli/runTasks';
-
 export async function runSkier(argv: string[]) {
-  // Look for humble.tasks.js or humble.tasks.ts in the current working directory
   const cwd = process.cwd();
-  let tasksPath = path.join(cwd, 'skier.tasks.js');
-  if (!fs.existsSync(tasksPath)) {
-    tasksPath = path.join(cwd, 'skier.tasks.cjs');
-  }
-  if (!fs.existsSync(tasksPath)) {
-    tasksPath = path.join(cwd, 'skier.tasks.ts');
-  }
-  if (!fs.existsSync(tasksPath)) {
-    console.error('❌ Could not find a skier.tasks.js, skier.tasks.cjs, or skier.tasks.ts file in your project root.');
-    process.exit(1);
-  }
-  // Dynamically import the user's tasks
   let userTasks: TaskDef[];
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    userTasks = require(tasksPath).tasks;
+    userTasks = await loadTasks(cwd);
   } catch (e) {
-    console.error('❌ Failed to load tasks from', tasksPath, e);
+    console.error(e instanceof Error ? e.message : e);
     process.exit(1);
   }
   const { only, skip, debug } = parseCliArgs(argv);
-  const logger = new Logger({ debug, taskName: 'runner' });
+  const logger = createTaskLogger('runner', debug);
   logger.info('Started');
   let tasksToRun: TaskDef[] = userTasks;
   if (only && only.length > 0) {

@@ -1,6 +1,6 @@
 import { TaskDef } from '../../types';
-import fs from 'fs-extra';
-import path from 'path';
+import { ensureDir, readdir, writeFileUtf8, findFilesRecursive } from '../../utils/fileHelpers';
+import { join } from '../../utils/pathHelpers';
 
 export interface GenerateSitemapConfig {
   /**
@@ -24,33 +24,26 @@ export function generateSitemapTask(config: GenerateSitemapConfig): TaskDef<Gene
     config,
     run: async (cfg, ctx) => {
       try {
-        await fs.ensureDir(cfg.scanDir);
-        // Recursively find all .html files in outDir
-        const htmlFiles: string[] = [];
-        async function findHtmlFiles(dir: string, relBase: string) {
-          const entries = await fs.readdir(dir, { withFileTypes: true });
-          for (const entry of entries) {
-            const fullPath = path.join(dir, entry.name);
-            const relPath = path.join(relBase, entry.name);
-            if (entry.isDirectory()) {
-              await findHtmlFiles(fullPath, relPath);
-            } else if (entry.isFile() && entry.name.endsWith('.html')) {
-              htmlFiles.push(relPath.replace(/\\/g, '/'));
-            }
-          }
-        }
-        await findHtmlFiles(cfg.scanDir, '');
+        await ensureDir(cfg.scanDir);
+        // Use findFilesRecursive to collect all .html files
+        const allHtmlFiles = await findFilesRecursive(cfg.scanDir, '.html');
+        // Convert to relative paths from scanDir
+        const htmlFiles = allHtmlFiles.map((f) =>
+          f.startsWith(cfg.scanDir) ? f.slice(cfg.scanDir.length).replace(/^\/+/, '') : f,
+        );
         if (htmlFiles.length === 0) {
           if (ctx.logger) ctx.logger.warn('No HTML files found in outDir for sitemap generation.');
         }
-        const sitemapEntries = htmlFiles.map(relPath => {
-          const url = '/' + relPath.replace(/^\/+/, '');
-          const loc = cfg.siteUrl ? `${cfg.siteUrl.replace(/\/$/, '')}${url}` : url;
-          return `<url><loc>${loc}</loc></url>`;
-        }).join('\n    ');
+        const sitemapEntries = htmlFiles
+          .map((relPath) => {
+            const url = '/' + relPath.replace(/^\/+/, '');
+            const loc = cfg.siteUrl ? `${cfg.siteUrl.replace(/\/$/, '')}${url}` : url;
+            return `<url><loc>${loc}</loc></url>`;
+          })
+          .join('\n    ');
         const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n    ${sitemapEntries}\n</urlset>\n`;
-        const outPath = path.join(cfg.outDir, 'sitemap.xml');
-        await fs.writeFile(outPath, xml, 'utf8');
+        const outPath = join(cfg.outDir, 'sitemap.xml');
+        await writeFileUtf8(outPath, xml);
         if (ctx.logger) {
           ctx.logger.debug(`Generated sitemap.xml at ${outPath}`);
         }
@@ -60,6 +53,6 @@ export function generateSitemapTask(config: GenerateSitemapConfig): TaskDef<Gene
         }
         throw new Error(`[skier] Failed to generate sitemap: ${err}`);
       }
-    }
+    },
   };
 }

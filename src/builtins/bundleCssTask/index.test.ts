@@ -34,7 +34,9 @@ describe('bundleCssTask', () => {
     expect(await fs.pathExists(outPath)).toBe(true);
     expect(await fs.pathExists(expectedPath)).toBe(true);
     const actual = (await fs.readFile(outPath, 'utf8')).replace(/\r\n/g, '\n').replace(/\s+/g, '');
-    const expected = (await fs.readFile(expectedPath, 'utf8')).replace(/\r\n/g, '\n').replace(/\s+/g, '');
+    const expected = (await fs.readFile(expectedPath, 'utf8'))
+      .replace(/\r\n/g, '\n')
+      .replace(/\s+/g, '');
     expect(actual).toBe(expected);
   });
 });

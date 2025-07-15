@@ -27,7 +27,9 @@ describe('setGlobalFromMarkdownTask', () => {
     // Check that the variable is set in the returned object
     expect(result.changelogHtml).toBeDefined();
     const actual = (result.changelogHtml as string).replace(/\r\n/g, '\n').replace(/\s+/g, '');
-    const expected = (await fs.readFile(expectedHtml, 'utf8')).replace(/\r\n/g, '\n').replace(/\s+/g, '');
+    const expected = (await fs.readFile(expectedHtml, 'utf8'))
+      .replace(/\r\n/g, '\n')
+      .replace(/\s+/g, '');
     expect(actual).toBe(expected);
   });
 });

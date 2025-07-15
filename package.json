@@ -8,6 +8,8 @@
     "skier": "dist/bin/skier.js"
   },
   "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build": "tsc",
     "start": "node dist/bin/skier.js",
     "cli": "node dist/bin/skier.js",
@@ -55,6 +57,8 @@
     "@types/minimist": "^1.2.5",
     "@types/node": "^24.0.13",
     "jest": "^30.0.4",
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.1.0",
     "semantic-release": "^23.0.0",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"

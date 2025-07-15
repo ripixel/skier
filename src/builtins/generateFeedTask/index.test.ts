@@ -5,10 +5,16 @@ jest.mock('feed', () => {
       addItem(item: any) {
         this.items.push(item);
       }
-      rss2() { return '<rss><item>' + this.items.map(i => i.title).join(',') + '</item></rss>'; }
-      atom1() { return '<feed><entry>' + this.items.map(i => i.title).join(',') + '</entry></feed>'; }
-      json1() { return JSON.stringify({ feed: this.items.map(i => i.title) }); }
-    }
+      rss2() {
+        return '<rss><item>' + this.items.map((i) => i.title).join(',') + '</item></rss>';
+      }
+      atom1() {
+        return '<feed><entry>' + this.items.map((i) => i.title).join(',') + '</entry></feed>';
+      }
+      json1() {
+        return JSON.stringify({ feed: this.items.map((i) => i.title) });
+      }
+    },
   };
 });
 

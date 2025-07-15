@@ -3,28 +3,66 @@ version: 2.1
 executors:
   node-executor:
     docker:
-      - image: cimg/node:20.11
+      - image: cimg/node:22.17.0
 
 jobs:
+  setup:
+    executor: node-executor
+    steps:
+      - checkout
+      - run: npm ci
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules
+            - package-lock.json
+            - package.json
+            - tsconfig.json
+  prettier:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: npm run format:check
   build:
     executor: node-executor
     steps:
       - checkout
-      - run: npm ci
+      - attach_workspace:
+          at: .
       - run: npm run build
-
+  test:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: npm test
   release:
     executor: node-executor
     steps:
       - checkout
-      - run: npm ci
+      - attach_workspace:
+          at: .
       - run: npx semantic-release
 
 workflows:
   version: 2
   build-and-release:
     jobs:
-      - build
+      - setup
+      - prettier:
+          requires:
+            - setup
+      - build:
+          requires:
+            - setup
+      - test:
+          requires:
+            - setup
       - release:
           requires:
+            - prettier
             - build
+            - test

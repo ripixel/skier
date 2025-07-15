@@ -1,5 +1,5 @@
-import fs from 'fs-extra';
-import path from 'path';
+import { ensureDir, readdir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers';
+import { join, extname, basename } from '../../utils/pathHelpers';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import Handlebars from 'handlebars';
@@ -33,6 +33,10 @@ export interface GeneratePagesConfig {
   partialsDir: string;
   outDir: string;
   /**
+   * Extension to scan for in pagesDir (e.g., '.html', '.hbs'). Defaults to '.html'.
+   */
+  pageExt?: string;
+  /**
    * Optional function to inject additional variables into the render context for each page.
    * Receives all innate HtmlRenderVars.
    */
@@ -44,7 +48,9 @@ export interface GeneratePagesConfig {
  */
 import type { TaskDef } from '../../types';
 
-export function generatePagesTask(config: GeneratePagesConfig): TaskDef<GeneratePagesConfig, { [outputVar: string]: string[] }> {
+export function generatePagesTask(
+  config: GeneratePagesConfig,
+): TaskDef<GeneratePagesConfig, { [outputVar: string]: string[] }> {
   return {
     name: 'generate-pages',
     title: `Generate HTML pages from ${config.pagesDir} with partials from ${config.partialsDir}`,
@@ -58,7 +64,11 @@ export function generatePagesTask(config: GeneratePagesConfig): TaskDef<Generate
       }
       // Patch Handlebars to warn on missing variables and undefined #each, using the logger for this run
       const origLookupProperty = (Handlebars as any).Utils.lookupProperty;
-      (Handlebars as any).Utils.lookupProperty = function(this: any, parent: any, propertyName: string) {
+      (Handlebars as any).Utils.lookupProperty = function (
+        this: any,
+        parent: any,
+        propertyName: string,
+      ) {
         const logger = (this && this.logger) || (ctx && ctx.logger);
         if (parent == null || typeof parent !== 'object' || !(propertyName in parent)) {
           if (typeof propertyName === 'string' && propertyName !== '__proto__') {
@@ -66,7 +76,9 @@ export function generatePagesTask(config: GeneratePagesConfig): TaskDef<Generate
               logger.warn(`Template references missing variable '{{${propertyName}}}'`);
               logger.WARN(`Template references missing variable '{{${propertyName}}}'`);
             } else {
-              console.warn(`⚠️  Skier warning: Template references missing variable '{{${propertyName}}}'`);
+              console.warn(
+                `⚠️  Skier warning: Template references missing variable '{{${propertyName}}}'`,
+              );
             }
           }
         }
@@ -74,62 +86,64 @@ export function generatePagesTask(config: GeneratePagesConfig): TaskDef<Generate
       };
       const origEachHelper = Handlebars.helpers.each;
       Handlebars.unregisterHelper('each');
-      Handlebars.registerHelper('each', function(this: any, context, options) {
-        const logger = options.data && options.data.root && options.data.root.logger || (ctx && ctx.logger);
+      Handlebars.registerHelper('each', function (this: any, context, options) {
+        const logger =
+          (options.data && options.data.root && options.data.root.logger) || (ctx && ctx.logger);
         if (context == null || (typeof context !== 'object' && !Array.isArray(context))) {
           if (logger && typeof logger.warn === 'function') {
             logger.WARN(`#each attempted on undefined or non-iterable variable.`);
           } else {
-            console.warn(`⚠️  Skier warning: #each attempted on undefined or non-iterable variable.`);
+            console.warn(
+              `⚠️  Skier warning: #each attempted on undefined or non-iterable variable.`,
+            );
           }
           return '';
         }
         return origEachHelper.call(this, context, options);
       });
       // Register all partials
-      const partialFiles = await fs.readdir(cfg.partialsDir);
+      const partialFiles = (await readdir(cfg.partialsDir)).filter((f: string) => {
+        const ext = extname(f);
+        return ext === '.hbs' || ext === '.html';
+      });
       for (const file of partialFiles) {
-        if (path.extname(file) === '.html') {
-          const partialName = path.basename(file, '.html');
-          const partialPath = path.join(cfg.partialsDir, file);
-          const partialContent = await fs.readFile(partialPath, 'utf8');
-          Handlebars.registerPartial(partialName, partialContent);
-        }
+        const ext = extname(file);
+        const partialName = basename(file, ext);
+        const partialPath = join(cfg.partialsDir, file);
+        const partialContent = await readFileUtf8(partialPath);
+        Handlebars.registerPartial(partialName, partialContent);
       }
-      // Render each page
-      await fs.ensureDir(cfg.outDir);
-      const pageFiles = await fs.readdir(cfg.pagesDir);
-      for (const file of pageFiles) {
-        if (path.extname(file) === '.html') {
-          const pageName = path.basename(file, '.html');
-          const pagePath = path.join(cfg.pagesDir, file);
-          const outPath = path.join(cfg.outDir, file);
-          let pageContent = await fs.readFile(pagePath, 'utf8');
-          // (Optional) TODO: parse frontmatter for per-page variables
-          // Compose render context
-          let renderVars: HtmlRenderVars = {
-            ...ctx.globals,
-            currentPage: pageName,
-            currentPagePath: file,
-          };
-          if (typeof cfg.additionalVarsFn === 'function') {
-            const additional = await cfg.additionalVarsFn({
-              ...renderVars,
-            });
-            if (additional && typeof additional === 'object') {
-              renderVars = { ...renderVars, ...additional };
-            }
-          }
 
-          const template = Handlebars.compile(pageContent);
-          const output = template(renderVars);
-          await fs.writeFile(outPath, output, 'utf8');
-          if (ctx.logger) {
-            ctx.logger.debug(`Generated ${outPath}`);
+      await ensureDir(cfg.outDir);
+      const pageExt = cfg.pageExt || '.html';
+      const pageFiles = (await readdir(cfg.pagesDir)).filter((f: string) => extname(f) === pageExt);
+      for (const file of pageFiles) {
+        const pageName = basename(file, pageExt);
+        const pagePath = join(cfg.pagesDir, file);
+        const pageContent = await readFileUtf8(pagePath);
+        const outPath = join(cfg.outDir, pageName + '.html');
+        let renderVars: HtmlRenderVars = {
+          ...ctx.globals,
+          currentPage: pageName,
+          currentPagePath: file,
+        };
+        if (typeof cfg.additionalVarsFn === 'function') {
+          const additional = await cfg.additionalVarsFn({
+            ...renderVars,
+          });
+          if (additional && typeof additional === 'object') {
+            renderVars = { ...renderVars, ...additional };
           }
+        }
+
+        const template = Handlebars.compile(pageContent);
+        const output = template(renderVars);
+        await writeFileUtf8(outPath, output);
+        if (ctx.logger) {
+          ctx.logger.debug(`Generated ${outPath}`);
         }
       }
       return {};
-    }
+    },
   };
 }

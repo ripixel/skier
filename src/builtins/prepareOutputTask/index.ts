@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import { pathExists, removeDir, ensureDir } from '../../utils/fileHelpers';
 import { TaskDef } from '../../types';
 
 export interface PrepareOutputConfig {
@@ -13,18 +13,18 @@ export function prepareOutputTask(config: PrepareOutputConfig): TaskDef<PrepareO
     run: async (cfg, ctx) => {
       if (ctx.logger) ctx.logger.debug(`Cleaning output directory: ${cfg.outDir}`);
       let removed = false;
-      if (await fs.pathExists(cfg.outDir)) {
-        await fs.remove(cfg.outDir);
+      if (await pathExists(cfg.outDir)) {
+        await removeDir(cfg.outDir);
         removed = true;
         if (ctx.logger && ctx.debug) {
           ctx.logger.debug(`Removed directory "${cfg.outDir}"`);
         }
       }
-      await fs.ensureDir(cfg.outDir);
+      await ensureDir(cfg.outDir);
       if (ctx.logger && ctx.debug) {
         ctx.logger.debug(`Ensured directory "${cfg.outDir}" exists`);
       }
       return {};
-    }
+    },
   };
 }

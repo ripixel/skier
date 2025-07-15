@@ -26,10 +26,14 @@ function getTaskColor(taskName: string) {
   // Simple hash to pick a color for each task
   let hash = 0;
   for (let i = 0; i < taskName.length; i++) {
-    hash = ((hash << 5) - hash) + taskName.charCodeAt(i);
+    hash = (hash << 5) - hash + taskName.charCodeAt(i);
     hash |= 0;
   }
   return colorPalette[Math.abs(hash) % colorPalette.length];
+}
+
+export function createTaskLogger(taskName: string, debug: boolean): Logger {
+  return new Logger({ debug, taskName });
 }
 
 export class Logger {
@@ -72,4 +76,3 @@ export class Logger {
     return chalk.blue('[skier/runner]');
   }
 }
-

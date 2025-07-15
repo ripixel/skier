@@ -6,5 +6,8 @@ export { generatePagesTask, GeneratePagesConfig } from './generatePagesTask';
 export { generateItemsTask, GenerateItemsConfig } from './generateItemsTask';
 export { prepareOutputTask, PrepareOutputConfig } from './prepareOutputTask';
 export { generateFeedTask, GenerateFeedConfig } from './generateFeedTask';
-export { setGlobalFromMarkdownTask, SetGlobalFromMarkdownConfig } from './setGlobalFromMarkdownTask';
+export {
+  setGlobalFromMarkdownTask,
+  SetGlobalFromMarkdownConfig,
+} from './setGlobalFromMarkdownTask';
 export { setGlobalsTask, SetGlobalsConfig } from './setGlobalsTask';

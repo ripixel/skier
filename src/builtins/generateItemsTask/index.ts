@@ -1,21 +1,17 @@
-import fs from 'fs-extra';
-import path from 'path';
 import Handlebars from 'handlebars';
-import { marked } from 'marked';
-import hljs from 'highlight.js';
-
-const renderer = new marked.Renderer();
-renderer.code = (code, infostring, escaped) => {
-  const lang = (infostring || '').match(/\S*/)?.[0];
-  if (lang && hljs.getLanguage(lang)) {
-    const highlighted = hljs.highlight(code, { language: lang }).value;
-    return `<pre><code class="hljs language-${lang}">${highlighted}</code></pre>`;
-  }
-  const auto = hljs.highlightAuto(code).value;
-  return `<pre><code class="hljs">${auto}</code></pre>`;
-};
-marked.setOptions({ renderer });
+import { renderMarkdown } from '../../utils/markdown';
+import {
+  ensureDir,
+  readFileUtf8,
+  writeFileUtf8,
+  readdir,
+  stat,
+  pathExists,
+} from '../../utils/fileHelpers';
+import { titleFromFilename, excerptFromMarkdown } from '../../utils/stringUtils';
+import { formatDateDisplay } from '../../utils/dateUtils';
 import { SkierItem, TaskDef } from '../../types';
+import { extname, basename, join, relativePath } from '../../utils/pathHelpers';
 
 /**
  * The default variables provided to every item template in generateItemisedTask
@@ -65,9 +61,9 @@ export interface GenerateItemsConfig {
   /** Custom sorting function for items */
   sortFn?: (a: SkierItem, b: SkierItem) => number;
   /** Custom link generator: (args: { section, itemName, meta }) => string */
-  linkFn?: (args: { section: string, itemName: string, meta: any }) => string;
+  linkFn?: (args: { section: string; itemName: string; meta: any }) => string;
   /** Custom output path generator: (args: { section, itemName, meta }) => string */
-  outputPathFn?: (args: { section: string, itemName: string, meta: any }) => string;
+  outputPathFn?: (args: { section: string; itemName: string; meta: any }) => string;
   /** Custom markdown renderer: (md: string) => string | Promise<string> */
   markdownRenderer?: (md: string) => string | Promise<string>;
 
@@ -79,18 +75,28 @@ export interface GenerateItemsConfig {
    * Optional user override for date extraction. Receives (args: { section, itemName, itemPath, content, fileStat })
    * and should return a Date, string, or undefined.
    */
-  extractDate?: (args: { section: string, itemName: string, itemPath: string, content: string, fileStat: import('fs-extra').Stats }) => Date | string | undefined;
+  extractDate?: (args: {
+    section: string;
+    itemName: string;
+    itemPath: string;
+    content: string;
+    fileStat: import('fs-extra').Stats;
+  }) => Date | string | undefined;
   /**
    * Optional function to inject additional variables into the render context for each item.
    * Receives all innate ItemisedRenderVars.
    */
-  additionalVarsFn?: (args: ItemisedRenderVars) => Record<string, any> | Promise<Record<string, any>>;
+  additionalVarsFn?: (
+    args: ItemisedRenderVars,
+  ) => Record<string, any> | Promise<Record<string, any>>;
 }
 
 /**
  * Built-in task for generating multiple HTML pages from templates and Markdown/HTML items (e.g. blog posts, projects, etc.)
  */
-export function generateItemsTask(config: GenerateItemsConfig): TaskDef<GenerateItemsConfig, { [outputVar: string]: SkierItem[] }> {
+export function generateItemsTask(
+  config: GenerateItemsConfig,
+): TaskDef<GenerateItemsConfig, { [outputVar: string]: SkierItem[] }> {
   return {
     name: 'generate-items',
     title: `Generate HTML items (Markdown/HTML) from ${config.itemsDir}`,
@@ -101,34 +107,35 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
 
       // Register all partials (configurable extension)
       const partialExt = cfg.partialExtension ?? '.html';
-      const partialFiles = await fs.readdir(cfg.partialsDir);
+      const partialFiles = (await readdir(cfg.partialsDir)).filter(
+        (file) => extname(file) === partialExt,
+      );
       for (const file of partialFiles) {
-        if (path.extname(file) === partialExt) {
-          const partialName = path.basename(file, partialExt);
-          const partialPath = path.join(cfg.partialsDir, file);
-          const partialContent = await fs.readFile(partialPath, 'utf8');
-          Handlebars.registerPartial(partialName, partialContent);
-        }
+        const partialName = basename(file, partialExt);
+        const partialPath = join(cfg.partialsDir, file);
+        const partialContent = await readFileUtf8(partialPath);
+        Handlebars.registerPartial(partialName, partialContent);
       }
 
       // Flat structure support
       if (cfg.flatStructure) {
         // All files in itemsDir are items (no sections)
-        const itemFiles = (await fs.readdir(cfg.itemsDir)).filter(f => f.endsWith('.md'));
-        // Look for template at itemsDir/template.html or itemsDir/template{templateExt}
+        const itemFiles = (await readdir(cfg.itemsDir)).filter((file) => file.endsWith('.md'));
         const templateExt = cfg.templateExtension ?? '.html';
-        const templatePath = path.join(cfg.itemsDir, `template${templateExt}`);
-        const hasTemplate = await fs.pathExists(templatePath);
+        const templatePath = join(cfg.itemsDir, `template${templateExt}`);
+        const hasTemplate = await pathExists(templatePath);
         if (!hasTemplate && itemFiles.length > 0) {
-          throw new Error(`[skier] No template${templateExt} found in ${cfg.itemsDir}, but found Markdown files. Markdown items require a template.`);
+          throw new Error(
+            `[skier] No template${templateExt} found in ${cfg.itemsDir}, but found Markdown files. Markdown items require a template.`,
+          );
         }
         if (hasTemplate) {
-          const templateContent = await fs.readFile(templatePath, 'utf8');
+          const templateContent = await readFileUtf8(templatePath);
           const template = Handlebars.compile(templateContent);
           for (const itemFile of itemFiles) {
-            const itemName = path.basename(itemFile, path.extname(itemFile));
-            const itemPath = path.join(cfg.itemsDir, itemFile);
-            let rawMarkdown = await fs.readFile(itemPath, 'utf8');
+            const itemName = basename(itemFile, extname(itemFile));
+            const itemPath = join(cfg.itemsDir, itemFile);
+            let rawMarkdown = await readFileUtf8(itemPath);
             // Metadata variables for this item
             let date: string | undefined;
             let dateObj: Date | undefined;
@@ -141,10 +148,16 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
             title = undefined;
             excerpt = undefined;
             body = rawMarkdown;
-            fileStat = await fs.stat(itemPath);
+            fileStat = await stat(itemPath);
             // 1. User override
             if (typeof cfg.extractDate === 'function') {
-              const userDate = cfg.extractDate({ section: '', itemName, itemPath, content: rawMarkdown, fileStat });
+              const userDate = cfg.extractDate({
+                section: '',
+                itemName,
+                itemPath,
+                content: rawMarkdown,
+                fileStat,
+              });
               if (userDate instanceof Date && !isNaN(userDate.getTime())) {
                 dateObj = userDate;
                 date = userDate.toISOString();
@@ -172,7 +185,7 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
                 const fmMatch = rawMarkdown.match(/^---\n([\s\S]*?)---/);
                 if (fmMatch) {
                   const fm = fmMatch[1];
-                  const dateLine = fm.split('\n').find(line => line.trim().startsWith('date:'));
+                  const dateLine = fm.split('\n').find((line) => line.trim().startsWith('date:'));
                   if (dateLine) {
                     const dateVal = dateLine.split(':').slice(1).join(':').trim();
                     const d = new Date(dateVal);
@@ -206,7 +219,10 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
                 title = frontmatter.title;
               }
               if (frontmatter.excerpt) {
-                excerpt = typeof frontmatter.excerpt === 'string' ? await marked(frontmatter.excerpt) : undefined;
+                excerpt =
+                  typeof frontmatter.excerpt === 'string'
+                    ? await renderMarkdown(frontmatter.excerpt)
+                    : undefined;
               }
             }
             if (!title) {
@@ -215,24 +231,14 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
               if (datePrefixMatch) {
                 nameForTitle = datePrefixMatch[1];
               }
-              title = nameForTitle.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+              title = titleFromFilename(nameForTitle);
             }
             // Fallback: auto-excerpt from first two non-empty paragraphs if not provided in frontmatter
             if (!excerpt) {
               if (typeof cfg.excerptFn === 'function') {
                 excerpt = await cfg.excerptFn(rawMarkdown, frontmatter);
               } else {
-                let mdForExcerpt = rawMarkdown;
-                if (mdForExcerpt.startsWith('---')) {
-                  const fmEnd = mdForExcerpt.indexOf('---', 3);
-                  if (fmEnd !== -1) {
-                    mdForExcerpt = mdForExcerpt.slice(fmEnd + 3);
-                  }
-                }
-                const paragraphs = mdForExcerpt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-                if (paragraphs.length > 0) {
-                  excerpt = await marked(paragraphs.slice(0, 2).map(p => p.replace(/^#+\s*/, '').replace(/^>+\s*/, '').replace(/^\*+\s*/, '')).join('\n\n'));
-                }
+                excerpt = await excerptFromMarkdown(rawMarkdown);
               }
             }
             // Now render markdown to HTML for body
@@ -240,7 +246,7 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
             if (typeof cfg.markdownRenderer === 'function') {
               content = await cfg.markdownRenderer(rawMarkdown);
             } else {
-              content = await marked(rawMarkdown);
+              content = await renderMarkdown(rawMarkdown);
             }
             // Output path and link configurable
             let outPath: string;
@@ -248,24 +254,27 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
               outPath = cfg.outputPathFn({ section: '', itemName, meta: frontmatter });
             } else {
               const outDir = cfg.outDir;
-              await fs.ensureDir(outDir);
-              outPath = path.join(outDir, itemName + '.html');
+              await ensureDir(outDir);
+              outPath = join(outDir, itemName + '.html');
             }
-            const relativePath = path.relative(cfg.outDir, outPath);
+            const relPath = relativePath(cfg.outDir, outPath);
             let renderVars: ItemisedRenderVars = {
               ...ctx.globals,
               section: '',
               itemName,
               itemPath,
               outPath,
-              relativePath,
+              relativePath: relPath,
               title,
               date,
               dateObj,
-              dateDisplay: dateObj ? dateObj.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) : undefined,
+              dateDisplay: dateObj ? formatDateDisplay(dateObj) : undefined,
               excerpt,
               body,
-              link: typeof cfg.linkFn === 'function' ? cfg.linkFn({ section: '', itemName, meta: frontmatter }) : `/${itemName}.html`,
+              link:
+                typeof cfg.linkFn === 'function'
+                  ? cfg.linkFn({ section: '', itemName, meta: frontmatter })
+                  : `/${itemName}.html`,
               content,
             };
             if (typeof cfg.additionalVarsFn === 'function') {
@@ -275,18 +284,21 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
               }
             }
             const output = template(renderVars);
-            await fs.writeFile(outPath, output, 'utf8');
-            const relLink = typeof cfg.linkFn === 'function' ? cfg.linkFn({ section: '', itemName, meta: frontmatter }) : `/${itemName}.html`;
+            await writeFileUtf8(outPath, output);
+            const relLink =
+              typeof cfg.linkFn === 'function'
+                ? cfg.linkFn({ section: '', itemName, meta: frontmatter })
+                : `/${itemName}.html`;
             generatedItems.push({
               section: '',
               itemName,
               itemPath,
               outPath,
-              relativePath: path.relative(cfg.outDir, outPath),
+              relativePath: relPath,
               type: 'md',
               date,
               dateObj,
-              dateDisplay: dateObj ? dateObj.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) : undefined,
+              dateDisplay: dateObj ? formatDateDisplay(dateObj) : undefined,
               title,
               excerpt,
               body,
@@ -309,32 +321,32 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
 
       // For each section (e.g. blog, projects)
       const templateExt = cfg.templateExtension ?? '.html';
-      const allSectionNames = await fs.readdir(cfg.itemsDir);
+      const allSectionNames = await readdir(cfg.itemsDir);
       const sectionDirs: string[] = [];
       for (const name of allSectionNames) {
-        const stat = await fs.stat(path.join(cfg.itemsDir, name));
-        if (stat.isDirectory()) sectionDirs.push(name);
+        const statResult = await stat(join(cfg.itemsDir, name));
+        if (statResult.isDirectory()) sectionDirs.push(name);
       }
       for (const section of sectionDirs) {
-        const sectionPath = path.join(cfg.itemsDir, section);
-        const templatePath = path.join(sectionPath, `template${templateExt}`);
-        const hasTemplate = await fs.pathExists(templatePath);
-        const itemFiles = (await fs.readdir(sectionPath)).filter(f => f !== `template${templateExt}` && f.endsWith('.md'));
-        const mdFiles = itemFiles;
+        const sectionPath = join(cfg.itemsDir, section);
+        const templatePath = join(sectionPath, `template${templateExt}`);
+        const hasTemplate = await pathExists(templatePath);
+        const itemFiles = (await readdir(sectionPath)).filter((file) => file.endsWith('.md'));
+        const mdFiles: string[] = itemFiles;
 
         if (!hasTemplate && mdFiles.length > 0) {
-          throw new Error(`[skier] No template.html found in ${sectionPath}, but found Markdown files. Markdown items require a template.`);
+          throw new Error(
+            `[skier] No template.html found in ${sectionPath}, but found Markdown files. Markdown items require a template.`,
+          );
         }
-
         // Handle .md files (only if template exists)
         if (hasTemplate) {
-          const templateContent = await fs.readFile(templatePath, 'utf8');
+          const templateContent = await readFileUtf8(templatePath);
           const template = Handlebars.compile(templateContent);
           for (const itemFile of mdFiles) {
-            const itemName = path.basename(itemFile, path.extname(itemFile));
-            const itemPath = path.join(sectionPath, itemFile);
-            let rawMarkdown = await fs.readFile(itemPath, 'utf8');
-            // Metadata variables for this item
+            const itemName = basename(itemFile, extname(itemFile));
+            const itemPath = join(sectionPath, itemFile);
+            let rawMarkdown = await readFileUtf8(itemPath);
             // Metadata variables for this item
             let date: string | undefined;
             let dateObj: Date | undefined;
@@ -342,16 +354,21 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
             let excerpt: string | undefined;
             let body: string;
             let fileStat: import('fs-extra').Stats;
-            // Assignments only, no redeclaration below
             date = undefined;
             dateObj = undefined;
             title = undefined;
             excerpt = undefined;
             body = rawMarkdown;
-            fileStat = await fs.stat(itemPath);
+            fileStat = await stat(itemPath);
             // 1. User override
             if (typeof cfg.extractDate === 'function') {
-              const userDate = cfg.extractDate({ section, itemName, itemPath, content: rawMarkdown, fileStat });
+              const userDate = cfg.extractDate({
+                section,
+                itemName,
+                itemPath,
+                content: rawMarkdown,
+                fileStat,
+              });
               if (userDate instanceof Date && !isNaN(userDate.getTime())) {
                 dateObj = userDate;
                 date = userDate.toISOString();
@@ -379,7 +396,7 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
                 const fmMatch = rawMarkdown.match(/^---\n([\s\S]*?)---/);
                 if (fmMatch) {
                   const fm = fmMatch[1];
-                  const dateLine = fm.split('\n').find(line => line.trim().startsWith('date:'));
+                  const dateLine = fm.split('\n').find((line) => line.trim().startsWith('date:'));
                   if (dateLine) {
                     const dateVal = dateLine.split(':').slice(1).join(':').trim();
                     const d = new Date(dateVal);
@@ -413,36 +430,26 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
                 title = frontmatter.title;
               }
               if (frontmatter.excerpt) {
-                excerpt = typeof frontmatter.excerpt === 'string' ? await marked(frontmatter.excerpt) : undefined;
+                excerpt =
+                  typeof frontmatter.excerpt === 'string'
+                    ? await renderMarkdown(frontmatter.excerpt)
+                    : undefined;
               }
             }
             if (!title) {
-              // If date was extracted from filename, strip it from itemName before prettifying
               let nameForTitle = itemName;
               const datePrefixMatch = nameForTitle.match(/^\d{4}-\d{2}-\d{2}[-_]?(.+)$/);
               if (datePrefixMatch) {
                 nameForTitle = datePrefixMatch[1];
               }
-              title = nameForTitle.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+              title = titleFromFilename(nameForTitle);
             }
             // Fallback: auto-excerpt from first two non-empty paragraphs if not provided in frontmatter
             if (!excerpt) {
               if (typeof cfg.excerptFn === 'function') {
                 excerpt = await cfg.excerptFn(rawMarkdown, frontmatter);
               } else {
-                // Remove frontmatter if present
-                let mdForExcerpt = rawMarkdown;
-                if (mdForExcerpt.startsWith('---')) {
-                  const fmEnd = mdForExcerpt.indexOf('---', 3);
-                  if (fmEnd !== -1) {
-                    mdForExcerpt = mdForExcerpt.slice(fmEnd + 3);
-                  }
-                }
-                // Find first two non-empty paragraphs
-                const paragraphs = mdForExcerpt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-                if (paragraphs.length > 0) {
-                  excerpt = await marked(paragraphs.slice(0, 2).map(p => p.replace(/^#+\s*/, '').replace(/^>+\s*/, '').replace(/^\*+\s*/, '')).join('\n\n'));
-                }
+                excerpt = await excerptFromMarkdown(rawMarkdown);
               }
             }
             // Now render markdown to HTML for body
@@ -450,32 +457,35 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
             if (typeof cfg.markdownRenderer === 'function') {
               content = await cfg.markdownRenderer(rawMarkdown);
             } else {
-              content = await marked(rawMarkdown);
+              content = await renderMarkdown(rawMarkdown);
             }
             // Output path and link configurable
             let outPath: string;
             if (typeof cfg.outputPathFn === 'function') {
               outPath = cfg.outputPathFn({ section, itemName, meta: frontmatter });
             } else {
-              const outDir = path.join(cfg.outDir, section);
-              await fs.ensureDir(outDir);
-              outPath = path.join(outDir, itemName + '.html');
+              const outDir = join(cfg.outDir, section);
+              await ensureDir(outDir);
+              outPath = join(outDir, itemName + '.html');
             }
-            const relativePath = path.relative(cfg.outDir, outPath);
+            const relPath = relativePath(cfg.outDir, outPath);
             let renderVars: ItemisedRenderVars = {
               ...ctx.globals,
               section,
               itemName,
               itemPath,
               outPath,
-              relativePath,
+              relativePath: relPath,
               title,
               date,
               dateObj,
-              dateDisplay: dateObj ? dateObj.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) : undefined,
+              dateDisplay: dateObj ? formatDateDisplay(dateObj) : undefined,
               excerpt,
               body,
-              link: typeof cfg.linkFn === 'function' ? cfg.linkFn({ section, itemName, meta: frontmatter }) : `/${section}/${itemName}.html`,
+              link:
+                typeof cfg.linkFn === 'function'
+                  ? cfg.linkFn({ section, itemName, meta: frontmatter })
+                  : `/${section}/${itemName}.html`,
               content,
             };
             // If user provided, call additionalVarsFn with all innate fields and ctx
@@ -488,7 +498,7 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
               }
             }
             const output = template(renderVars);
-            await fs.writeFile(outPath, output, 'utf8');
+            await writeFileUtf8(outPath, output);
             if (!title) {
               // If date was extracted from filename, strip it from itemName before prettifying
               let nameForTitle = itemName;
@@ -496,7 +506,7 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
               if (datePrefixMatch) {
                 nameForTitle = datePrefixMatch[1];
               }
-              title = nameForTitle.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+              title = nameForTitle.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
             }
             // Link: output path relative to site root
             const relLink = `/${section}/${itemName}.html`;
@@ -505,11 +515,11 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
               itemName,
               itemPath,
               outPath,
-              relativePath: path.relative(cfg.outDir, outPath),
+              relativePath: relPath,
               type: 'md',
               date,
               dateObj,
-              dateDisplay: dateObj ? dateObj.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) : undefined,
+              dateDisplay: dateObj ? formatDateDisplay(dateObj) : undefined,
               title,
               excerpt,
               body,
@@ -517,7 +527,6 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
             });
             ctx.logger.debug(`Generated ${outPath}`);
           }
-
         }
       }
       // Sort items (configurable)
@@ -531,6 +540,6 @@ export function generateItemsTask(config: GenerateItemsConfig): TaskDef<Generate
         });
       }
       return { [cfg.outputVar]: generatedItems };
-    }
+    },
   };
 }

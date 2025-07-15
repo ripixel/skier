@@ -38,7 +38,13 @@ describe('generateItemsTask', () => {
       // In this test, section is always 'blog'
       expect(item.section).toBe('blog');
       const outPath = path.join(testOutDir, 'blog', item.itemName + '.html');
-      const expectedPath = path.join(__dirname, 'testAssets', 'expected', 'blog', item.itemName + '.html');
+      const expectedPath = path.join(
+        __dirname,
+        'testAssets',
+        'expected',
+        'blog',
+        item.itemName + '.html',
+      );
       expect(await fs.pathExists(outPath)).toBe(true);
       expect(await fs.pathExists(expectedPath)).toBe(true);
       const actual = (await fs.readFile(outPath, 'utf8')).replace(/\r\n/g, '\n');

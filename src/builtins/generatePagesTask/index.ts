@@ -42,7 +42,7 @@ export interface GeneratePagesConfig {
 /**
  * Built-in HTML generation task for Skier: supports partials, variables, and per-page metadata.
  */
-import type { TaskContext, TaskDef } from '../types';
+import type { TaskDef } from '../../types';
 
 export function generatePagesTask(config: GeneratePagesConfig): TaskDef<GeneratePagesConfig, { [outputVar: string]: string[] }> {
   return {

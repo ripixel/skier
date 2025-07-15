@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import { marked } from 'marked';
-import type { TaskDef, TaskContext } from '../types';
+import type { TaskDef, TaskContext } from '../../types';
 
 export interface SetGlobalFromMarkdownConfig {
   mdPath: string; // Path to markdown file

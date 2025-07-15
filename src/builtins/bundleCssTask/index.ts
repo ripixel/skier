@@ -1,4 +1,4 @@
-import { TaskDef } from '../types';
+import { TaskDef } from '../../types';
 import fs from 'fs-extra';
 import path from 'path';
 import CleanCSS from 'clean-css';

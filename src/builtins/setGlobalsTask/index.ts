@@ -1,4 +1,4 @@
-import type { TaskDef, TaskContext } from '../types';
+import type { TaskDef, TaskContext } from '../../types';
 
 export interface SetGlobalsConfig {
   values?: Record<string, any>;

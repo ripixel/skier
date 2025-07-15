@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import { TaskDef } from '../types';
+import { TaskDef } from '../../types';
 
 export interface PrepareOutputConfig {
   outDir: string;

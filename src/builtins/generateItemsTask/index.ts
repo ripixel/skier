@@ -15,7 +15,7 @@ renderer.code = (code, infostring, escaped) => {
   return `<pre><code class="hljs">${auto}</code></pre>`;
 };
 marked.setOptions({ renderer });
-import { SkierItem } from '../types';
+import { SkierItem, TaskDef } from '../../types';
 
 /**
  * The default variables provided to every item template in generateItemisedTask
@@ -90,8 +90,6 @@ export interface GenerateItemsConfig {
 /**
  * Built-in task for generating multiple HTML pages from templates and Markdown/HTML items (e.g. blog posts, projects, etc.)
  */
-import type { TaskContext, TaskDef } from '../types';
-
 export function generateItemsTask(config: GenerateItemsConfig): TaskDef<GenerateItemsConfig, { [outputVar: string]: SkierItem[] }> {
   return {
     name: 'generate-items',

@@ -1,4 +1,4 @@
-import { TaskDef } from '../types';
+import { TaskDef } from '../../types';
 import fs from 'fs-extra';
 
 

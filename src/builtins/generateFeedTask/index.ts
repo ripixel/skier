@@ -1,9 +1,9 @@
 import * as fs from 'fs-extra';
 import { Feed } from 'feed';
 import path from 'path';
-import type { SkierItem, TaskContext, TaskDef } from '../types';
+import type { SkierItem, TaskDef } from '../../types';
 
-export interface GenerateRssFeedConfig {
+export interface GenerateFeedConfig {
   articles: SkierItem[];
   outDir: string;
   site: {
@@ -26,12 +26,12 @@ export interface GenerateRssFeedConfig {
   };
 }
 
-export function generateRssFeedTask(config: GenerateRssFeedConfig): TaskDef<GenerateRssFeedConfig, { rssPath: string; jsonPath: string; atomPath: string }> {
+export function generateFeedTask(config: GenerateFeedConfig): TaskDef<GenerateFeedConfig, { rssPath: string; jsonPath: string; atomPath: string }> {
   return {
-    name: 'generateRssFeed',
+    name: 'generate-feed',
     title: 'Generate RSS/Atom/JSON Feeds',
     config,
-    run: async (cfg: GenerateRssFeedConfig, ctx: TaskContext) => {
+    run: async (cfg, ctx) => {
       const logger = ctx.logger;
       const feed = new Feed({
         title: cfg.site.title,

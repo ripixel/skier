@@ -1,16 +1,16 @@
 import fs from 'fs-extra';
-import { TaskDef } from '../types';
+import { TaskDef } from '../../types';
 
-export interface CleanAndCreateOutputConfig {
+export interface PrepareOutputConfig {
   outDir: string;
 }
 
-export function cleanAndCreateOutputTask(config: CleanAndCreateOutputConfig): TaskDef<CleanAndCreateOutputConfig> {
+export function prepareOutputTask(config: PrepareOutputConfig): TaskDef<PrepareOutputConfig> {
   return {
-    name: 'clean-create-output',
-    title: `Clean & Create Output Directory (${config.outDir})`,
+    name: 'prepare-output',
+    title: `Prepare output directory: ${config.outDir}`,
     config,
-    run: async (cfg: CleanAndCreateOutputConfig, ctx) => {
+    run: async (cfg, ctx) => {
       if (ctx.logger) ctx.logger.debug(`Cleaning output directory: ${cfg.outDir}`);
       let removed = false;
       if (await fs.pathExists(cfg.outDir)) {

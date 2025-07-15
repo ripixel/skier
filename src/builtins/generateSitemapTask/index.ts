@@ -1,10 +1,14 @@
-import { TaskDef } from '../types';
+import { TaskDef } from '../../types';
 import fs from 'fs-extra';
 import path from 'path';
 
 export interface GenerateSitemapConfig {
   /**
-   * Output directory for sitemap.xml and where to scan for .html files
+   * Directory to scan for .html files
+   */
+  scanDir: string;
+  /**
+   * Directory to output sitemap file to
    */
   outDir: string;
   /**
@@ -16,11 +20,11 @@ export interface GenerateSitemapConfig {
 export function generateSitemapTask(config: GenerateSitemapConfig): TaskDef<GenerateSitemapConfig> {
   return {
     name: 'generate-sitemap',
-    title: `Generate sitemap.xml in ${config.outDir}`,
+    title: `Generate sitemap.xml in ${config.scanDir}`,
     config,
-    run: async (cfg: GenerateSitemapConfig, ctx) => {
+    run: async (cfg, ctx) => {
       try {
-        await fs.ensureDir(cfg.outDir);
+        await fs.ensureDir(cfg.scanDir);
         // Recursively find all .html files in outDir
         const htmlFiles: string[] = [];
         async function findHtmlFiles(dir: string, relBase: string) {
@@ -35,7 +39,7 @@ export function generateSitemapTask(config: GenerateSitemapConfig): TaskDef<Gene
             }
           }
         }
-        await findHtmlFiles(cfg.outDir, '');
+        await findHtmlFiles(cfg.scanDir, '');
         if (htmlFiles.length === 0) {
           if (ctx.logger) ctx.logger.warn('No HTML files found in outDir for sitemap generation.');
         }

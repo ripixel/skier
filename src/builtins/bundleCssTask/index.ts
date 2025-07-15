@@ -1,21 +1,21 @@
-import { TaskDef } from '../types';
+import { TaskDef } from '../../types';
 import fs from 'fs-extra';
 import path from 'path';
 import CleanCSS from 'clean-css';
 
-export interface ProcessCssConfig {
+export interface BundleCssConfig {
   from: string; // source directory
   to: string;   // output directory
   output: string; // output filename (e.g. styles.min.css)
   minify?: boolean;
 }
 
-export function processCssTask(config: ProcessCssConfig): TaskDef<ProcessCssConfig> {
+export function bundleCssTask(config: BundleCssConfig): TaskDef<BundleCssConfig> {
   return {
-    name: 'process-css',
-    title: `Process CSS bundle: ${config.output}`,
+    name: 'bundle-css',
+    title: `Bundle CSS from ${config.from}`,
     config,
-    run: async (cfg: ProcessCssConfig, ctx) => {
+    run: async (cfg, ctx) => {
       try {
         if (ctx.logger) ctx.logger.debug(`Processing CSS bundle: ${cfg.output}`);
         await fs.ensureDir(cfg.to);

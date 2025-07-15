@@ -28,6 +28,7 @@ function parseCliArgs(argv: string[]) : { only: string[]; skip: string[]; debug:
 }
 
 import { Logger } from './logger';
+import { runTasks } from './cli/runTasks';
 
 export async function runSkier(argv: string[]) {
   // Look for humble.tasks.js or humble.tasks.ts in the current working directory
@@ -63,54 +64,6 @@ export async function runSkier(argv: string[]) {
   }
   // Shared context for variable propagation
   let skierContext: Record<string, any> = {};
-  function resolveConfigVars(config: any, context: Record<string, any>, logger: Logger): any {
-    if (typeof config === 'string' && config.startsWith('${') && config.endsWith('}')) {
-      const varName = config.slice(2, -1);
-      if (context[varName] !== undefined) {
-        logger.debug(`Resolved variable '\${${varName}}' to value of type '${typeof context[varName]}'`);
-        return context[varName];
-      } else {
-        logger.debug(`Variable '\${${varName}}' not found in context, leaving as undefined`);
-        return undefined;
-      }
-    } else if (Array.isArray(config)) {
-      return config.map(item => resolveConfigVars(item, context, logger));
-    } else if (typeof config === 'object' && config !== null) {
-      const resolved: any = {};
-      for (const key in config) {
-        resolved[key] = resolveConfigVars(config[key], context, logger);
-      }
-      return resolved;
-    }
-    return config;
-  }
-
-
-
-  for (const task of tasksToRun) {
-    // Always use the config property from TaskDef
-    const userConfig = task.config;
-    const taskLogger = new Logger({ debug, taskName: task.name });
-    taskLogger.info('Started task');
-    const resolvedConfig = resolveConfigVars(userConfig, skierContext, taskLogger);
-    try {
-      // Run the task and capture output with runtime context
-      const result = await task.run(resolvedConfig, { logger: taskLogger, debug, globals: skierContext });
-      // If the task returned an object, merge it into the context
-      if (result && typeof result === 'object') {
-        for (const key of Object.keys(result)) {
-          if (key in skierContext) {
-            taskLogger.warn(`outputVar/global '${key}' is being overwritten by a later task. This may indicate a configuration issue.`);
-          }
-          skierContext[key] = (result as { [key: string]: any })[key];
-          taskLogger.debug(`Added/updated variable: ${key} = ${JSON.stringify((result as { [key: string]: any })[key], null, 2)}`);
-        }
-      }
-      taskLogger.info('Finished task');
-    } catch (err) {
-      taskLogger.error('Task failed: ' + (err instanceof Error ? err.message : String(err)));
-      process.exit(1);
-    }
-  }
+  await runTasks(tasksToRun, skierContext, debug);
   logger.info('Completed');
 }

@@ -15,7 +15,9 @@
     "cli": "node dist/bin/skier.js",
     "prepare": "npm run build",
     "test": "jest",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "docs:build": "npm run build && node dist/bin/skier.js",
+    "docs:build:debug": "npm run build && node dist/bin/skier.js --debug"
   },
   "author": "James King",
   "license": "MIT",

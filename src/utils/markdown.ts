@@ -18,4 +18,3 @@ export async function renderMarkdown(md: string): Promise<string> {
 
   return html;
 }
-

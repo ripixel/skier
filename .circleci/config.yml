@@ -32,6 +32,10 @@ jobs:
       - attach_workspace:
           at: .
       - run: npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
   test:
     executor: node-executor
     steps:
@@ -138,7 +142,7 @@ workflows:
             - setup
       - build_docs:
           requires:
-            - setup
+            - build
       - test:
           requires:
             - setup

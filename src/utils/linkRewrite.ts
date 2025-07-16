@@ -13,7 +13,7 @@ export function rewriteLinks(
     toExt?: string;
     rootRelative?: boolean;
     prefix?: string;
-  } = {}
+  } = {},
 ): string {
   const { stripPrefix, fromExt = '.md', toExt = '.html', rootRelative = true } = opts;
   const prefixes = Array.isArray(stripPrefix) ? stripPrefix : stripPrefix ? [stripPrefix] : [];
@@ -30,9 +30,7 @@ export function rewriteLinks(
     }
     // Convert extension (even before # or ?)
     if (fromExt) {
-      const extRe = new RegExp(
-        fromExt.replace(/[.*+?^${}()|[\]\\]/g, '\$&') + '(?=($|[#?]))'
-      );
+      const extRe = new RegExp(fromExt.replace(/[.*+?^${}()|[\]\\]/g, '\$&') + '(?=($|[#?]))');
       if (typeof toExt !== 'undefined') {
         if (toExt === '') {
           newHref = newHref.replace(extRe, '');
@@ -42,10 +40,7 @@ export function rewriteLinks(
       }
     }
     // Prefix section if requested (and not external/anchor/../)
-    if (
-      opts.prefix &&
-      !/^([a-zA-Z]+:|#|\/|\.\.\/)/.test(newHref)
-    ) {
+    if (opts.prefix && !/^([a-zA-Z]+:|#|\/|\.\.\/)/.test(newHref)) {
       newHref = opts.prefix.replace(/\/$/, '') + '/' + newHref.replace(/^\//, '');
     }
     // Ensure root-relative if requested

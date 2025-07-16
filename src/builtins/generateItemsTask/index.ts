@@ -1,12 +1,6 @@
 import Handlebars from 'handlebars';
 import { renderMarkdown } from '../../utils/markdown';
-import {
-  ensureDir,
-  readFileUtf8,
-  writeFileUtf8,
-  readdir,
-  stat,
-} from '../../utils/fileHelpers';
+import { ensureDir, readFileUtf8, writeFileUtf8, readdir, stat } from '../../utils/fileHelpers';
 import { titleFromFilename, excerptFromMarkdown } from '../../utils/stringUtils';
 import { formatDateDisplay } from '../../utils/dateUtils';
 import { SkierItem, TaskDef } from '../../types';
@@ -63,7 +57,6 @@ export interface GenerateItemsConfig {
     rootRelative?: boolean;
     prefix?: string;
   };
-
 
   /** Extension for section templates (default: .html) */
   templateExtension?: string;

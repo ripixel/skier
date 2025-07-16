@@ -1,5 +1,11 @@
 //@ts-check
-const { prepareOutputTask, copyStaticTask, bundleCssTask, generateItemsTask, generatePagesTask } = require('./dist/');
+const {
+  prepareOutputTask,
+  copyStaticTask,
+  bundleCssTask,
+  generateItemsTask,
+  generatePagesTask,
+} = require('./dist/');
 
 exports.tasks = [
   // 1. Prepare output directory
@@ -42,7 +48,7 @@ exports.tasks = [
   generatePagesTask({
     pagesDir: 'site/pages',
     partialsDir: 'site/partials',
-    outDir: 'public'
+    outDir: 'public',
   }),
 
   // 6. Post-step: Alias README.html to index.html for builtins
@@ -64,7 +70,6 @@ exports.tasks = [
           throw err;
         }
       }
-    }
+    },
   },
-
 ];

@@ -33,7 +33,11 @@ export async function findMarkdownFiles(root: string): Promise<MarkdownFile[]> {
  * Find the nearest template file (template.hbs/html) up the directory tree from a given file.
  * Returns absolute path or undefined if not found.
  */
-export async function findNearestTemplate(startDir: string, root: string, templateExt: string): Promise<string | undefined> {
+export async function findNearestTemplate(
+  startDir: string,
+  root: string,
+  templateExt: string,
+): Promise<string | undefined> {
   let current = startDir;
   while (true) {
     const candidate = join(current, `template${templateExt}`);

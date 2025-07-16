@@ -2,7 +2,8 @@ import { rewriteLinks } from './linkRewrite';
 
 describe('rewriteLinks', () => {
   it('removes /docs and docs/ prefixes from links', () => {
-    const html = '<a href="/docs/foo.md">foo</a> <a href="docs/bar.md">bar</a> <a href="baz.md">baz</a>';
+    const html =
+      '<a href="/docs/foo.md">foo</a> <a href="docs/bar.md">bar</a> <a href="baz.md">baz</a>';
     const result = rewriteLinks(html, {
       stripPrefix: ['/docs/', 'docs/'],
       fromExt: '.md',

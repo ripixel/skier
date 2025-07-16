@@ -3,21 +3,13 @@
     {
       "target": "production",
       "public": "./public",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "cleanUrls": true
     },
     {
       "target": "staging",
       "public": "./public",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "cleanUrls": true
     }
   ]

@@ -140,6 +140,16 @@ body {
   background: transparent;
 }
 
+hr {
+  border: none;
+  border-top: 3px solid #099e8f;
+  height: 0;
+  margin: 2.5rem 0 2rem 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #099e8f 0%, #8fd6ff 100%);
+  opacity: 0.85;
+}
+
 @media (max-width: 900px) {
   .docs-container {
     flex-direction: column;

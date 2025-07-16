@@ -49,6 +49,7 @@ exports.tasks = [
     pagesDir: 'site/pages',
     partialsDir: 'site/partials',
     outDir: 'public',
+    pageExt: '.hbs',
   }),
 
   // 6. Post-step: Alias README.html to index.html for builtins

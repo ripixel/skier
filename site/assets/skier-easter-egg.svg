@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Skier head -->
+  <circle cx="32" cy="18" r="4" fill="#099e8f" />
+  <!-- Body -->
+  <rect x="30.5" y="22" width="3" height="14" rx="1.5" fill="#099e8f" />
+  <!-- Left arm -->
+  <rect x="22" y="26" width="14" height="2" rx="1" fill="#8fd6ff" transform="rotate(-25 22 26)" />
+  <!-- Right arm -->
+  <rect x="28" y="26" width="14" height="2" rx="1" fill="#8fd6ff" transform="rotate(25 28 26)" />
+  <!-- Left leg -->
+  <rect x="28" y="36" width="10" height="2" rx="1" fill="#099e8f" transform="rotate(30 28 36)" />
+  <!-- Right leg -->
+  <rect x="34" y="36" width="10" height="2" rx="1" fill="#099e8f" transform="rotate(-30 34 36)" />
+  <!-- Left ski -->
+  <rect x="10" y="54" width="44" height="2.2" rx="1.1" fill="#8fd6ff" transform="rotate(-10 10 54)" />
+  <!-- Right ski -->
+  <rect x="12" y="58" width="44" height="2.2" rx="1.1" fill="#099e8f" transform="rotate(8 12 58)" />
+  <!-- Shadow -->
+  <ellipse cx="32" cy="62" rx="16" ry="2" fill="#8fd6ff" fill-opacity="0.18"/>
+</svg>

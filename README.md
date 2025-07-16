@@ -1,37 +1,44 @@
-# skier
+# Skier
 
-**Skier** is an opinionated static site generator CLI framework. It provides a simple, extensible, and scriptable way to build static websites using a task-based approach.
+**Skier** is a minimal, modular static site generator for modern web projects. It’s designed for developers who want full control over their build pipeline—without bloat, black boxes, or magic.
 
-## Features
-- Task registry for extensible site generation steps (user-supplied)
-- CLI interface for running and filtering tasks
-- TypeScript-first codebase
+---
 
-## Usage
+## Why Skier?
+- **Minimal & Fast:** No unnecessary dependencies or features. You control every build step.
+- **Extensible:** Compose your own pipeline using built-in and custom tasks.
+- **TypeScript-first:** Modern, type-safe codebase and config.
+- **Scriptable:** All logic is explicit—no hidden conventions.
+- **Production-tested:** Powers [ripixel-website](https://github.com/ripixel/ripixel-website) and other real sites.
 
-### Install (local development)
-```
-npm install --save-dev skier
-```
+---
 
-### Or install globally
-```
-npm install -g skier
-```
+## Key Features
+- Task-based pipeline (pages, blog, feeds, static, CSS, and more)
+- Markdown & frontmatter support
+- Handlebars templates and partials
+- CLI for running, filtering, and debugging tasks
+- A suite of Built-In tasks that cover common needs to quick-start your site generation
 
-### Run the generator
-```
-npx skier [--only task1,task2] [--skip task3]
-```
+---
 
-## Configuration
-- Projects must supply a `skier.tasks.js` or `skier.tasks.ts` in the project root, exporting an array of tasks.
-- Each task should have a `name`, `title`, and `run()` function.
+## Get Started
+See the [Getting Started guide](./docs/getting-started.md) for quick setup, project structure, and your first build.
 
-## Developing Skier
-- Clone this repo and run `npm install`
-- Source code is in `src/`, CLI entrypoint in `bin/`
-- Build with `npm run build`
+---
+
+## Documentation
+Full documentation is in the [`/docs`](./docs) folder:
+- [Getting Started](./docs/getting-started.md)
+- [Configuration](./docs/configuration.md)
+- [Tasks](./docs/tasks.md)
+- [Custom Tasks](./docs/custom-tasks.md)
+- [Templates & Partials](./docs/templates-partials.md)
+- [Markdown & Frontmatter](./docs/markdown-frontmatter.md)
+- [FAQ](./docs/faq.md)
+- [Contributing](./docs/contributing.md)
+
+---
 
 ## License
 MIT

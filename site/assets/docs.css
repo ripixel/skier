@@ -45,7 +45,9 @@ body {
   margin: 3rem auto 2rem auto;
   background: linear-gradient(120deg, #f8fcff 0%, #b2fff9 100%);
   border-radius: 14px;
-  box-shadow: 0 6px 32px #0de2c422, 0 1.5px 6px #b2fff944;
+  box-shadow:
+    0 6px 32px #0de2c422,
+    0 1.5px 6px #b2fff944;
   overflow: hidden;
   border: 1.5px solid #8fd6ff;
   backdrop-filter: blur(2px);
@@ -74,7 +76,10 @@ body {
   color: #099e8f;
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s, background 0.2s, border-radius 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    border-radius 0.2s;
   padding: 0.33em 0.7em;
   border-radius: 6px;
   display: inline-block;

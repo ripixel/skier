@@ -1,6 +1,16 @@
 // Shared path helpers to eliminate direct path import in built-ins
 
 /**
+ * Returns the directory name of a path (POSIX-only, no Windows support).
+ */
+export function dirname(filePath: string): string {
+  if (!filePath) return '';
+  const parts = filePath.split('/');
+  parts.pop();
+  return parts.length ? parts.join('/') : '';
+}
+
+/**
  * Returns the extension of the path, including the leading dot (e.g., ".md").
  */
 export function extname(filePath: string): string {

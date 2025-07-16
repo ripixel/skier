@@ -103,6 +103,7 @@ npm run build
 
 ## Next Steps
 - Explore built-in tasks for feeds, sitemaps, CSS bundling, and more.
+- You’ll define your build pipeline as an array of tasks in a config file (usually `skier.tasks.cjs`). Each task does one thing—copy static files, render pages, generate a feed, etc. You can use any of the built-in tasks, or write your own. See the [Built-In Tasks](./builtins/README.md) page for a full list and details on each built-in.
 - Customize your pipeline by adding or writing custom tasks.
 - See the [Configuration](./configuration.md) and [Tasks](./tasks.md) docs for more details.
 

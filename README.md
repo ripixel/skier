@@ -32,6 +32,7 @@ Full documentation is in the [`/docs`](./docs) folder:
 - [Getting Started](./docs/getting-started.md)
 - [Configuration](./docs/configuration.md)
 - [Tasks](./docs/tasks.md)
+- [Built-In Tasks](./docs/builtins/README.md)
 - [Custom Tasks](./docs/custom-tasks.md)
 - [Templates & Partials](./docs/templates-partials.md)
 - [Markdown & Frontmatter](./docs/markdown-frontmatter.md)

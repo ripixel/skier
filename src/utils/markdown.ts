@@ -14,5 +14,7 @@ renderer.code = (code, infostring) => {
 marked.setOptions({ renderer });
 
 export async function renderMarkdown(md: string): Promise<string> {
-  return marked.parse(md);
+  let html = await marked.parse(md);
+
+  return html;
 }

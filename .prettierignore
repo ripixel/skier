@@ -8,3 +8,4 @@ coverage
 *.md
 package-lock.json
 yarn.lock
+*.hbs

@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "skier-52135"
+  },
+  "targets": {
+    "skier-52135": {
+      "hosting": {
+        "production": [
+          "skier-52135"
+        ],
+        "staging": [
+          "skier-staging"
+        ]
+      }
+    }
+  }
+}

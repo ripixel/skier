@@ -15,7 +15,9 @@
     "cli": "node dist/bin/skier.js",
     "prepare": "npm run build",
     "test": "jest",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "docs:build": "node dist/bin/skier.js",
+    "docs:build:debug": "node dist/bin/skier.js --debug"
   },
   "author": "James King",
   "license": "MIT",
@@ -56,6 +58,7 @@
     "@types/jest": "^30.0.0",
     "@types/minimist": "^1.2.5",
     "@types/node": "^24.0.13",
+    "firebase-tools": "^14.10.1",
     "jest": "^30.0.4",
     "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^4.1.0",

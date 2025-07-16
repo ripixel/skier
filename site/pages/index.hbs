@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{title}} | Skier Docs</title>
+    <link rel="stylesheet" href="/assets/docs.css" />
+  </head>
+
+  <body>
+    {{> header}}
+    <div class="docs-container">
+      <aside class="sidebar">
+        {{> sidebar}}
+      </aside>
+      <main class="content">
+        <h1>Welcome to <span class="brand">Skier Docs</span>!</h1>
+        <p>Your minimal, modular, and fun static site generator for documentation and more.</p>
+        <p>Browse the docs, explore built-in tasks, or check out the FAQ:</p>
+        <div class="links">
+          <a href="/builtins/index.html">Built-in Tasks</a>
+          <a href="/getting-started.html">Getting Started</a>
+          <a href="/faq.html">FAQ</a>
+          <a href="https://github.com/ripixel/skier" target="_blank">GitHub</a>
+        </div>
+        <p style="margin-top: 3em; color: #888; font-size: 0.95em">Made with ❤️ using Skier.</p>
+      </main>
+    </div>
+    {{> footer}}
+  </body>
+
+</html>

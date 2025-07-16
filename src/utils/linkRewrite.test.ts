@@ -39,6 +39,19 @@ describe('rewriteLinks', () => {
     expect(result).toContain('href="#section"');
   });
 
+  it('trims trailing slash from links except root', () => {
+    const html = '<a href="foo/">foo</a> <a href="/bar/">bar</a> <a href="/">root</a>';
+    const result = rewriteLinks(html, {
+      stripPrefix: [],
+      fromExt: '',
+      toExt: '',
+      rootRelative: false,
+    });
+    expect(result).toContain('href="foo"');
+    expect(result).toContain('href="/bar"');
+    expect(result).toContain('href="/"');
+  });
+
   it('removes .md extension entirely if toExt is empty string', () => {
     const html = '<a href="foo.md">foo</a> <a href="bar.md#x">bar</a>';
     const result = rewriteLinks(html, {

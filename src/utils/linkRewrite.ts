@@ -44,7 +44,13 @@ export function rewriteLinks(
       newHref = opts.prefix.replace(/\/$/, '') + '/' + newHref.replace(/^\//, '');
     }
     // Ensure root-relative if requested
-    if (rootRelative && !newHref.startsWith('/')) newHref = '/' + newHref;
+    if (rootRelative && !/^([a-zA-Z]+:|#|\/)/.test(newHref)) {
+      newHref = '/' + newHref.replace(/^\/+/, '');
+    }
+    // Trim trailing slash unless it's just '/'
+    if (newHref.length > 1 && newHref.endsWith('/')) {
+      newHref = newHref.replace(/\/$/, '');
+    }
     return `<a ${pre}href="${newHref}"${post}>`;
   });
 }

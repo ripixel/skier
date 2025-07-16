@@ -5,29 +5,38 @@ const {
   bundleCssTask,
   generateItemsTask,
   generatePagesTask,
+  setGlobalsTask,
 } = require('./dist/');
 
 exports.tasks = [
-  // 1. Prepare output directory
+  // Prepare output directory
   prepareOutputTask({
     outDir: 'public',
   }),
 
-  // 2. Copy docs assets (CSS, images, etc.)
+  // Copy docs assets (CSS, images, etc.)
   copyStaticTask({
     from: 'site/assets',
     to: 'public/assets',
   }),
 
-  // 3. Bundle docs-site CSS
+  // Bundle docs-site CSS
   bundleCssTask({
     from: 'site/assets',
     to: 'public/assets',
-    output: 'docs.css',
+    output: 'docs.min.css',
     minify: true,
   }),
 
-  // 4. Render Markdown docs as HTML pages
+  // Set some globals
+  setGlobalsTask({
+    values: {
+      year: (new Date()).getFullYear(),
+      noindex: process.env.NODE_ENV === 'production' ? '' : '<meta name="robots" content="noindex">',
+    }
+  }),
+
+  // Render Markdown docs as HTML pages
   generateItemsTask({
     itemsDir: 'docs',
     partialsDir: 'site/partials',
@@ -42,9 +51,12 @@ exports.tasks = [
       toExt: '',
       rootRelative: true,
     },
+    additionalVarsFn: ({ title }) => ({
+      subtitle: '| ' + title,
+    }),
   }),
 
-  // 5. Render pages
+  // Render pages
   generatePagesTask({
     pagesDir: 'site/pages',
     partialsDir: 'site/partials',
@@ -52,7 +64,7 @@ exports.tasks = [
     pageExt: '.hbs',
   }),
 
-  // 6. Post-step: Alias README.html to index.html for builtins
+  // Post-step: Alias README.html to index.html for builtins
   {
     name: 'aliasBuiltinsReadmeToIndex',
     config: {},

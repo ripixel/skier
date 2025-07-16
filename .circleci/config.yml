@@ -46,6 +46,84 @@ jobs:
       - attach_workspace:
           at: .
       - run: npx semantic-release
+  build_docs:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: npm run docs:build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - public
+  deploy_docs_prod:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: ./node_modules/.bin/firebase deploy --only hosting:production --token "$FIREBASE_TOKEN"
+
+  deploy_docs_staging:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: ./node_modules/.bin/firebase deploy --only hosting:staging --token "$FIREBASE_TOKEN"
+      - run:
+          name: Post Github PR Comment
+          command: |
+            sudo apt-get install jq
+            channels=$(./node_modules/.bin/firebase hosting:channel:list)
+            circle_branch_replaced=$(echo $CIRCLE_BRANCH | sed "s/\//-/")
+            regex='(https:\/\/[a-z0-9-]*--'"${circle_branch_replaced:0:39}"'-[a-z0-9-]*.web.app)'
+            [[ $channels =~ $regex ]] && url=${BASH_REMATCH[0]}
+            if [ $(echo $url | jq length) -eq 0 ]; then
+              url="Unable to get URL - check Firebase console"
+            fi
+            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+            -u $GH_USER:$GH_TOKEN)
+            if [ $(echo $pr_response | jq length) -eq 0 ]; then
+              echo "No PR found to update"
+            else
+              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+            fi
+            curl --location --request POST "$pr_comment_url" \
+            -u $GH_USER:$GH_TOKEN \
+            --header 'Content-Type: application/json' \
+            --data-raw '{"body": "Successfully deployed to Firebase staging preview! Available at: '"$url"'"}'
+
+  deploy_docs_preview:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: ./node_modules/.bin/firebase hosting:channel:deploy $CIRCLE_BRANCH --token "$FIREBASE_TOKEN"
+      - run:
+          name: Post Github PR Comment
+          command: |
+            sudo apt-get install jq
+            channels=$(./node_modules/.bin/firebase hosting:channel:list)
+            circle_branch_replaced=$(echo $CIRCLE_BRANCH | sed "s/\//-/")
+            regex='(https:\/\/[a-z0-9-]*--'"${circle_branch_replaced:0:39}"'-[a-z0-9-]*.web.app)'
+            [[ $channels =~ $regex ]] && url=${BASH_REMATCH[0]}
+            if [ $(echo $url | jq length) -eq 0 ]; then
+              url="Unable to get URL - check Firebase console"
+            fi
+            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+            -u $GH_USER:$GH_TOKEN)
+            if [ $(echo $pr_response | jq length) -eq 0 ]; then
+              echo "No PR found to update"
+            else
+              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+            fi
+            curl --location --request POST "$pr_comment_url" \
+            -u $GH_USER:$GH_TOKEN \
+            --header 'Content-Type: application/json' \
+            --data-raw '{"body": "Successfully deployed to Firebase preview! Available at: '"$url"'"}'
 
 workflows:
   version: 2
@@ -58,6 +136,9 @@ workflows:
       - build:
           requires:
             - setup
+      - build_docs:
+          requires:
+            - setup
       - test:
           requires:
             - setup
@@ -66,3 +147,26 @@ workflows:
             - prettier
             - build
             - test
+      - deploy_docs_prod:
+          filters:
+            branches:
+              only: main
+          requires:
+            - release
+            - build_docs
+      - deploy_docs_staging:
+          filters:
+            branches:
+              only: staging
+          requires:
+            - release
+            - build_docs
+      - deploy_docs_preview:
+          filters:
+            branches:
+              ignore:
+                - main
+                - staging
+          requires:
+            - release
+            - build_docs

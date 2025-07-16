@@ -31,9 +31,10 @@ exports.tasks = [
   // Set some globals
   setGlobalsTask({
     values: {
-      year: (new Date()).getFullYear(),
-      noindex: process.env.NODE_ENV === 'production' ? '' : '<meta name="robots" content="noindex">',
-    }
+      year: new Date().getFullYear(),
+      noindex:
+        process.env.NODE_ENV === 'production' ? '' : '<meta name="robots" content="noindex">',
+    },
   }),
 
   // Render Markdown docs as HTML pages

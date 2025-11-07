@@ -37,7 +37,7 @@
     "fs-extra": "^11.3.0",
     "handlebars": "^4.7.8",
     "highlight.js": "^11.11.1",
-    "marked": "^12.0.2",
+    "marked": "^16.0.0",
     "minimist": "^1.2.8"
   },
   "files": [

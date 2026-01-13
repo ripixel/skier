@@ -35,7 +35,7 @@ describe('loadTasks', () => {
     );
     const tasks = await loadTasks(TEST_DIR);
     expect(Array.isArray(tasks)).toBe(true);
-    expect(tasks[0].name).toBe('test');
+    expect(tasks[0]?.name).toBe('test');
   });
 
   it('loads tasks from skier.tasks.cjs if .js is missing', async () => {
@@ -44,7 +44,7 @@ describe('loadTasks', () => {
       `exports.tasks = [{ name: 'cjs', config: {}, run: async () => ({}) }];`,
     );
     const tasks = await loadTasks(TEST_DIR);
-    expect(tasks[0].name).toBe('cjs');
+    expect(tasks[0]?.name).toBe('cjs');
   });
 
   it('loads tasks from skier.tasks.ts if .js and .cjs are missing', async () => {
@@ -53,7 +53,7 @@ describe('loadTasks', () => {
       `exports.tasks = [{ name: 'ts', config: {}, run: async () => ({}) }];`,
     );
     const tasks = await loadTasks(TEST_DIR);
-    expect(tasks[0].name).toBe('ts');
+    expect(tasks[0]?.name).toBe('ts');
   });
 
   it('throws if no tasks file is found', async () => {

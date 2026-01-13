@@ -70,7 +70,8 @@ export class Logger {
   private prefix() {
     if (this.taskName) {
       // Colorize each task prefix consistently
-      return getTaskColor(this.taskName)(`[skier/${this.taskName}]`);
+      const color = getTaskColor(this.taskName) ?? chalk.blue;
+      return color(`[skier/${this.taskName}]`);
     }
     // Runner logs always blue
     return chalk.blue('[skier/runner]');

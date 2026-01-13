@@ -1,7 +1,8 @@
-import Handlebars from 'handlebars';
-import { ensureDir, readFileUtf8, writeFileUtf8, readdir } from '../../utils/fileHelpers';
-import { join, basename, extname, dirname } from '../../utils/pathHelpers';
+import { ensureDir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers';
+import { join, dirname } from '../../utils/pathHelpers';
 import type { TaskDef } from '../../types';
+import { throwTaskError } from '../../utils/errors';
+import { setupHandlebarsEnvironment } from '../../utils/handlebars';
 
 /**
  * Pagination metadata object exposed to templates.
@@ -180,21 +181,7 @@ function buildPaginationMeta(
 /**
  * Built-in task for generating paginated HTML pages from a data source.
  * Produces multiple page files with navigation controls.
- *
- * @example
- * ```javascript
- * generatePaginatedItemsTask({
- *   dataFile: './items/life/fitness.json',
- *   dataKey: 'timeline',
- *   itemsPerPage: 15,
- *   template: './pages/life-fitness-paginated.html',
- *   partialsDir: './partials',
- *   outDir: './public',
- *   basePath: '/life-fitness',
- *   outputVar: 'activities',
- *   paginationVar: 'pagination',
- * })
- * ```
+ * Uses an isolated Handlebars environment.
  */
 export function generatePaginatedItemsTask(
   config: GeneratePaginatedItemsConfig,
@@ -204,21 +191,17 @@ export function generatePaginatedItemsTask(
     title: `Generate paginated pages for ${config.basePath}`,
     config,
     run: async (cfg, ctx) => {
+      const taskName = 'generate-paginated-items';
+
       // Validate config
       if (!cfg.dataFile && !cfg.dataVar) {
-        const msg = `[skier/generate-paginated-items] Either dataFile or dataVar must be provided.`;
-        ctx.logger.error(msg);
-        throw new Error(msg);
+        throwTaskError(ctx, taskName, 'Either dataFile or dataVar must be provided.');
       }
       if (cfg.dataFile && cfg.dataVar) {
-        const msg = `[skier/generate-paginated-items] Cannot specify both dataFile and dataVar.`;
-        ctx.logger.error(msg);
-        throw new Error(msg);
+        throwTaskError(ctx, taskName, 'Cannot specify both dataFile and dataVar.');
       }
       if (!cfg.itemsPerPage || cfg.itemsPerPage <= 0) {
-        const msg = `[skier/generate-paginated-items] itemsPerPage must be a positive number.`;
-        ctx.logger.error(msg);
-        throw new Error(msg);
+        throwTaskError(ctx, taskName, 'itemsPerPage must be a positive number.');
       }
 
       // 1. Load data
@@ -226,9 +209,9 @@ export function generatePaginatedItemsTask(
       if (cfg.dataFile) {
         ctx.logger.debug(`Loading data from file: ${cfg.dataFile}`);
         const fileContent = await readFileUtf8(cfg.dataFile);
-        const json = JSON.parse(fileContent);
+        const json = JSON.parse(fileContent) as Record<string, unknown>;
         if (cfg.dataKey) {
-          data = json[cfg.dataKey];
+          data = json[cfg.dataKey] as unknown[];
           if (data === undefined) {
             ctx.logger.warn(
               `dataKey '${cfg.dataKey}' not found in ${cfg.dataFile}, using empty array`,
@@ -236,11 +219,11 @@ export function generatePaginatedItemsTask(
             data = [];
           }
         } else {
-          data = json;
+          data = json as unknown as unknown[];
         }
       } else {
         // dataVar - resolve from globals
-        const varName = cfg.dataVar!.replace(/^\$\{|\}$/g, '');
+        const varName = cfg.dataVar!.replace(/^\${|}$/g, '');
         ctx.logger.debug(`Resolving data from global variable: ${varName}`);
         data = ctx.globals[varName] as unknown[];
         if (data === undefined) {
@@ -269,23 +252,13 @@ export function generatePaginatedItemsTask(
       const totalPages = Math.max(1, chunks.length); // At least 1 page even if empty
       ctx.logger.debug(`Split into ${totalPages} pages of ${cfg.itemsPerPage} items each`);
 
-      // 4. Register partials
-      const partialFiles = (await readdir(cfg.partialsDir)).filter((f: string) => {
-        const ext = extname(f);
-        return ext === '.hbs' || ext === '.html';
-      });
-      for (const file of partialFiles) {
-        const ext = extname(file);
-        const partialName = basename(file, ext);
-        const partialPath = join(cfg.partialsDir, file);
-        const partialContent = await readFileUtf8(partialPath);
-        Handlebars.registerPartial(partialName, partialContent);
-      }
-      ctx.logger.debug(`Registered ${partialFiles.length} partials`);
+      // 4. Setup isolated Handlebars environment
+      const handlebars = await setupHandlebarsEnvironment(cfg.partialsDir, ctx.logger);
+      ctx.logger.debug(`Registered partials from ${cfg.partialsDir}`);
 
       // 5. Load and compile template
       const templateContent = await readFileUtf8(cfg.template);
-      const template = Handlebars.compile(templateContent);
+      const template = handlebars.compile(templateContent);
 
       // 6. Generate each page
       const outputVar = cfg.outputVar || 'items';

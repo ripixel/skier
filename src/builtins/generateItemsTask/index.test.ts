@@ -34,7 +34,7 @@ describe('generateItemsTask', () => {
     const result = await task.run(config, ctx);
     expect(result.items).toBeInstanceOf(Array);
     // Check that output HTML files exist and match expected output
-    for (const item of result.items) {
+    for (const item of result.items!) {
       // In this test, section is always 'blog'
       expect(item.section).toBe('blog');
       const outPath = path.join(testOutDir, 'blog', item.itemName + '.html');

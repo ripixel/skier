@@ -1,5 +1,5 @@
 import minimist from 'minimist';
-import type { TaskDef } from './types';
+import type { TaskDef, SkierGlobals } from './types';
 import { createTaskLogger } from './logger';
 import { runTasks } from './cli/runTasks';
 import { loadTasks } from './cli/loadTasks';
@@ -52,7 +52,7 @@ export async function runSkier(argv: string[]) {
     tasksToRun = userTasks.filter((task: TaskDef) => !skip.includes(task.name));
   }
   // Shared context for variable propagation
-  let skierContext: Record<string, any> = {};
+  const skierContext: SkierGlobals = {};
   await runTasks(tasksToRun, skierContext, debug);
   logger.info('Completed');
 }

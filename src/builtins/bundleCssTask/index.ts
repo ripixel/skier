@@ -1,6 +1,7 @@
 import { TaskDef } from '../../types';
 import { ensureDir, readdir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers';
 import { extname, join } from '../../utils/pathHelpers';
+import { throwTaskError } from '../../utils/errors';
 import CleanCSS from 'clean-css';
 
 export interface BundleCssConfig {
@@ -17,7 +18,7 @@ export function bundleCssTask(config: BundleCssConfig): TaskDef<BundleCssConfig>
     config,
     run: async (cfg, ctx) => {
       try {
-        if (ctx.logger) ctx.logger.debug(`Processing CSS bundle: ${cfg.output}`);
+        ctx.logger.debug(`Processing CSS bundle: ${cfg.output}`);
         await ensureDir(cfg.to);
         const files = (await readdir(cfg.from)).filter((f: string) => extname(f) === '.css');
         let concatenated = '';
@@ -30,23 +31,29 @@ export function bundleCssTask(config: BundleCssConfig): TaskDef<BundleCssConfig>
         if (cfg.minify) {
           const output = new CleanCSS({}).minify(concatenated);
           if (output.errors.length) {
-            throw new Error(
-              `[skier] CSS minification errors for ${cfg.output}: ${output.errors.join(', ')}`,
+            throwTaskError(
+              ctx,
+              'bundle-css',
+              `CSS minification errors for ${cfg.output}: ${output.errors.join(', ')}`,
             );
           }
           outputCss = output.styles;
-          if (ctx.logger) {
-            ctx.logger.debug(`Minified CSS: ${cfg.output}`);
-          }
+          ctx.logger.debug(`Minified CSS: ${cfg.output}`);
         }
         const outFile = join(cfg.to, cfg.output);
         await writeFileUtf8(outFile, outputCss);
-        if (ctx.logger) {
-          ctx.logger.debug(`Processed CSS: ${outFile}`);
-        }
+        ctx.logger.debug(`Wrote CSS: ${outFile}`);
         return {};
       } catch (err) {
-        throw new Error(`[skier] Failed to process CSS: ${err}`);
+        if (err instanceof Error && err.message.startsWith('[skier/')) {
+          throw err; // Already a SkierTaskError
+        }
+        throwTaskError(
+          ctx,
+          'bundle-css',
+          `Failed to process CSS`,
+          err instanceof Error ? err : undefined,
+        );
       }
     },
   };

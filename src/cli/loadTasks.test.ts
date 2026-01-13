@@ -54,7 +54,7 @@ describe('loadTasks', () => {
 
   it('throws if no tasks file is found', async () => {
     await expect(loadTasks(TEST_DIR)).rejects.toThrow(
-      'Could not find a skier.tasks.js, skier.tasks.cjs, or skier.tasks.ts file',
+      'Could not find a skier.tasks.js, skier.tasks.mjs, skier.tasks.cjs, or skier.tasks.ts file',
     );
   });
 

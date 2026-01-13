@@ -1,81 +1,242 @@
 # Configuration
 
-Skier is highly configurable, allowing you to tailor your build pipeline to your project's needs. This guide covers how to configure Skier, including file formats, global options, and examples.
+How to configure your Skier build pipeline.
 
 ---
 
-## Config File Location & Format
+## Config File Location
 
-Skier looks for a pipeline config file at your project root. Supported formats:
+Skier looks for a config file at your project root, in this order:
 
-- `skier.tasks.js` (CommonJS, most common)
-- `skier.tasks.cjs` (explicit CommonJS)
-- `skier.tasks.ts` (TypeScript, requires build step or ts-node)
+| Filename | Module System | When to Use |
+|----------|---------------|-------------|
+| `skier.tasks.mjs` | ESM | **Recommended** for v3+ |
+| `skier.tasks.js` | ESM* | If `"type": "module"` in package.json |
+| `skier.tasks.cjs` | CommonJS | Legacy projects |
+| `skier.tasks.ts` | TypeScript | Type safety (requires ts-node) |
 
-You can export either an array of tasks or a function returning an array (for dynamic configs).
+\* Without `"type": "module"`, `.js` is treated as CommonJS.
 
 ---
 
-## Example: Basic Config File
+## Basic Configuration
+
+Your config exports an array of tasks:
 
 ```js
-// skier.tasks.js
-const { generatePagesTask, generateItemsTask, copyStaticTask } = require('skier/builtins');
+// skier.tasks.mjs
+import { prepareOutputTask, generatePagesTask, copyStaticTask } from 'skier';
 
-module.exports = [
+export default [
+  prepareOutputTask({ outDir: 'public' }),
   generatePagesTask({
     pagesDir: 'src/pages',
     partialsDir: 'src/partials',
     outDir: 'public',
   }),
-  generateItemsTask({
-    itemsDir: 'src/blog',
-    template: 'src/pages/blog-post.html',
-    partialsDir: 'src/partials',
-    outDir: 'public/blog',
-  }),
   copyStaticTask({
-    staticDir: 'src/static',
-    outDir: 'public',
+    from: 'src/static',
+    to: 'public',
   }),
 ];
 ```
 
 ---
 
-## Global Options
+## Complete Production Example
 
-Each task accepts its own config, but you can also define global variables and options that are available to all tasks and templates.
-
-- **Globals**: Set via `setGlobalsTask` or `setGlobalFromMarkdownTask`.
-- **Debug Mode**: Run Skier with `--debug` to enable verbose logging.
-- **Output Directory**: Typically set per task (`outDir`), but you can use the same directory for all outputs.
-
----
-
-## Dynamic Config Example
-
-You can export a function for dynamic configuration:
+A real-world config from a blog with pagination, feeds, and pre-built data:
 
 ```js
-module.exports = (env) => [
-  // Tasks can be conditionally included based on env
+// skier.tasks.mjs
+import { readFileSync } from 'fs';
+import {
+  prepareOutputTask,
+  setGlobalsTask,
+  generateItemsTask,
+  generatePaginatedItemsTask,
+  generatePagesTask,
+  generateFeedTask,
+  generateSitemapTask,
+  bundleCssTask,
+  copyStaticTask,
+} from 'skier';
+
+// Load pre-fetched external data (see Recipes for the fetch script)
+const externalData = JSON.parse(
+  readFileSync('./_data/external.json', 'utf-8')
+);
+
+export default [
+  // === SETUP ===
+  prepareOutputTask({ outDir: 'public' }),
+
+  setGlobalsTask({
+    values: {
+      siteTitle: 'My Awesome Blog',
+      siteUrl: 'https://myblog.example.com',
+      author: 'Jane Doe',
+      currentYear: new Date().getFullYear(),
+      externalData: externalData.items,
+    },
+  }),
+
+  // === CONTENT ===
+  // Process blog posts (creates individual pages + populates globals.posts)
+  generateItemsTask({
+    itemsDir: 'src/items/posts',
+    partialsDir: 'src/partials',
+    outDir: 'public/posts',
+    outputVar: 'posts',
+    templateExtension: '.html',
+    sortFn: (a, b) => new Date(b.date) - new Date(a.date),
+    excerptFn: (content) => content.split('<!--more-->')[0],
+  }),
+
+  // Paginated blog index
+  generatePaginatedItemsTask({
+    dataVar: '${posts}',
+    itemsPerPage: 10,
+    template: 'src/pages/blog.html',
+    partialsDir: 'src/partials',
+    outDir: 'public',
+    basePath: '/blog',
+    additionalVarsFn: ({ pageNumber }) => ({
+      pageTitle: pageNumber === 1 ? 'Blog' : `Blog - Page ${pageNumber}`,
+    }),
+  }),
+
+  // Static pages (about, contact, etc.)
+  generatePagesTask({
+    pagesDir: 'src/pages',
+    partialsDir: 'src/partials',
+    outDir: 'public',
+  }),
+
+  // === FEEDS & DISCOVERY ===
+  generateFeedTask({
+    articles: '${posts}',
+    outDir: 'public',
+    site: {
+      title: 'My Awesome Blog',
+      description: 'Thoughts on code and life',
+      id: 'https://myblog.example.com/',
+      link: 'https://myblog.example.com/',
+      language: 'en',
+      author: { name: 'Jane Doe', email: 'jane@example.com' },
+    },
+  }),
+
+  generateSitemapTask({
+    outDir: 'public',
+    baseUrl: 'https://myblog.example.com',
+  }),
+
+  // === ASSETS ===
+  bundleCssTask({
+    from: 'src/styles',
+    to: 'public',
+    output: 'styles.min.css',
+    minify: true,
+  }),
+
+  copyStaticTask({
+    from: 'src/static',
+    to: 'public',
+  }),
 ];
 ```
 
 ---
 
-## Overriding Defaults
+## Dynamic Configuration
 
-Most built-in tasks have sensible defaults, but you can override any option. See the docs for each built-in for details and examples.
+Export a function for environment-aware configs:
+
+```js
+// skier.tasks.mjs
+import { setGlobalsTask, generatePagesTask } from 'skier';
+
+export default (env) => {
+  const isProd = process.env.NODE_ENV === 'production';
+
+  return [
+    setGlobalsTask({
+      values: {
+        siteUrl: isProd
+          ? 'https://example.com'
+          : 'http://localhost:3000',
+        analyticsEnabled: isProd,
+      },
+    }),
+    generatePagesTask({ /* ... */ }),
+  ];
+};
+```
 
 ---
 
-## Best Practices
-- Keep your config file small and focused—use custom tasks for advanced logic.
-- Co-locate templates, partials, and content for clarity.
-- Use globals for site-wide variables (site title, author, etc.).
+## Computed Globals
+
+Use `valuesFn` to compute globals from other globals:
+
+```js
+setGlobalsTask({
+  valuesFn: (globals) => ({
+    // Latest 5 posts for the homepage
+    recentPosts: globals.posts?.slice(0, 5) || [],
+
+    // Total post count
+    postCount: globals.posts?.length || 0,
+
+    // Posts grouped by year
+    postsByYear: (globals.posts || []).reduce((acc, post) => {
+      const year = new Date(post.date).getFullYear();
+      (acc[year] = acc[year] || []).push(post);
+      return acc;
+    }, {}),
+  }),
+}),
+```
 
 ---
 
-**Next:** Learn more about [Tasks](./tasks.md) and [Built-in Tasks](./builtins/generateItemsTask.md) to customize your pipeline.
+## Task Order Matters
+
+Tasks run sequentially. Data-producing tasks must come before data-consuming tasks:
+
+```js
+export default [
+  // ✅ Correct: generateItemsTask populates globals.posts
+  generateItemsTask({ outputVar: 'posts', /* ... */ }),
+
+  // ✅ Correct: generatePagesTask can now use globals.posts
+  generatePagesTask({ /* ... */ }),
+
+  // ❌ Wrong order would mean posts is undefined in templates
+];
+```
+
+---
+
+## Running the Build
+
+Add to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "build": "skier",
+    "build:debug": "skier --debug"
+  }
+}
+```
+
+Then:
+```bash
+npm run build
+```
+
+---
+
+**Next:** Learn about [Tasks](./tasks.md) and [Built-in Tasks](./builtins/README.md).

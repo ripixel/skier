@@ -1,18 +1,24 @@
 # bundleCssTask
 
-## Summary
-Bundles and minifies CSS files for your site. Use this to optimize your stylesheets for production by combining multiple CSS files into one and reducing file size.
+Bundle and minify CSS files into a single optimized stylesheet.
 
-## Default Behavior
-With minimal config, all `.css` files in the specified input directory are concatenated, minified, and written to the output file.
+---
 
-## Configuration Options
-- `from` (string, required): Path to the directory containing source CSS files (e.g., `src/styles`).
-- `to` (string, required): Path to the output directory (e.g., `public`).
-- `output` (string, required): Output filename for the bundled/minified CSS (e.g., `styles.min.css`).
-- `minify` (boolean, optional): Whether to minify the output CSS.
+## When to Use
 
-**Example config:**
+✅ Use `bundleCssTask` when you want:
+- Multiple CSS files combined into one
+- Production minification
+- Consistent ordering of stylesheets
+
+❌ Use `copyStaticTask` instead for:
+- Pre-minified CSS libraries
+- CSS you don't want modified
+
+---
+
+## Quick Start
+
 ```js
 bundleCssTask({
   from: 'src/styles',
@@ -22,48 +28,66 @@ bundleCssTask({
 })
 ```
 
-## Input Expectations
-- A directory containing one or more `.css` files.
-- Files are processed in alphanumeric order unless `include` is specified.
+**Input:** All `.css` files in `src/styles/`
+**Output:** Single `public/styles.min.css`
 
-**Example:**
+---
+
+## Configuration
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `from` | string | ✅ | Source CSS directory |
+| `to` | string | ✅ | Output directory |
+| `output` | string | ✅ | Output filename |
+| `minify` | boolean | | Minify output (default: `true`) |
+
+---
+
+## File Order
+
+Files are concatenated in **alphabetical order**. Control ordering with filename prefixes:
+
 ```
-src/
-  styles/
-    reset.css
-    main.css
-    theme.css
+src/styles/
+├── 01-reset.css        # First: CSS reset
+├── 02-variables.css    # Second: Custom properties
+├── 03-base.css         # Third: Base styles
+├── 10-components.css   # Components
+├── 20-layouts.css      # Layouts
+└── 99-utilities.css    # Last: Utility overrides
 ```
 
-## Output
-- A single bundled (and optionally minified) CSS file at the specified output path.
+---
 
-**Example:**
-```
-public/
-  styles.css
-```
+## Development vs Production
 
-## Practical Example
+Disable minification for readable debug output:
+
 ```js
-const { bundleCssTask } = require('skier/builtins');
-
-module.exports = [
-  bundleCssTask({
-    from: 'src/styles',
-    to: 'public',
-    output: 'styles.min.css',
-    minify: true,
-  }),
-];
+bundleCssTask({
+  from: 'src/styles',
+  to: 'public',
+  output: process.env.NODE_ENV === 'production'
+    ? 'styles.min.css'
+    : 'styles.css',
+  minify: process.env.NODE_ENV === 'production',
+})
 ```
 
-## Common Pitfalls & Tips
-- Make sure all CSS files you want included are in the input directory or match the `include` patterns.
-- If you need to control the order of CSS, use filename prefixes (e.g., `01-reset.css`, `02-main.css`).
-- If `minify` is false, the output will be readable but larger.
+---
 
-## Related Tasks/Docs
-- [copyStaticTask](./copyStaticTask.md)
-- [generatePagesTask](./generatePagesTask.md)
-- [Getting Started guide](../getting-started.md)
+## Referencing in Templates
+
+Link to your bundled stylesheet:
+
+```handlebars
+<link rel="stylesheet" href="/styles.min.css">
+```
+
+---
+
+## Related Tasks
+
+- [copyStaticTask](./copyStaticTask.md) — For assets that don't need processing
+- [generatePagesTask](./generatePagesTask.md) — Templates that reference CSS

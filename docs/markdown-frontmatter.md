@@ -1,61 +1,135 @@
 # Markdown & Frontmatter
 
-Skier supports flexible Markdown content and (optionally) YAML frontmatter for metadata. This guide covers how Markdown is rendered, what features are available, and how frontmatter is handled in your content files.
+Write content in Markdown with YAML frontmatter for metadata.
 
 ---
 
-## Supported Markdown Features
+## File Format
 
-- Skier uses [marked](https://marked.js.org/) for Markdown parsing.
-- CommonMark compliant: headings, lists, links, images, code blocks, blockquotes, tables, and more.
-- Supports GitHub-flavored Markdown (GFM) features such as task lists, strikethrough, and autolinks.
-- Syntax highlighting for code blocks via [highlight.js](https://highlightjs.org/).
-
----
-
-## Writing Content with Markdown
-
-You can place Markdown files anywhere in your content directories (e.g., `src/blog/2024-01-01-my-post.md`).
-
-Example:
-
-```
+```markdown
 ---
 title: My First Post
-date: 2024-01-01
-description: This is my first post!
+date: 2024-01-15
+category: Tech
+tags:
+  - javascript
+  - web
 ---
 
 # Hello World
 
-This is a **Markdown** post.
+This is my **first post** written in Markdown.
+
+## Code Example
+
+```javascript
+console.log('Hello!');
+```
+
+More content here...
 ```
 
 ---
 
-## Frontmatter Syntax
+## Frontmatter
 
-- Frontmatter is written as a YAML block at the very top of your Markdown file, between `---` lines.
-- Common fields: `title`, `date`, `description`, `tags`, etc.
-- All frontmatter fields are available as variables in your templates.
+The YAML block at the top (between `---` markers) becomes template variables:
 
----
+```handlebars
+<h1>{{title}}</h1>
+<time>{{date}}</time>
+<span>{{category}}</span>
 
-## How Skier Handles Frontmatter
-
-- Skier parses YAML frontmatter and strips it from the Markdown before rendering.
-- The frontmatter object is merged into the template variables for that page or item.
-- If no frontmatter is present, only the Markdown body is rendered.
-- You can access frontmatter fields in your templates like `{{title}}`, `{{date}}`, etc.
-
----
-
-## Caveats & Tips
-- Make sure your frontmatter is valid YAML (no tabs, use spaces for indentation).
-- If you don't need metadata, you can omit the frontmatter block.
-- Date fields are parsed as strings—parse/format as needed in your templates.
-- If you have custom frontmatter fields, they are available in your template context.
+{{#each tags}}
+  <span class="tag">{{this}}</span>
+{{/each}}
+```
 
 ---
 
-**Next:** Learn more about [Templates & Partials](./templates-partials.md) or [Built-in Tasks](./builtins/generateItemsTask.md).
+## Supported Features
+
+Skier uses [marked](https://marked.js.org/) with GitHub Flavored Markdown:
+
+- **Headings**: `# H1` through `###### H6`
+- **Emphasis**: `*italic*`, `**bold**`, `~~strikethrough~~`
+- **Links**: `[text](url)`
+- **Images**: `![alt](src)`
+- **Code blocks**: Triple backticks with language
+- **Tables**: GFM table syntax
+- **Task lists**: `- [ ]` and `- [x]`
+- **Blockquotes**: `>`
+- **Horizontal rules**: `---`
+
+---
+
+## Syntax Highlighting
+
+Code blocks are highlighted with [highlight.js](https://highlightjs.org/):
+
+````markdown
+```javascript
+const greeting = 'Hello';
+console.log(greeting);
+```
+````
+
+Include the highlight.js CSS in your template:
+```html
+<link rel="stylesheet" href="https://unpkg.com/highlight.js@11/styles/github-dark.min.css">
+```
+
+---
+
+## Excerpts
+
+For post summaries, use a marker:
+
+```markdown
+---
+title: My Post
+---
+
+This is the excerpt that appears in lists.
+
+<!--more-->
+
+This is the full content that only appears on the detail page.
+```
+
+Configure in your task:
+```js
+generateItemsTask({
+  excerptFn: (content) => content.split('<!--more-->')[0],
+  // ...
+})
+```
+
+---
+
+## Common Fields
+
+| Field | Type | Usage |
+|-------|------|-------|
+| `title` | string | Page title |
+| `date` | string | ISO date (`2024-01-15`) |
+| `description` | string | Meta description / excerpt |
+| `tags` | array | Categories/labels |
+| `featured` | boolean | Highlight post |
+| `draft` | boolean | Skip in build |
+
+---
+
+## Tips
+
+- **Dates**: Use ISO format (`2024-01-15`) for reliable parsing
+- **No tabs**: YAML requires spaces for indentation
+- **Optional**: Frontmatter block can be omitted if not needed
+- **Custom fields**: Add any field; it's available in templates
+
+---
+
+## Learn More
+
+- [Templates & Partials](./templates-partials.md) — Using content in templates
+- [generateItemsTask](./builtins/generateItemsTask.md) — Processing Markdown files

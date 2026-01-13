@@ -1,96 +1,208 @@
 # generateItemsTask
 
-## Summary
-Generates HTML pages for collections of items (e.g., blog posts, portfolio entries) from Markdown or data files. Supports sorting, excerpts, custom templates, and configurable output structure.
+Generate HTML pages from a collection of Markdown files (blog posts, portfolio items, etc.).
 
-## Default Behavior
-With minimal config, reads all Markdown files in the specified `itemsDir`, sorts them by date (if available), and renders each to an HTML page using the specified item template. Also generates an index/list page for the collection.
+---
 
-## Configuration Options
-- `itemsDir` (string, required): Path to the directory containing item Markdown files (e.g., `src/posts`).
-- `partialsDir` (string, required): Path to your partials directory (e.g., `src/partials`).
-- `outDir` (string, required): Path to the output directory for generated HTML (e.g., `public/posts`).
-- `outputVar` (string, required): Name of the variable to output the item list as.
-- `templateExtension` (string, optional): Extension for section templates (default: `.html`).
-- `partialExtension` (string, optional): Extension for partials (default: `.html`).
-- `flatStructure` (boolean, optional): If true, treat all files in itemsDir as items (no sections).
-- `frontmatterParser` (function, optional): Custom frontmatter parser.
-- `excerptFn` (function, optional): Custom excerpt extractor.
-- `sortFn` (function, optional): Custom sorting function for items.
-- `linkFn` (function, optional): Custom link generator.
-- `outputPathFn` (function, optional): Custom output path generator.
-- `markdownRenderer` (function, optional): Custom markdown renderer.
-- `extractDate` (function, optional): Custom date extractor.
-- `additionalVarsFn` (function, optional): Function to inject additional variables into the render context for each item.
+## When to Use
 
-**Example config:**
+✅ Use `generateItemsTask` when you have:
+- Blog posts as Markdown files
+- Portfolio projects with frontmatter
+- Any collection of similar content items
+
+❌ Use `generatePaginatedItemsTask` instead when:
+- You need paginated list pages
+- Data comes from JSON rather than Markdown
+
+---
+
+## Quick Start
+
 ```js
 generateItemsTask({
-  itemsDir: 'src/posts',
+  itemsDir: 'src/items/posts',
   partialsDir: 'src/partials',
   outDir: 'public/posts',
   outputVar: 'posts',
-  templateExtension: '.html',
-  partialExtension: '.html',
-  flatStructure: false,
 })
 ```
 
-## Input Expectations
-- A directory of Markdown files, each representing an item (e.g., a blog post).
-- Each file can include frontmatter (YAML or TOML) for metadata like title, date, tags.
-- Templates for items and list/index pages (Handlebars or HTML).
+**Input:** Markdown files in `src/items/posts/`
+**Output:** HTML pages in `public/posts/` + `globals.posts` array
 
-**Example:**
-```
-src/
-  posts/
-    first-post.md
-    second-post.md
-  templates/
-    post.html
-    posts.html
-```
+---
 
-## Output
-- One HTML file per item, rendered from `itemTemplate`.
-- One index/list HTML page rendered from `listTemplate`.
-- Output filenames/structure configurable with `flat` option.
+## Configuration
 
-**Example:**
-```
-public/
-  posts/
-    first-post/index.html
-    second-post/index.html
-    index.html
-```
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `itemsDir` | string | ✅ | Directory containing Markdown files |
+| `partialsDir` | string | ✅ | Directory with Handlebars partials |
+| `outDir` | string | ✅ | Output directory for generated HTML |
+| `outputVar` | string | ✅ | Variable name for items array in globals |
+| `templateExtension` | string | | Template file extension (default: `.html`) |
+| `partialExtension` | string | | Partial file extension (default: `.html`) |
+| `flatStructure` | boolean | | If true, treat all files as items (no subdirs) |
+| `sortFn` | function | | Custom sort function |
+| `excerptFn` | function | | Custom excerpt extractor |
+| `linkFn` | function | | Custom URL generator |
+| `outputPathFn` | function | | Custom output path generator |
+| `additionalVarsFn` | function | | Inject extra template variables |
 
-## Practical Example
+---
+
+## Sorting Items
+
+Default: items are sorted by `date` (newest first).
+
+**Custom sort by title:**
 ```js
-const { generateItemsTask } = require('skier/builtins');
-
-module.exports = [
-  generateItemsTask({
-    itemsDir: 'src/posts',
-    partialsDir: 'src/partials',
-    outDir: 'public/posts',
-    outputVar: 'posts',
-    templateExtension: '.html',
-    partialExtension: '.html',
-    flatStructure: false,
-  }),
-];
+generateItemsTask({
+  // ...
+  sortFn: (a, b) => a.title.localeCompare(b.title),
+})
 ```
 
-## Common Pitfalls & Tips
-- If your Markdown files lack frontmatter, sorting by `date` may not work as expected.
-- Use the `excerptSeparator` to control where the preview/summary ends in list views.
-- If `flat` is true, all items are output as `outDir/slug.html`; otherwise, as `outDir/slug/index.html`.
-- Ensure your templates expect the available item fields (frontmatter, excerpt, etc.).
-- When adding new fields to frontmatter, update your templates accordingly.
+**Reverse chronological (explicit):**
+```js
+sortFn: (a, b) => new Date(b.date) - new Date(a.date),
+```
 
-## Related Tasks/Docs
-- [generatePagesTask](./generatePagesTask.md)
-- [generateFeedTask](./generateFeedTask.md)
-- [Markdown & Frontmatter](../markdown-frontmatter.md)
+---
+
+## Extracting Excerpts
+
+Default: first 150 characters.
+
+**Use a marker (`<!--more-->`):**
+```js
+generateItemsTask({
+  // ...
+  excerptFn: (content) => {
+    const [excerpt] = content.split('<!--more-->');
+    return excerpt.trim();
+  },
+})
+```
+
+---
+
+## Output Structure
+
+**Default (nested):** Each item gets its own directory:
+```
+public/posts/
+├── hello-world/
+│   └── index.html
+├── second-post/
+│   └── index.html
+└── index.html        # List page
+```
+
+**Flat structure:** Items as direct HTML files:
+```js
+generateItemsTask({
+  flatStructure: true,
+  // ...
+})
+```
+```
+public/posts/
+├── hello-world.html
+├── second-post.html
+└── index.html
+```
+
+---
+
+## Real-World Example
+
+From a blog with categories and reading time:
+
+```js
+generateItemsTask({
+  itemsDir: 'src/items/posts',
+  partialsDir: 'src/partials',
+  outDir: 'public/posts',
+  outputVar: 'posts',
+
+  sortFn: (a, b) => new Date(b.date) - new Date(a.date),
+
+  excerptFn: (content) => {
+    const text = content.replace(/<[^>]*>/g, ''); // Strip HTML
+    return text.slice(0, 200) + '...';
+  },
+
+  additionalVarsFn: (item, globals) => ({
+    readingTime: Math.ceil(item.content.split(' ').length / 200),
+    relatedPosts: (globals.posts || [])
+      .filter(p => p.category === item.category && p.slug !== item.slug)
+      .slice(0, 3),
+  }),
+})
+```
+
+---
+
+## Template Variables
+
+Each item template receives:
+
+```js
+{
+  // From frontmatter
+  title: "Hello World",
+  date: "2024-01-15",
+  category: "Tech",
+  tags: ["javascript", "web"],
+
+  // Auto-generated
+  slug: "hello-world",
+  content: "<p>Rendered HTML...</p>",
+  excerpt: "First part of content...",
+  link: "/posts/hello-world/",
+
+  // From additionalVarsFn
+  readingTime: 5,
+
+  // All globals
+  siteTitle: "My Blog",
+  posts: [/* all posts */],
+}
+```
+
+---
+
+## Common Mistakes
+
+❌ **Forgetting outputVar:**
+```js
+// Items won't be available in templates!
+generateItemsTask({
+  itemsDir: 'src/posts',
+  // Missing: outputVar: 'posts'
+})
+```
+
+❌ **Using wrong task order:**
+```js
+// Wrong: generatePagesTask can't access posts yet
+generatePagesTask({ /* ... */ }),
+generateItemsTask({ outputVar: 'posts' }),
+```
+
+❌ **Invalid date formats:**
+```yaml
+# Frontmatter
+date: January 15, 2024  # ❌ Won't parse correctly
+date: 2024-01-15        # ✅ ISO format
+```
+
+---
+
+## Related Tasks
+
+- [generatePaginatedItemsTask](./generatePaginatedItemsTask.md) — For paginated lists
+- [generateFeedTask](./generateFeedTask.md) — Use with `outputVar` for RSS/Atom
+- [generateSitemapTask](./generateSitemapTask.md) — Auto-includes generated pages

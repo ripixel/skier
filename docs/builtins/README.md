@@ -15,6 +15,7 @@ Below you'll find a list of all built-in tasks, with a short summary and a link 
 - [setGlobalFromMarkdownTask](./setGlobalFromMarkdownTask.md): Reads a Markdown file, renders it to HTML, and sets the result as a global variable for use in templates and tasks. Ideal for site-wide content like an About section, footer, or legal notices.
 - [generatePagesTask](./generatePagesTask.md): Generates static HTML pages from templates and partials. Use this to render your site's main pages (home, about, contact, etc.) with Handlebars or HTML templates.
 - [generateItemsTask](./generateItemsTask.md): Generates HTML pages for collections of items (e.g., blog posts, portfolio entries) from Markdown or data files. Supports sorting, excerpts, custom templates, and configurable output structure.
+- [generatePaginatedItemsTask](./generatePaginatedItemsTask.md): Generates paginated HTML pages from a data source (JSON or pipeline variable), producing multiple page files with navigation controls. Ideal for timelines, archives, or any collection that needs to be split across pages.
 - [generateFeedTask](./generateFeedTask.md): Generates RSS, Atom, and JSON feeds from your site's content (typically blog posts or articles). Use this to provide feed subscriptions for readers and syndication services.
 - [generateSitemapTask](./generateSitemapTask.md): Generates a `sitemap.xml` file for your site based on the pages produced by your build. This helps search engines index your site efficiently.
 

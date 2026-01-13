@@ -11,3 +11,8 @@ export {
   SetGlobalFromMarkdownConfig,
 } from './setGlobalFromMarkdownTask';
 export { setGlobalsTask, SetGlobalsConfig } from './setGlobalsTask';
+export {
+  generatePaginatedItemsTask,
+  GeneratePaginatedItemsConfig,
+  PaginationMeta,
+} from './generatePaginatedItemsTask';

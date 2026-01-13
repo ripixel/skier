@@ -3,19 +3,52 @@
 <html lang="en">
   {{> head }}
 
-  <body>
+  <body class="docs-layout">
     {{> header }}
+
     <div class="docs-container">
       <aside class="sidebar">
         {{> sidebar }}
       </aside>
+      <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('open')"></div>
+
       <main class="content">
+        {{#if breadcrumb}}
+          <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <a href="/">Docs</a>
+            <span class="breadcrumbs-separator">›</span>
+            {{#if section}}
+              <a href="/{{sectionSlug}}">{{section}}</a>
+              <span class="breadcrumbs-separator">›</span>
+            {{/if}}
+            <span>{{title}}</span>
+          </nav>
+        {{/if}}
+
         {{{content}}}
-        <img src="/assets/skier-easter-egg.svg" alt="" aria-hidden="true"
-          style="position: absolute; right: 2.5rem; bottom: 2.5rem; width: 64px; opacity: 0.55; z-index: 2; pointer-events: none;" />
+
+        {{#if prevPage}}
+          <nav class="page-nav">
+            {{#if prevPage}}
+              <a href="{{prevPage.url}}" class="page-nav-link prev">
+                <span class="page-nav-label">← Previous</span>
+                <span class="page-nav-title">{{prevPage.title}}</span>
+              </a>
+            {{/if}}
+            {{#if nextPage}}
+              <a href="{{nextPage.url}}" class="page-nav-link next">
+                <span class="page-nav-label">Next →</span>
+                <span class="page-nav-title">{{nextPage.title}}</span>
+              </a>
+            {{/if}}
+          </nav>
+        {{/if}}
       </main>
     </div>
+
     {{> footer }}
+
+    <img src="/assets/skier-easter-egg.svg" alt="" aria-hidden="true" class="skier-mascot" />
   </body>
 
 </html>

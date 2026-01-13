@@ -16,3 +16,10 @@ export {
   GeneratePaginatedItemsConfig,
   PaginationMeta,
 } from './generatePaginatedItemsTask';
+export {
+  generateNavDataTask,
+  GenerateNavDataConfig,
+  NavData,
+  NavSection,
+  NavItem,
+} from './generateNavDataTask';

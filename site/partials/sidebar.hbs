@@ -1,13 +1,72 @@
-<nav class='sidebar-nav'>
-  <ul>
-    <li><a href='/getting-started'>Getting Started</a></li>
-    <li><a href='/configuration'>Configuration</a></li>
-    <li><a href='/tasks'>Tasks</a></li>
-    <li><a href='/builtins'>Built-In Tasks</a></li>
-    <li><a href='/custom-tasks'>Custom Tasks</a></li>
-    <li><a href='/templates-partials'>Templates & Partials</a></li>
-    <li><a href='/markdown-frontmatter'>Markdown & Frontmatter</a></li>
-    <li><a href='/faq'>FAQ</a></li>
-    <li><a href='/contributing'>Contributing</a></li>
-  </ul>
+<nav class="sidebar-nav">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <ul>
+      <li><a href="/getting-started">Quick Start</a></li>
+      <li><a href="/configuration">Configuration</a></li>
+    </ul>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Core Concepts</div>
+    <ul>
+      <li><a href="/tasks">Tasks</a></li>
+      <li><a href="/custom-tasks">Custom Tasks</a></li>
+      <li><a href="/templates-partials">Templates & Partials</a></li>
+      <li><a href="/markdown-frontmatter">Markdown & Frontmatter</a></li>
+    </ul>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Built-in Tasks</div>
+    <ul>
+      <li><a href="/builtins">Overview</a></li>
+      <li>
+        <details open>
+          <summary>Setup</summary>
+          <ul class="nav-children">
+            <li><a href="/builtins/prepareOutputTask">prepareOutputTask</a></li>
+            <li><a href="/builtins/copyStaticTask">copyStaticTask</a></li>
+            <li><a href="/builtins/bundleCssTask">bundleCssTask</a></li>
+          </ul>
+        </details>
+      </li>
+      <li>
+        <details open>
+          <summary>Globals</summary>
+          <ul class="nav-children">
+            <li><a href="/builtins/setGlobalsTask">setGlobalsTask</a></li>
+            <li><a href="/builtins/setGlobalFromMarkdownTask">setGlobalFromMarkdownTask</a></li>
+          </ul>
+        </details>
+      </li>
+      <li>
+        <details open>
+          <summary>Content</summary>
+          <ul class="nav-children">
+            <li><a href="/builtins/generatePagesTask">generatePagesTask</a></li>
+            <li><a href="/builtins/generateItemsTask">generateItemsTask</a></li>
+            <li><a href="/builtins/generatePaginatedItemsTask">generatePaginatedItemsTask</a></li>
+          </ul>
+        </details>
+      </li>
+      <li>
+        <details open>
+          <summary>Feeds & SEO</summary>
+          <ul class="nav-children">
+            <li><a href="/builtins/generateFeedTask">generateFeedTask</a></li>
+            <li><a href="/builtins/generateSitemapTask">generateSitemapTask</a></li>
+          </ul>
+        </details>
+      </li>
+    </ul>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Community</div>
+    <ul>
+      <li><a href="/faq">FAQ</a></li>
+      <li><a href="/contributing">Contributing</a></li>
+    </ul>
+  </div>
 </nav>

@@ -1,50 +1,78 @@
 # setGlobalFromMarkdownTask
 
-Reads a Markdown file, renders it to HTML, and sets the result as a global variable for use in templates and tasks. Ideal for site-wide content like an About section, footer, or legal notices.
+Set a global variable from a rendered Markdown file.
 
-## Summary
-Reads a Markdown file, renders it to HTML, and sets the result as a global variable for use in templates and tasks. Ideal for site-wide content like an About section, footer, or legal notices.
+---
 
-## Default Behavior
-With minimal config, reads the specified Markdown file, renders it to HTML, and sets it as a global variable with the given key.
+## When to Use
 
-## Configuration Options
-- `mdPath` (string, required): Path to the Markdown file to read (e.g., `src/about.md`).
-- `outputVar` (string, required): The name of the global variable to set (e.g., `aboutHtml`).
+✅ Use `setGlobalFromMarkdownTask` for:
+- Site-wide content blocks (about, legal notices)
+- Rendered Markdown you need in multiple templates
+- Content that should be editable as Markdown
 
-**Example config:**
+❌ Use `setGlobalsTask` instead for:
+- Simple key-value configuration
+- Computed values from other globals
+
+---
+
+## Quick Start
+
 ```js
 setGlobalFromMarkdownTask({
-  mdPath: 'src/about.md',
-  outputVar: 'aboutHtml',
+  file: 'content/about.md',
+  varName: 'aboutContent',
 })
 ```
 
-## Input Expectations
-- A Markdown file at the specified path.
-- Can include frontmatter; only the body is rendered to HTML.
+**Input:** Markdown file
+**Output:** `globals.aboutContent` containing rendered HTML
 
-## Output
-- Renders the Markdown file to HTML and sets it as `globals[globalKey]` for all subsequent tasks and templates.
+---
 
-## Practical Example
-```js
-const { setGlobalFromMarkdownTask } = require('skier/builtins');
+## Configuration
 
-module.exports = [
-  setGlobalFromMarkdownTask({
-    mdPath: 'src/about.md',
-    outputVar: 'aboutHtml',
-  }),
-  // ...other tasks
-];
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `file` | string | ✅ | Path to Markdown file |
+| `varName` | string | ✅ | Global variable name for the HTML output |
+
+---
+
+## Using in Templates
+
+```handlebars
+<section class="about">
+  {{{aboutContent}}}  {{!-- Triple braces for raw HTML --}}
+</section>
 ```
 
-## Common Pitfalls & Tips
-- The rendered HTML is unescaped; use triple braces (`{{{aboutHtml}}}`) in your templates to inject it.
-- If your Markdown file contains frontmatter, it will be ignored in the rendered HTML but fields are not set as globals (use `setGlobalsTask` for that).
-- Useful for legal, about, or reusable content blocks.
+---
 
-## Related Tasks/Docs
-- [setGlobalsTask](./setGlobalsTask.md)
-- [Markdown & Frontmatter](../markdown-frontmatter.md)
+## Real-World Example
+
+Footer with Markdown content:
+
+```js
+setGlobalFromMarkdownTask({
+  file: 'content/footer-legal.md',
+  varName: 'footerLegal',
+}),
+```
+
+```handlebars
+{{!-- partials/footer.html --}}
+<footer>
+  <div class="legal">
+    {{{footerLegal}}}
+  </div>
+</footer>
+```
+
+---
+
+## Related Tasks
+
+- [setGlobalsTask](./setGlobalsTask.md) — For simple values
+- [generateItemsTask](./generateItemsTask.md) — For collections of Markdown

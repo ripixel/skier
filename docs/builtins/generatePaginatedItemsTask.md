@@ -1,82 +1,129 @@
 # generatePaginatedItemsTask
 
-## Summary
-Generates paginated HTML pages from a data source (JSON file or pipeline variable), producing multiple page files with navigation controls. Ideal for timelines, activity feeds, blog archives, or any collection that needs to be split across multiple pages.
+Generate multiple HTML pages from a data array with built-in pagination controls.
 
-## Default Behavior
-Reads data from a JSON file or pipeline variable, chunks it into pages based on `itemsPerPage`, and renders each page using the specified Handlebars template. Page 1 is output at the base path, subsequent pages at `basePath/page/N.html`.
+---
 
-## Configuration Options
-- `dataFile` (string): Path to a JSON file containing the data array. Mutually exclusive with `dataVar`.
-- `dataVar` (string): Variable name from globals using `${varName}` syntax. Mutually exclusive with `dataFile`.
-- `dataKey` (string, optional): Key within the JSON to extract the array (e.g., `'timeline'` for `data.timeline`).
-- `itemsPerPage` (number, required): Number of items per page.
-- `template` (string, required): Path to the Handlebars template for each page.
-- `partialsDir` (string, required): Directory containing Handlebars partials.
-- `outDir` (string, required): Output directory for generated pages.
-- `basePath` (string, required): URL base path (e.g., `/life-fitness`).
-- `outputVar` (string, optional): Variable name for items array in templates (default: `'items'`).
-- `paginationVar` (string, optional): Variable name for pagination object (default: `'pagination'`).
-- `itemTransformFn` (function, optional): Transform each item before rendering.
-- `additionalVarsFn` (function, optional): Inject additional variables per page.
+## When to Use
 
-**Example config:**
+✅ Use `generatePaginatedItemsTask` when you need:
+- Paginated blog archives
+- Activity timelines split across pages
+- Any large dataset that should be chunked
+
+❌ Use `generateItemsTask` instead when:
+- Each item needs its own detail page
+- Data comes from Markdown files
+
+---
+
+## Quick Start
+
 ```js
 generatePaginatedItemsTask({
-  dataFile: './data/posts.json',
-  dataKey: 'articles',
+  dataVar: '${posts}',
   itemsPerPage: 10,
-  template: './templates/archive.html',
-  partialsDir: './partials',
-  outDir: './public',
+  template: 'src/pages/blog.html',
+  partialsDir: 'src/partials',
+  outDir: 'public',
   basePath: '/blog',
 })
 ```
 
+**Output files:**
+```
+public/
+├── blog.html           # Page 1
+└── blog/
+    └── page/
+        ├── 2.html      # Page 2
+        └── 3.html      # Page 3
+```
+
+---
+
+## Configuration
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `dataFile` | string | ⚡ | Path to JSON file |
+| `dataVar` | string | ⚡ | Pipeline variable using `${varName}` syntax |
+| `dataKey` | string | | Key to extract array from JSON object |
+| `itemsPerPage` | number | ✅ | Items per page |
+| `template` | string | ✅ | Handlebars template path |
+| `partialsDir` | string | ✅ | Partials directory |
+| `outDir` | string | ✅ | Output directory |
+| `basePath` | string | ✅ | URL base path (for links) |
+| `outputVar` | string | | Template variable name for items (default: `'items'`) |
+| `paginationVar` | string | | Template variable for pagination (default: `'pagination'`) |
+| `itemTransformFn` | function | | Transform each item |
+| `additionalVarsFn` | function | | Add extra template variables |
+
+⚡ Exactly one of `dataFile` or `dataVar` is required.
+
+---
+
+## Data Sources
+
+**From pipeline globals (recommended):**
+```js
+generateItemsTask({ outputVar: 'posts' }),
+generatePaginatedItemsTask({
+  dataVar: '${posts}',
+  // ...
+})
+```
+
+**From JSON file:**
+```js
+generatePaginatedItemsTask({
+  dataFile: './data/activities.json',
+  dataKey: 'timeline',  // Extract data.timeline
+  // ...
+})
+```
+
+---
+
 ## Pagination Object
-Templates receive a `pagination` object with full navigation metadata:
+
+Your template receives a `pagination` object:
 
 ```js
 {
-  currentPage: 2,           // 1-indexed
+  currentPage: 2,
   totalPages: 5,
   totalItems: 47,
   itemsPerPage: 10,
+
   hasNext: true,
   hasPrev: true,
+
   nextUrl: '/blog/page/3',
-  prevUrl: '/blog',         // Page 1 uses base path
+  prevUrl: '/blog',          // Page 1 uses base path
   firstUrl: '/blog',
   lastUrl: '/blog/page/5',
-  pages: [                  // For page number navigation
+
+  pages: [
     { number: 1, url: '/blog', isCurrent: false },
     { number: 2, url: '/blog/page/2', isCurrent: true },
+    { number: 3, url: '/blog/page/3', isCurrent: false },
     // ...
   ]
 }
 ```
 
-## Output Structure
-For `basePath: '/life-fitness'` with 47 items at 10 per page:
-
-```
-public/
-├── life-fitness.html           # Page 1 (items 1-10)
-└── life-fitness/
-    └── page/
-        ├── 2.html              # Page 2 (items 11-20)
-        ├── 3.html              # Page 3 (items 21-30)
-        ├── 4.html              # Page 4 (items 31-40)
-        └── 5.html              # Page 5 (items 41-47)
-```
+---
 
 ## Template Example
+
 ```handlebars
 <h1>Blog Archive</h1>
 
 {{#each items}}
   <article>
-    <h2>{{this.title}}</h2>
+    <h2><a href="{{this.link}}">{{this.title}}</a></h2>
+    <time>{{this.formattedDate}}</time>
     <p>{{this.excerpt}}</p>
   </article>
 {{/each}}
@@ -84,57 +131,136 @@ public/
 {{#if pagination.totalPages}}
 <nav class="pagination">
   {{#if pagination.hasPrev}}
-    <a href="{{pagination.prevUrl}}">← Newer</a>
+    <a href="{{pagination.prevUrl}}" rel="prev">← Newer</a>
   {{/if}}
 
-  <span>Page {{pagination.currentPage}} of {{pagination.totalPages}}</span>
+  {{#each pagination.pages}}
+    {{#if this.isCurrent}}
+      <span class="current">{{this.number}}</span>
+    {{else}}
+      <a href="{{this.url}}">{{this.number}}</a>
+    {{/if}}
+  {{/each}}
 
   {{#if pagination.hasNext}}
-    <a href="{{pagination.nextUrl}}">Older →</a>
+    <a href="{{pagination.nextUrl}}" rel="next">Older →</a>
   {{/if}}
 </nav>
 {{/if}}
 ```
 
-## Practical Example
-```js
-const { generatePaginatedItemsTask } = require('skier');
+---
 
-module.exports = [
-  generatePaginatedItemsTask({
-    dataFile: './items/life/fitness.json',
-    dataKey: 'timeline',
-    itemsPerPage: 15,
-    template: './pages/life-fitness.html',
-    partialsDir: './partials',
-    outDir: './public',
-    basePath: '/life-fitness',
-    outputVar: 'activities',
-    itemTransformFn: (item) => ({
-      ...item,
-      formattedDate: new Date(item.date).toLocaleDateString(),
-    }),
-    additionalVarsFn: ({ pageNumber, totalPages }) => ({
-      page: 'life-fitness',
-      subpage: pageNumber > 1 ? `| Page ${pageNumber}` : '',
+## Transforming Items
+
+Format data before rendering:
+
+```js
+generatePaginatedItemsTask({
+  // ...
+  itemTransformFn: (item) => ({
+    ...item,
+    formattedDate: new Date(item.date).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     }),
   }),
-];
+})
 ```
 
+---
+
+## Additional Page Variables
+
+Inject extra data per page:
+
+```js
+generatePaginatedItemsTask({
+  // ...
+  additionalVarsFn: ({ pageNumber, totalPages, items }) => ({
+    pageTitle: pageNumber === 1
+      ? 'Blog'
+      : `Blog - Page ${pageNumber} of ${totalPages}`,
+    isFirstPage: pageNumber === 1,
+  }),
+})
+```
+
+---
+
+## Real-World Example
+
+Activity timeline with date grouping:
+
+```js
+generatePaginatedItemsTask({
+  dataVar: '${activities}',
+  itemsPerPage: 20,
+  template: 'src/pages/activity-timeline.html',
+  partialsDir: 'src/partials',
+  outDir: 'public',
+  basePath: '/activity',
+  outputVar: 'activities',
+
+  itemTransformFn: (activity) => ({
+    ...activity,
+    icon: getActivityIcon(activity.type),
+    formattedDate: formatDate(activity.date),
+  }),
+
+  additionalVarsFn: ({ pageNumber, items }) => {
+    // Group by month for this page
+    const byMonth = items.reduce((acc, item) => {
+      const month = item.date.slice(0, 7);
+      (acc[month] = acc[month] || []).push(item);
+      return acc;
+    }, {});
+
+    return {
+      pageTitle: `Activity${pageNumber > 1 ? ` - Page ${pageNumber}` : ''}`,
+      monthGroups: Object.entries(byMonth),
+    };
+  },
+})
+```
+
+---
+
 ## Edge Cases
-- **0 items**: Generates page 1 with empty `items` array and `totalPages: 1`.
-- **Items ≤ itemsPerPage**: Generates single page with `hasNext: false` and `hasPrev: false`.
-- **Missing dataVar**: Uses empty array and logs a warning.
-- **Missing dataKey**: Uses empty array if the key doesn't exist in the JSON.
 
-## Common Pitfalls & Tips
-- Items should be pre-sorted in your JSON or via `itemTransformFn`. The task does not sort for you.
-- Use `dataKey` when your JSON wraps the array in an object (e.g., `{ "timeline": [...] }`).
-- All generated pages are discoverable by `generateSitemapTask`.
-- The `pages` array in the pagination object is useful for generating numbered page links.
+| Situation | Behavior |
+|-----------|----------|
+| 0 items | Generates page 1 with empty `items` array |
+| Items ≤ itemsPerPage | Single page, `hasNext: false`, `hasPrev: false` |
+| Missing dataVar | Empty array, logs warning |
+| Missing dataKey | Empty array if key not found in JSON |
 
-## Related Tasks/Docs
-- [generateItemsTask](./generateItemsTask.md)
-- [generatePagesTask](./generatePagesTask.md)
-- [generateSitemapTask](./generateSitemapTask.md)
+---
+
+## Common Mistakes
+
+❌ **Confusing basePath and outDir:**
+```js
+{
+  outDir: 'public',        // Filesystem path
+  basePath: '/blog',       // URL path (for links!)
+}
+```
+
+❌ **Expecting sorted data:**
+Items are NOT sorted automatically. Sort in `dataFile`, via `itemTransformFn`, or in a prior task.
+
+❌ **Using wrong variable syntax:**
+```js
+dataVar: 'posts',      // ❌ Wrong
+dataVar: '${posts}',   // ✅ Correct
+```
+
+---
+
+## Related Tasks
+
+- [generateItemsTask](./generateItemsTask.md) — For individual item pages
+- [generatePagesTask](./generatePagesTask.md) — For standalone pages
+- [generateSitemapTask](./generateSitemapTask.md) — Includes paginated pages

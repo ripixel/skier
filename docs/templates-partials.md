@@ -1,82 +1,134 @@
 # Templates & Partials
 
-Skier uses [Handlebars](https://handlebarsjs.com/) for templating. Templates and partials let you create flexible layouts and reusable components for your site.
+Skier uses [Handlebars](https://handlebarsjs.com/) for templating.
 
 ---
 
 ## Templates
 
-- Templates are HTML (or `.hbs`) files with Handlebars expressions (e.g., `{{title}}`, `{{content}}`).
-- Place your main templates in `src/pages/` (or another directory as configured).
-- Each page or item is rendered using a template.
+Templates are HTML files with Handlebars expressions:
 
-Example template (`src/pages/blog-post.html`):
-
-```html
+```handlebars
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{{title}}</title>
-  </head>
-  <body>
-    {{> header}}
-    <main>
-      <h1>{{title}}</h1>
-      <article>{{{content}}}</article>
-    </main>
-    {{> footer}}
-  </body>
+<head>
+  <title>{{title}} | {{siteTitle}}</title>
+</head>
+<body>
+  {{> header}}
+
+  <main>
+    <h1>{{title}}</h1>
+    {{{content}}}  {{!-- Triple braces for HTML --}}
+  </main>
+
+  {{> footer}}
+</body>
 </html>
 ```
+
+**Key syntax:**
+- `{{variable}}` — Escaped output (safe for user content)
+- `{{{variable}}}` — Raw HTML output (for rendered Markdown)
+- `{{> partialName}}` — Include a partial
 
 ---
 
 ## Partials
 
-- Partials are reusable template snippets (e.g., header, footer, nav).
-- Place partials in `src/partials/` (or as configured).
-- Register and use in templates with `{{> partialName}}`.
+Partials are reusable template fragments:
 
-Example partial (`src/partials/header.html`):
-
-```html
+```handlebars
+{{!-- src/partials/header.html --}}
 <header>
   <nav>
-    <a href="/">Home</a>
-    <a href="/blog/">Blog</a>
+    <a href="/">{{siteTitle}}</a>
+    {{#each navigation}}
+      <a href="{{this.url}}">{{this.label}}</a>
+    {{/each}}
   </nav>
 </header>
 ```
 
----
-
-## Variables & Helpers
-
-- All frontmatter fields and globals are available as template variables.
-- Use triple braces (`{{{content}}}`) for unescaped HTML (e.g., rendered Markdown).
-- You can register [Handlebars helpers](https://handlebarsjs.com/guide/#custom-helpers) for custom logic (see custom tasks).
-
----
-
-## Folder Structure Example
+Place partials in your `partialsDir` and reference by filename (without extension):
 
 ```
-src/
-  pages/
-    index.html
-    blog-post.html
-  partials/
-    header.html
-    footer.html
+src/partials/
+├── header.html    →  {{> header}}
+├── footer.html    →  {{> footer}}
+└── card.html      →  {{> card}}
 ```
 
 ---
 
-## Tips
-- Use partials to avoid duplicating layout code.
-- Use variables for dynamic content (title, date, etc.).
-- Use helpers for formatting (dates, lists, etc.).
+## Available Variables
+
+All globals and frontmatter fields are available:
+
+```handlebars
+{{!-- From setGlobalsTask --}}
+{{siteTitle}}
+{{author.name}}
+
+{{!-- From frontmatter --}}
+{{title}}
+{{date}}
+{{#each tags}}{{this}}{{/each}}
+
+{{!-- From generateItemsTask --}}
+{{#each posts}}
+  <h2>{{this.title}}</h2>
+{{/each}}
+```
 
 ---
 
-**Next:** Learn more about [Markdown & Frontmatter](./markdown-frontmatter.md) or [Custom Tasks](./custom-tasks.md).
+## Control Flow
+
+```handlebars
+{{!-- Conditionals --}}
+{{#if featured}}
+  <span class="badge">Featured</span>
+{{/if}}
+
+{{!-- Loops --}}
+{{#each posts}}
+  <article>{{this.title}}</article>
+{{else}}
+  <p>No posts yet.</p>
+{{/each}}
+
+{{!-- With context --}}
+{{#with author}}
+  <p>By {{name}} ({{email}})</p>
+{{/with}}
+```
+
+---
+
+## Common Patterns
+
+**Conditional classes:**
+```handlebars
+<nav class="nav {{#if isHome}}nav--home{{/if}}">
+```
+
+**Safe access to nested data:**
+```handlebars
+{{#if posts}}
+  {{posts.0.title}}
+{{/if}}
+```
+
+**Passing data to partials:**
+```handlebars
+{{> card title=post.title link=post.link}}
+```
+
+---
+
+## Learn More
+
+- [Markdown & Frontmatter](./markdown-frontmatter.md) — Content file format
+- [generatePagesTask](./builtins/generatePagesTask.md) — Rendering templates
+- [Handlebars Docs](https://handlebarsjs.com/guide/) — Full syntax reference

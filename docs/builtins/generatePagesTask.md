@@ -1,75 +1,171 @@
 # generatePagesTask
 
-## Summary
-Generates static HTML pages from templates and partials. Use this to render your site's main pages (home, about, contact, etc.) with Handlebars or HTML templates.
+Render standalone HTML pages from Handlebars templates.
 
-## Default Behavior
-With minimal config, renders all `.html` (or `.hbs`) files in the specified `pagesDir` using the provided global context, and writes the output to the specified `outDir`.
+---
 
-## Configuration Options
-- `pagesDir` (string, required): Path to your templates directory (e.g., `src/pages`).
-- `partialsDir` (string, required): Path to your partials directory (e.g., `src/partials`).
-- `outDir` (string, required): Path to your output directory (e.g., `public`).
-- `pageExt` (string, optional): File extension for templates to process (e.g., `.html` or `.hbs`). Defaults to `.html`.
-- `additionalVarsFn` (function, optional): Function to inject additional variables into the render context for each page.
+## When to Use
 
-**Example config:**
+✅ Use `generatePagesTask` for:
+- Homepage, about, contact pages
+- Any page not part of a collection
+- Landing pages with custom layouts
+
+❌ Use `generateItemsTask` instead for:
+- Blog posts, portfolio items, or other collections
+- Pages generated from Markdown files
+
+---
+
+## Quick Start
+
 ```js
 generatePagesTask({
   pagesDir: 'src/pages',
   partialsDir: 'src/partials',
   outDir: 'public',
-  pageExt: '.html',
 })
 ```
 
-## Input Expectations
-- A directory with template files (default: `.html` or `.hbs`).
-- Optional partials directory for reusable template snippets.
-- Global context variables available for template rendering.
+**Input:** Templates in `src/pages/`
+**Output:** HTML files in `public/`
 
-**Example:**
+---
+
+## Configuration
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `pagesDir` | string | ✅ | Directory containing page templates |
+| `partialsDir` | string | ✅ | Directory with shared partials |
+| `outDir` | string | ✅ | Output directory |
+| `pageExt` | string | | Template extension (default: `.html`) |
+| `additionalVarsFn` | function | | Inject extra variables per page |
+
+---
+
+## Directory Structure
+
+Templates mirror output structure:
+
 ```
-src/
-  pages/
-    index.html
-    about.html
-  partials/
-    header.html
-    footer.html
+src/pages/           →    public/
+├── index.html       →    ├── index.html
+├── about.html       →    ├── about.html
+└── contact.html     →    └── contact.html
 ```
 
-## Output
-- Renders each template in `pagesDir` to an HTML file in `outDir`, preserving filenames.
-- Partials are included where referenced in templates.
+Subdirectories are preserved:
 
-**Example:**
 ```
-public/
-  index.html
-  about.html
+src/pages/           →    public/
+└── legal/           →    └── legal/
+    ├── privacy.html →        ├── privacy.html
+    └── terms.html   →        └── terms.html
 ```
 
-## Practical Example
+---
+
+## Template Variables
+
+All globals are available in templates:
+
+```handlebars
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{pageTitle}} | {{siteTitle}}</title>
+</head>
+<body>
+  {{> header}}
+
+  <main>
+    <h1>{{pageTitle}}</h1>
+
+    {{!-- Access any global --}}
+    <p>Latest post: {{posts.0.title}}</p>
+  </main>
+
+  {{> footer}}
+</body>
+</html>
+```
+
+---
+
+## Per-Page Variables
+
+Use `additionalVarsFn` for page-specific data:
+
 ```js
-const { generatePagesTask } = require('skier/builtins');
+generatePagesTask({
+  pagesDir: 'src/pages',
+  partialsDir: 'src/partials',
+  outDir: 'public',
 
-module.exports = [
-  generatePagesTask({
-    pagesDir: 'src/pages',
-    partialsDir: 'src/partials',
-    outDir: 'public',
-    pageExt: '.html',
-  }),
-];
+  additionalVarsFn: (pagePath, globals) => {
+    const pageName = pagePath.replace('.html', '');
+
+    return {
+      currentPage: pageName,
+      pageTitle: {
+        'index': 'Home',
+        'about': 'About Us',
+        'contact': 'Get in Touch',
+      }[pageName] || pageName,
+    };
+  },
+})
 ```
 
-## Common Pitfalls & Tips
-- Use partials for shared layout (header, footer, etc.) to avoid duplication.
-- All global variables are available in templates; set them with `setGlobalsTask` or similar.
-- If you use a non-default extension, set `ext` accordingly.
+---
 
-## Related Tasks/Docs
-- [setGlobalsTask](./setGlobalsTask.md)
-- [copyStaticTask](./copyStaticTask.md)
-- [Templates & Partials guide](../templates-partials.md)
+## Real-World Example
+
+Homepage with dynamic sections:
+
+```js
+// After generateItemsTask has populated posts
+generatePagesTask({
+  pagesDir: 'src/pages',
+  partialsDir: 'src/partials',
+  outDir: 'public',
+
+  additionalVarsFn: (pagePath, globals) => {
+    if (pagePath === 'index.html') {
+      return {
+        featuredPosts: (globals.posts || []).slice(0, 3),
+        showNewsletter: true,
+      };
+    }
+    return {};
+  },
+})
+```
+
+---
+
+## Common Mistakes
+
+❌ **Wrong partial reference:**
+```handlebars
+{{> partials/header}}  <!-- ❌ Wrong: include 'partials' path -->
+{{> header}}           <!-- ✅ Correct: just the name -->
+```
+
+❌ **Accessing undefined globals:**
+```handlebars
+{{posts.0.title}}  <!-- ❌ Crashes if posts is undefined -->
+
+{{#if posts}}
+  {{posts.0.title}}  <!-- ✅ Safe access -->
+{{/if}}
+```
+
+---
+
+## Related Tasks
+
+- [generateItemsTask](./generateItemsTask.md) — For collection pages
+- [setGlobalsTask](./setGlobalsTask.md) — Set variables used in templates
+- [copyStaticTask](./copyStaticTask.md) — For non-template assets

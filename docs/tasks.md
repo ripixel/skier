@@ -1,112 +1,60 @@
 # Tasks
 
-Skier is built around a flexible, modular task pipeline. Each task performs a distinct build step—like generating pages, bundling CSS, or copying static assets. You can use built-in tasks, write your own, and compose them in any order.
+Skier is built around a modular task pipeline. Each task performs one build step.
 
 ---
 
-## What is a Task?
+## How It Works
 
-A **task** is a function or object that describes a build step. Each task receives configuration and context, and can read/write files, update global variables, or generate output.
-
----
-
-## How Tasks Are Loaded
-
-- Skier loads tasks from your pipeline config file (see [Configuration](./configuration.md)).
-- The config exports an **array of tasks** (or a function returning one).
-- Tasks are run in the order listed in the array.
-
----
-
-## Task Anatomy
-
-A typical task is created by a factory function (e.g., `generatePagesTask(config)`) and returns an object like:
+1. **You define** an array of tasks in your config file
+2. **Skier runs** each task sequentially
+3. **Tasks share data** via the global context
 
 ```js
-{
-  name: 'generate-pages',
-  config: { ... },
-  run: async (config, context) => { ... }
-}
-```
-
-- **name**: Unique identifier for the task.
-- **config**: Task-specific configuration object.
-- **run**: Async function that performs the build step. Receives the config and a context object.
-
----
-
-## Context Object
-
-The context passed to each task includes:
-- `globals`: Global variables (site title, author, etc.)
-- `logger`: Task-specific logger
-- `debug`: Debug flag
-
----
-
-## Example: Custom Task
-
-```js
-const myCustomTask = {
-  name: 'say-hello',
-  run: async (config, ctx) => {
-    ctx.logger.info('Hello from my custom task!');
-    return {};
-  }
-};
-```
-
-Add it to your pipeline:
-
-```js
-module.exports = [
-  ...,
-  myCustomTask,
-  ...
+export default [
+  task1(),  // Runs first
+  task2(),  // Runs second, can access task1's output
+  task3(),  // Runs third, can access both
 ];
 ```
 
 ---
 
-## Pipeline Order
+## Task Types
 
-Tasks run sequentially, top-to-bottom. Output and globals from one task are available to all subsequent tasks.
+| Type | Purpose | Examples |
+|------|---------|----------|
+| **Built-in** | Common static site needs | `generatePagesTask`, `copyStaticTask` |
+| **Custom** | Your project-specific logic | Data processing, API fetching |
 
 ---
 
-## Sharing Data Between Tasks (Globals)
+## Global Context
 
-When a task's `run` method returns an object (a plain `Record<string, any>`), Skier merges that object onto the global context. These globals are then available to all subsequent tasks and templates.
+Tasks communicate through a shared global object:
 
-- This allows tasks to pass data to each other without manual wiring.
-- For example, a task can return `{ allPosts }`, and later tasks or templates can use `globals.allPosts`.
-- Globals are available in template variables as well as in the `context` object for subsequent tasks.
-
-**Example:**
 ```js
-const collectPostsTask = {
+// Task 1 returns data
+const task1 = {
   name: 'collect-posts',
   run: async (config, ctx) => {
-    // ...collect posts
-    return { allPosts };
+    return { posts: ['Post 1', 'Post 2'] };  // Merged into globals
   }
 };
 
-const generateFeedTask = {
-  name: 'generate-feed',
+// Task 2 reads that data
+const task2 = {
+  name: 'use-posts',
   run: async (config, ctx) => {
-    // ctx.globals.allPosts is available here!
+    console.log(ctx.globals.posts);  // ['Post 1', 'Post 2']
   }
 };
 ```
 
 ---
 
-## Built-in Tasks
+## Learn More
 
-Skier ships with many built-in tasks for common needs. See the [Built-ins](./builtins/generateItemsTask.md) section for details and examples.
-
----
-
-**Next:** Learn more about [Built-in Tasks](./builtins/generateItemsTask.md) or [Custom Tasks](./custom-tasks.md).
+- **[Built-in Tasks](./builtins/README.md)** — All built-in tasks with docs
+- **[Custom Tasks](./custom-tasks.md)** — Write your own tasks
+- **[Architecture](./architecture.md)** — Deep dive into the pipeline

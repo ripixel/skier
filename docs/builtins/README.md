@@ -1,24 +1,112 @@
 # Built-In Tasks
 
-Skier comes with a suite of built-in tasks to cover the most common needs in static site generation. Each task is modular, configurable, and can be used independently or as part of your pipeline.
-
-Below you'll find a list of all built-in tasks, with a short summary and a link to the full documentation for each.
+Skier includes tasks for all common static site needs. Use them as building blocks for your pipeline.
 
 ---
 
-## Task Index
+## Task Categories
 
-- [prepareOutputTask](./prepareOutputTask.md): Ensures the output directory exists and is ready for site generation. Typically the first task in your pipeline.
-- [copyStaticTask](./copyStaticTask.md): Copies static assets (images, fonts, CSS, JS, etc.) from a source directory to your output directory. Use this to include files that don’t require processing (such as favicon, robots.txt, fonts, etc.) in your generated site.
-- [bundleCssTask](./bundleCssTask.md): Bundles and minifies CSS files for your site. Use this to optimize your stylesheets for production by combining multiple CSS files into one and reducing file size.
-- [setGlobalsTask](./setGlobalsTask.md): Sets global variables for use in templates and tasks. Use this to define site-wide values (site title, author, base URL, etc.) that are available everywhere in your pipeline.
-- [setGlobalFromMarkdownTask](./setGlobalFromMarkdownTask.md): Reads a Markdown file, renders it to HTML, and sets the result as a global variable for use in templates and tasks. Ideal for site-wide content like an About section, footer, or legal notices.
-- [generatePagesTask](./generatePagesTask.md): Generates static HTML pages from templates and partials. Use this to render your site's main pages (home, about, contact, etc.) with Handlebars or HTML templates.
-- [generateItemsTask](./generateItemsTask.md): Generates HTML pages for collections of items (e.g., blog posts, portfolio entries) from Markdown or data files. Supports sorting, excerpts, custom templates, and configurable output structure.
-- [generatePaginatedItemsTask](./generatePaginatedItemsTask.md): Generates paginated HTML pages from a data source (JSON or pipeline variable), producing multiple page files with navigation controls. Ideal for timelines, archives, or any collection that needs to be split across pages.
-- [generateFeedTask](./generateFeedTask.md): Generates RSS, Atom, and JSON feeds from your site's content (typically blog posts or articles). Use this to provide feed subscriptions for readers and syndication services.
-- [generateSitemapTask](./generateSitemapTask.md): Generates a `sitemap.xml` file for your site based on the pages produced by your build. This helps search engines index your site efficiently.
+Organize your pipeline in this order:
+
+```mermaid
+flowchart LR
+    Setup --> Content --> Feeds --> Assets
+```
+
+| Category | Tasks | Purpose |
+|----------|-------|---------|
+| **Setup** | `prepareOutputTask`, `setGlobalsTask`, `setGlobalFromMarkdownTask` | Initialize directories and shared data |
+| **Content** | `generateItemsTask`, `generatePaginatedItemsTask`, `generatePagesTask` | Process and render content |
+| **Feeds** | `generateFeedTask`, `generateSitemapTask` | Create discovery/syndication files |
+| **Assets** | `bundleCssTask`, `copyStaticTask` | Optimize and copy static files |
 
 ---
 
-For details on configuring and using each task, click the task name above or see the [Getting Started guide](../getting-started.md) for a walkthrough of a typical pipeline.
+## Which Task Do I Need?
+
+```mermaid
+flowchart TD
+    Start([What do you want to do?])
+
+    Start --> Static{Static files?}
+    Static -->|Images, fonts, etc.| copyStaticTask
+    Static -->|CSS files| CSS{Bundle CSS?}
+    CSS -->|Yes| bundleCssTask
+    CSS -->|No| copyStaticTask
+
+    Start --> Variables{Set variables?}
+    Variables -->|Key-value pairs| setGlobalsTask
+    Variables -->|From Markdown file| setGlobalFromMarkdownTask
+
+    Start --> Pages{Generate pages?}
+    Pages -->|Standalone templates| generatePagesTask
+    Pages -->|From Markdown collection| generateItemsTask
+    Pages -->|Paginated list| generatePaginatedItemsTask
+
+    Start --> Syndication{Syndication?}
+    Syndication -->|RSS/Atom/JSON| generateFeedTask
+    Syndication -->|sitemap.xml| generateSitemapTask
+```
+
+---
+
+## Task Reference
+
+### Setup Tasks
+
+| Task | Description |
+|------|-------------|
+| [prepareOutputTask](./prepareOutputTask.md) | Create/clean the output directory |
+| [setGlobalsTask](./setGlobalsTask.md) | Set site-wide variables |
+| [setGlobalFromMarkdownTask](./setGlobalFromMarkdownTask.md) | Set globals from Markdown content |
+
+### Content Tasks
+
+| Task | Description |
+|------|-------------|
+| [generatePagesTask](./generatePagesTask.md) | Render standalone page templates |
+| [generateItemsTask](./generateItemsTask.md) | Generate pages from Markdown collections |
+| [generatePaginatedItemsTask](./generatePaginatedItemsTask.md) | Create paginated list pages |
+
+### Feed Tasks
+
+| Task | Description |
+|------|-------------|
+| [generateFeedTask](./generateFeedTask.md) | Create RSS, Atom, and JSON feeds |
+| [generateSitemapTask](./generateSitemapTask.md) | Generate sitemap.xml |
+
+### Asset Tasks
+
+| Task | Description |
+|------|-------------|
+| [bundleCssTask](./bundleCssTask.md) | Bundle and minify CSS |
+| [copyStaticTask](./copyStaticTask.md) | Copy static files unchanged |
+
+---
+
+## Minimal Pipeline Example
+
+```js
+// skier.tasks.mjs
+import {
+  prepareOutputTask,
+  setGlobalsTask,
+  generatePagesTask,
+  copyStaticTask,
+} from 'skier';
+
+export default [
+  prepareOutputTask({ outDir: 'public' }),
+  setGlobalsTask({ values: { siteTitle: 'My Site' } }),
+  generatePagesTask({
+    pagesDir: 'src/pages',
+    partialsDir: 'src/partials',
+    outDir: 'public',
+  }),
+  copyStaticTask({ from: 'src/static', to: 'public' }),
+];
+```
+
+---
+
+**Next:** See [Recipes](../recipes.md) for complete project examples.

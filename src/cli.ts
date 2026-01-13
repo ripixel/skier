@@ -1,8 +1,8 @@
 import minimist from 'minimist';
-import type { TaskDef, SkierGlobals } from './types';
-import { createTaskLogger } from './logger';
-import { runTasks } from './cli/runTasks';
-import { loadTasks } from './cli/loadTasks';
+import type { TaskDef, SkierGlobals } from './types.js';
+import { createTaskLogger } from './logger.js';
+import { runTasks } from './cli/runTasks.js';
+import { loadTasks } from './cli/loadTasks.js';
 
 function parseCliArgs(argv: string[]): { only: string[]; skip: string[]; debug: boolean } {
   const args = minimist(argv.slice(2), {

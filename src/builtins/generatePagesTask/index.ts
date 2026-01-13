@@ -1,10 +1,10 @@
-import { ensureDir, readdir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers';
-import { join, extname, basename } from '../../utils/pathHelpers';
+import { ensureDir, readdir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers.js';
+import { join, extname, basename } from '../../utils/pathHelpers.js';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
-import type { TaskDef } from '../../types';
-import { validateRequiredConfig } from '../../utils/errors';
-import { setupHandlebarsEnvironment } from '../../utils/handlebars';
+import type { TaskDef } from '../../types.js';
+import { validateRequiredConfig } from '../../utils/errors.js';
+import { setupHandlebarsEnvironment } from '../../utils/handlebars.js';
 
 const renderer = new marked.Renderer();
 renderer.code = (code, infostring) => {

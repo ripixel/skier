@@ -1,4 +1,4 @@
-import type { TaskDef, TaskContext, SkierGlobals } from '../../types';
+import type { TaskDef, TaskContext, SkierGlobals } from '../../types.js';
 
 export interface SetGlobalsConfig {
   values?: SkierGlobals;

@@ -1,7 +1,7 @@
-import { generatePagesTask, GeneratePagesConfig } from './index';
+import { generatePagesTask, GeneratePagesConfig } from './index.js';
 import * as fs from 'fs-extra';
 import path from 'path';
-import type { TaskContext } from '../../types';
+import type { TaskContext } from '../../types.js';
 
 describe('generatePagesTask', () => {
   const testOutDir = path.join(__dirname, 'testAssets', 'out');

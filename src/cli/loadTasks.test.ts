@@ -1,4 +1,4 @@
-import { loadTasks } from './loadTasks';
+import { loadTasks } from './loadTasks.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -12,12 +12,8 @@ describe('loadTasks', () => {
     if (!fs.existsSync(TEST_DIR)) fs.mkdirSync(TEST_DIR);
   });
   beforeEach(() => {
-    [JS_FILE, CJS_FILE, TS_FILE].forEach((f) => {
-      if (fs.existsSync(f)) {
-        const resolved = require.resolve(f);
-        if (require.cache[resolved]) delete require.cache[resolved];
-      }
-    });
+    // ESM modules are cached by Node and cannot be cleared like CJS require.cache.
+    // Tests use unique file content to avoid cache conflicts.
   });
   afterEach(() => {
     [JS_FILE, CJS_FILE, TS_FILE].forEach((f) => {

@@ -1,6 +1,6 @@
-import { TaskDef } from '../../types';
-import { ensureDir, copyDir } from '../../utils/fileHelpers';
-import { throwTaskError } from '../../utils/errors';
+import { TaskDef } from '../../types.js';
+import { ensureDir, copyDir } from '../../utils/fileHelpers.js';
+import { throwTaskError } from '../../utils/errors.js';
 
 export interface CopyStaticConfig {
   from: string;

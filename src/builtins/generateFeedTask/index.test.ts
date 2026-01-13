@@ -18,10 +18,10 @@ jest.mock('feed', () => {
   };
 });
 
-import { generateFeedTask, GenerateFeedConfig } from './index';
+import { generateFeedTask, GenerateFeedConfig } from './index.js';
 import * as fs from 'fs-extra';
 import path from 'path';
-import type { SkierItem, TaskContext } from '../../types';
+import type { SkierItem, TaskContext } from '../../types.js';
 
 describe('generateFeedTask', () => {
   const testOutDir = path.join(__dirname, 'testAssets', 'out');

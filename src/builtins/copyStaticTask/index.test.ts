@@ -1,7 +1,7 @@
-import { copyStaticTask, CopyStaticConfig } from './index';
+import { copyStaticTask, CopyStaticConfig } from './index.js';
 import * as fs from 'fs-extra';
 import path from 'path';
-import type { TaskContext } from '../../types';
+import type { TaskContext } from '../../types.js';
 
 describe('copyStaticTask', () => {
   const testOutDir = path.join(__dirname, 'testAssets', 'out');

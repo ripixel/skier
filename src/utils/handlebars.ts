@@ -1,7 +1,7 @@
 import Handlebars from 'handlebars';
-import { readdir, readFileUtf8 } from './fileHelpers';
-import { extname, basename, join } from './pathHelpers';
-import type { Logger } from '../types';
+import { readdir, readFileUtf8 } from './fileHelpers.js';
+import { extname, basename, join } from './pathHelpers.js';
+import type { Logger } from '../types.js';
 
 /**
  * Creates an isolated Handlebars environment with task-specific helpers and partials.

@@ -1,5 +1,5 @@
-import { pathExists, removeDir, ensureDir } from '../../utils/fileHelpers';
-import { TaskDef } from '../../types';
+import { pathExists, removeDir, ensureDir } from '../../utils/fileHelpers.js';
+import { TaskDef } from '../../types.js';
 
 export interface PrepareOutputConfig {
   outDir: string;

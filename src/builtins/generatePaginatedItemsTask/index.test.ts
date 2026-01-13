@@ -1,7 +1,7 @@
-import { generatePaginatedItemsTask } from './index';
-import { join } from '../../utils/pathHelpers';
-import { readFileUtf8, removeDir, ensureDir, pathExists } from '../../utils/fileHelpers';
-import type { TaskContext } from '../../types';
+import { generatePaginatedItemsTask } from './index.js';
+import { join } from '../../utils/pathHelpers.js';
+import { readFileUtf8, removeDir, ensureDir, pathExists } from '../../utils/fileHelpers.js';
+import type { TaskContext } from '../../types.js';
 
 const testAssetsDir = join(__dirname, 'testAssets');
 const testOutDir = join(__dirname, 'testAssets', '_testOutput');
@@ -217,7 +217,7 @@ describe('generatePaginatedItemsTask', () => {
         <p>Showing {{items.length}} items</p>
       `;
       const customTemplatePath = join(testOutDir, 'custom-template.html');
-      const { writeFileUtf8 } = await import('../../utils/fileHelpers');
+      const { writeFileUtf8 } = await import('../../utils/fileHelpers.js');
       await writeFileUtf8(customTemplatePath, customTemplate);
 
       const task = generatePaginatedItemsTask({

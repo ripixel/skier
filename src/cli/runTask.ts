@@ -1,6 +1,6 @@
-import { createTaskLogger } from '../logger';
-import { resolveConfigVars } from './resolveConfigVars';
-import type { TaskDef, SkierGlobals } from '../types';
+import { createTaskLogger } from '../logger.js';
+import { resolveConfigVars } from './resolveConfigVars.js';
+import type { TaskDef, SkierGlobals } from '../types.js';
 
 export async function runTask(
   task: TaskDef,

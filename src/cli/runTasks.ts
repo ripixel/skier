@@ -1,5 +1,5 @@
-import type { TaskDef, SkierGlobals } from '../types';
-import { runTask } from './runTask';
+import type { TaskDef, SkierGlobals } from '../types.js';
+import { runTask } from './runTask.js';
 
 export async function runTasks(
   tasks: TaskDef[],

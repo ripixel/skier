@@ -1,7 +1,7 @@
-import { prepareOutputTask, PrepareOutputConfig } from './index';
+import { prepareOutputTask, PrepareOutputConfig } from './index.js';
 import * as fs from 'fs-extra';
 import path from 'path';
-import type { TaskContext } from '../../types';
+import type { TaskContext } from '../../types.js';
 
 describe('prepareOutputTask', () => {
   const testOutDir = path.join(__dirname, 'testAssets', 'out');

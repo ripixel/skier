@@ -1,4 +1,4 @@
-import { rewriteLinks } from './linkRewrite';
+import { rewriteLinks } from './linkRewrite.js';
 
 describe('rewriteLinks', () => {
   it('removes /docs and docs/ prefixes from links', () => {

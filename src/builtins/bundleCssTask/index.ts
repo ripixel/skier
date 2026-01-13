@@ -1,7 +1,7 @@
-import { TaskDef } from '../../types';
-import { ensureDir, readdir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers';
-import { extname, join } from '../../utils/pathHelpers';
-import { throwTaskError } from '../../utils/errors';
+import { TaskDef } from '../../types.js';
+import { ensureDir, readdir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers.js';
+import { extname, join } from '../../utils/pathHelpers.js';
+import { throwTaskError } from '../../utils/errors.js';
 import CleanCSS from 'clean-css';
 
 export interface BundleCssConfig {

@@ -1,5 +1,5 @@
-import { setGlobalsTask, SetGlobalsConfig } from './index';
-import type { TaskContext } from '../../types';
+import { setGlobalsTask, SetGlobalsConfig } from './index.js';
+import type { TaskContext } from '../../types.js';
 
 describe('setGlobalsTask', () => {
   const ctx: TaskContext = {

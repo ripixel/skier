@@ -49,7 +49,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:URk6UqM1/e3vroCOb5tGrcchx8EJFhRhRn+Yw0gX8E0"
+            - 'SHA256:URk6UqM1/e3vroCOb5tGrcchx8EJFhRhRn+Yw0gX8E0'
       - attach_workspace:
           at: .
       - run:

@@ -81,8 +81,10 @@ function parseFrontmatter(content: string): ParsedFrontmatter {
       let value: string | number = line.slice(colonIdx + 1).trim();
 
       // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
         value = value.slice(1, -1);
       }
 
@@ -120,7 +122,7 @@ function extractTitleFromContent(content: string): string | undefined {
  * })
  */
 export function generateNavDataTask(
-  config: GenerateNavDataConfig
+  config: GenerateNavDataConfig,
 ): TaskDef<GenerateNavDataConfig, SkierGlobals> {
   return {
     name: 'generate-nav-data',
@@ -151,7 +153,7 @@ export function generateNavDataTask(
           if (entry.isDirectory()) {
             // Recurse into subdirectories
             await scanDir(fullPath, `${urlPrefix}/${entry.name}`);
-          } else if (entry.isFile() && extensions.some(ext => entry.name.endsWith(ext))) {
+          } else if (entry.isFile() && extensions.some((ext) => entry.name.endsWith(ext))) {
             // Skip template files
             if (entry.name === 'template.hbs' || entry.name === 'template.html') {
               continue;
@@ -174,7 +176,7 @@ export function generateNavDataTask(
             const title =
               frontmatter.title ||
               extractTitleFromContent(content) ||
-              basename.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+              basename.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
             // Determine section
             let section = frontmatter.section || defaultSection;
@@ -225,9 +227,7 @@ export function generateNavDataTask(
         return a.title.localeCompare(b.title);
       });
 
-      ctx.logger.debug(
-        `Generated nav data: ${sections.length} sections, ${allPages.length} pages`
-      );
+      ctx.logger.debug(`Generated nav data: ${sections.length} sections, ${allPages.length} pages`);
 
       const navData: NavData = { sections, pages: allPages };
 

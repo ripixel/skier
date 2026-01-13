@@ -107,7 +107,9 @@ export interface GenerateItemsConfig {
   /** User override for date extraction */
   extractDate?: (args: ItemFunctionArgs) => Date | string | undefined;
   /** Optional function to inject additional variables per item */
-  additionalVarsFn?: (args: ItemisedRenderVars) => Record<string, unknown> | Promise<Record<string, unknown>>;
+  additionalVarsFn?: (
+    args: ItemisedRenderVars,
+  ) => Record<string, unknown> | Promise<Record<string, unknown>>;
 }
 
 /**

@@ -1,10 +1,10 @@
 <h1>Page {{pagination.currentPage}} of {{pagination.totalPages}}</h1>
 <div class="items">
-{{#each items}}
+  {{#each items}}
   <div class="item">
     <span class="id">{{this.id}}</span>
     <span class="title">{{this.title}}</span>
   </div>
-{{/each}}
+  {{/each}}
 </div>
 {{> pagination}}

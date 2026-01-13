@@ -5,11 +5,7 @@ import type { SkierGlobals } from '../types';
  * Recursively resolves ${varName} references in config values.
  * Uses the globals context to replace variable references.
  */
-export function resolveConfigVars(
-  config: unknown,
-  context: SkierGlobals,
-  logger: Logger,
-): unknown {
+export function resolveConfigVars(config: unknown, context: SkierGlobals, logger: Logger): unknown {
   if (typeof config === 'string') {
     const varMatch = config.match(/^\$\{(.+?)\}$/);
     if (varMatch) {
@@ -18,7 +14,9 @@ export function resolveConfigVars(
         logger.debug(`Resolved variable '${varName}' to: ${JSON.stringify(context[varName])}`);
         return context[varName];
       } else {
-        logger.debug(`Variable '${varName ?? 'undefined'}' not found in context, leaving as undefined`);
+        logger.debug(
+          `Variable '${varName ?? 'undefined'}' not found in context, leaving as undefined`,
+        );
         return undefined;
       }
     }

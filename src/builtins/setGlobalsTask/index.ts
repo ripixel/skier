@@ -11,9 +11,7 @@ export interface SetGlobalsConfig {
  * Example: setGlobalsTask({ values: { noindex: '<meta name="robots" content="noindex">' } })
  * Example: setGlobalsTask({ valuesFn: globals => ({ latestVersion: extractVersion(globals.changelogHtml) }) })
  */
-export function setGlobalsTask(
-  config: SetGlobalsConfig,
-): TaskDef<SetGlobalsConfig, SkierGlobals> {
+export function setGlobalsTask(config: SetGlobalsConfig): TaskDef<SetGlobalsConfig, SkierGlobals> {
   return {
     name: 'set-globals',
     title: 'Set global template variables',

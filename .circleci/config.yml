@@ -47,8 +47,17 @@ jobs:
     executor: node-executor
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - 'SHA256:URk6UqM1/e3vroCOb5tGrcchx8EJFhRhRn+Yw0gX8E0'
       - attach_workspace:
           at: .
+      - run:
+          name: Configure Git for SSH
+          command: |
+            git config user.email "ci@skier.dev"
+            git config user.name "CircleCI"
+            git remote set-url origin git@github.com:ripixel/skier.git
       - run: npx semantic-release
   build_docs:
     executor: node-executor

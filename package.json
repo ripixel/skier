@@ -17,7 +17,8 @@
     "test": "jest",
     "release": "semantic-release",
     "docs:build": "node dist/bin/skier.js",
-    "docs:build:debug": "node dist/bin/skier.js --debug"
+    "docs:build:debug": "node dist/bin/skier.js --debug",
+    "docs:serve": "npm run docs:build && npx serve public -p 3333"
   },
   "author": "James King",
   "license": "MIT",

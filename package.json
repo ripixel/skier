@@ -1,6 +1,7 @@
 {
   "name": "skier",
   "version": "1.0.0",
+  "type": "module",
   "description": "Opinionated static site generator CLI framework.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

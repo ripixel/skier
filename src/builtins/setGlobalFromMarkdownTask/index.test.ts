@@ -1,7 +1,7 @@
-import { setGlobalFromMarkdownTask, SetGlobalFromMarkdownConfig } from './index';
+import { setGlobalFromMarkdownTask, SetGlobalFromMarkdownConfig } from './index.js';
 import * as fs from 'fs-extra';
 import path from 'path';
-import type { TaskContext } from '../../types';
+import type { TaskContext } from '../../types.js';
 
 describe('setGlobalFromMarkdownTask', () => {
   const testOutDir = path.join(__dirname, 'testAssets', 'out');

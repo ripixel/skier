@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import { extname, join } from './pathHelpers';
+import { extname, join } from './pathHelpers.js';
 
 export async function readdir(dir: string): Promise<string[]> {
   return fs.readdir(dir);

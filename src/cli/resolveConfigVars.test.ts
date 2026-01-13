@@ -1,4 +1,4 @@
-import { resolveConfigVars } from './resolveConfigVars';
+import { resolveConfigVars } from './resolveConfigVars.js';
 
 describe('resolveConfigVars', () => {
   const logger = { debug: jest.fn() };

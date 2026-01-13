@@ -1,7 +1,7 @@
 import { Feed } from 'feed';
-import { ensureDir, writeFileUtf8 } from '../../utils/fileHelpers';
-import { join } from '../../utils/pathHelpers';
-import type { SkierItem, TaskDef } from '../../types';
+import { ensureDir, writeFileUtf8 } from '../../utils/fileHelpers.js';
+import { join } from '../../utils/pathHelpers.js';
+import type { SkierItem, TaskDef } from '../../types.js';
 
 export interface GenerateFeedConfig {
   articles: SkierItem[];

@@ -1,13 +1,13 @@
-import { renderMarkdown } from '../../utils/markdown';
-import { ensureDir, readFileUtf8, writeFileUtf8, stat } from '../../utils/fileHelpers';
-import { titleFromFilename, excerptFromMarkdown } from '../../utils/stringUtils';
-import { formatDateDisplay } from '../../utils/dateUtils';
-import { SkierItem, TaskDef } from '../../types';
-import { extname, basename, join, relativePath } from '../../utils/pathHelpers';
-import { findMarkdownFiles, findNearestTemplate } from './recursiveUtils';
-import { rewriteLinks } from '../../utils/linkRewrite';
-import { validateRequiredConfig } from '../../utils/errors';
-import { setupHandlebarsEnvironment } from '../../utils/handlebars';
+import { renderMarkdown } from '../../utils/markdown.js';
+import { ensureDir, readFileUtf8, writeFileUtf8, stat } from '../../utils/fileHelpers.js';
+import { titleFromFilename, excerptFromMarkdown } from '../../utils/stringUtils.js';
+import { formatDateDisplay } from '../../utils/dateUtils.js';
+import { SkierItem, TaskDef } from '../../types.js';
+import { extname, basename, join, relativePath } from '../../utils/pathHelpers.js';
+import { findMarkdownFiles, findNearestTemplate } from './recursiveUtils.js';
+import { rewriteLinks } from '../../utils/linkRewrite.js';
+import { validateRequiredConfig } from '../../utils/errors.js';
+import { setupHandlebarsEnvironment } from '../../utils/handlebars.js';
 
 /**
  * Frontmatter data structure.

@@ -1,2 +1,3 @@
 #!/usr/bin/env node
-require('../../dist/cli').runSkier(process.argv);
+import { runSkier } from '../cli.js';
+runSkier(process.argv);

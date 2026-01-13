@@ -1,8 +1,8 @@
-import { ensureDir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers';
-import { join, dirname } from '../../utils/pathHelpers';
-import type { TaskDef } from '../../types';
-import { throwTaskError } from '../../utils/errors';
-import { setupHandlebarsEnvironment } from '../../utils/handlebars';
+import { ensureDir, readFileUtf8, writeFileUtf8 } from '../../utils/fileHelpers.js';
+import { join, dirname } from '../../utils/pathHelpers.js';
+import type { TaskDef } from '../../types.js';
+import { throwTaskError } from '../../utils/errors.js';
+import { setupHandlebarsEnvironment } from '../../utils/handlebars.js';
 
 /**
  * Pagination metadata object exposed to templates.

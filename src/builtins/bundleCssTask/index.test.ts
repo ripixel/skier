@@ -1,7 +1,7 @@
-import { bundleCssTask, BundleCssConfig } from './index';
+import { bundleCssTask, BundleCssConfig } from './index.js';
 import * as fs from 'fs-extra';
 import path from 'path';
-import type { TaskContext } from '../../types';
+import type { TaskContext } from '../../types.js';
 
 describe('bundleCssTask', () => {
   const testOutDir = path.join(__dirname, 'testAssets', 'out');

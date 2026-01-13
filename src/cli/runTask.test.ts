@@ -1,5 +1,5 @@
 jest.mock('../logger');
-import { runTask } from './runTask';
+import { runTask } from './runTask.js';
 
 describe('runTask', () => {
   it('runs a task, updates context, and returns result', async () => {

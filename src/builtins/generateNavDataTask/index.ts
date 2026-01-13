@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import type { TaskDef, TaskContext, SkierGlobals } from '../../types';
+import type { TaskDef, TaskContext, SkierGlobals } from '../../types.js';
 
 /**
  * A navigation item representing a single page in the sidebar.

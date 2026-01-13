@@ -1,6 +1,6 @@
-import { readFileUtf8 } from '../../utils/fileHelpers';
+import { readFileUtf8 } from '../../utils/fileHelpers.js';
 import { marked } from 'marked';
-import type { TaskDef } from '../../types';
+import type { TaskDef } from '../../types.js';
 
 export interface SetGlobalFromMarkdownConfig {
   mdPath: string; // Path to markdown file

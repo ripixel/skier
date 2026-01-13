@@ -1,25 +1,25 @@
 // skier built-in task factories (exports only)
-export { copyStaticTask, CopyStaticConfig } from './copyStaticTask';
-export { bundleCssTask, BundleCssConfig } from './bundleCssTask';
-export { generateSitemapTask, GenerateSitemapConfig } from './generateSitemapTask';
-export { generatePagesTask, GeneratePagesConfig } from './generatePagesTask';
-export { generateItemsTask, GenerateItemsConfig } from './generateItemsTask';
-export { prepareOutputTask, PrepareOutputConfig } from './prepareOutputTask';
-export { generateFeedTask, GenerateFeedConfig } from './generateFeedTask';
+export { copyStaticTask, CopyStaticConfig } from './copyStaticTask/index.js';
+export { bundleCssTask, BundleCssConfig } from './bundleCssTask/index.js';
+export { generateSitemapTask, GenerateSitemapConfig } from './generateSitemapTask/index.js';
+export { generatePagesTask, GeneratePagesConfig } from './generatePagesTask/index.js';
+export { generateItemsTask, GenerateItemsConfig } from './generateItemsTask/index.js';
+export { prepareOutputTask, PrepareOutputConfig } from './prepareOutputTask/index.js';
+export { generateFeedTask, GenerateFeedConfig } from './generateFeedTask/index.js';
 export {
   setGlobalFromMarkdownTask,
   SetGlobalFromMarkdownConfig,
-} from './setGlobalFromMarkdownTask';
-export { setGlobalsTask, SetGlobalsConfig } from './setGlobalsTask';
+} from './setGlobalFromMarkdownTask/index.js';
+export { setGlobalsTask, SetGlobalsConfig } from './setGlobalsTask/index.js';
 export {
   generatePaginatedItemsTask,
   GeneratePaginatedItemsConfig,
   PaginationMeta,
-} from './generatePaginatedItemsTask';
+} from './generatePaginatedItemsTask/index.js';
 export {
   generateNavDataTask,
   GenerateNavDataConfig,
   NavData,
   NavSection,
   NavItem,
-} from './generateNavDataTask';
+} from './generateNavDataTask/index.js';

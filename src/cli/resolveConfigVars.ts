@@ -1,5 +1,5 @@
-import type { Logger } from '../logger';
-import type { SkierGlobals } from '../types';
+import type { Logger } from '../logger.js';
+import type { SkierGlobals } from '../types.js';
 
 /**
  * Recursively resolves ${varName} references in config values.

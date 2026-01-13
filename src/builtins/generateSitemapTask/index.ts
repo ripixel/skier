@@ -1,7 +1,7 @@
-import { TaskDef } from '../../types';
-import { ensureDir, writeFileUtf8, findFilesRecursive } from '../../utils/fileHelpers';
-import { join } from '../../utils/pathHelpers';
-import { throwTaskError, validateRequiredConfig } from '../../utils/errors';
+import { TaskDef } from '../../types.js';
+import { ensureDir, writeFileUtf8, findFilesRecursive } from '../../utils/fileHelpers.js';
+import { join } from '../../utils/pathHelpers.js';
+import { throwTaskError, validateRequiredConfig } from '../../utils/errors.js';
 
 export interface GenerateSitemapConfig {
   /** Directory to scan for .html files */

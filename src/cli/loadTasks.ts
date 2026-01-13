@@ -1,6 +1,6 @@
-import { join } from '../utils/pathHelpers';
-import { pathExists } from '../utils/fileHelpers';
-import type { TaskDef } from '../types';
+import { join } from '../utils/pathHelpers.js';
+import { pathExists } from '../utils/fileHelpers.js';
+import type { TaskDef } from '../types.js';
 
 /**
  * Loads the user's tasks definition from skier.tasks.js/cjs/ts in cwd.
@@ -19,8 +19,8 @@ export async function loadTasks(cwd: string): Promise<TaskDef[]> {
       '❌ Could not find a skier.tasks.js, skier.tasks.cjs, or skier.tasks.ts file in your project root.',
     );
   }
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const mod = require(tasksPath);
+  // Dynamic import for ESM compatibility
+  const mod = await import(tasksPath);
   if (!mod.tasks || !Array.isArray(mod.tasks)) {
     throw new Error('❌ skier.tasks file does not export a tasks array.');
   }

@@ -1,4 +1,4 @@
-import type { TaskContext, Logger } from '../types';
+import type { TaskContext, Logger } from '../types.js';
 
 /**
  * Custom error class for Skier task failures.

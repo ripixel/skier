@@ -1,5 +1,5 @@
-import { join, extname, dirname } from '../../utils/pathHelpers';
-import { readdir, stat, pathExists } from '../../utils/fileHelpers';
+import { join, extname, dirname } from '../../utils/pathHelpers.js';
+import { readdir, stat, pathExists } from '../../utils/fileHelpers.js';
 
 export interface MarkdownFile {
   absPath: string;

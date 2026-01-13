@@ -1,11 +1,11 @@
 jest.mock('./logger');
 
 jest.mock('./cli/loadTasks');
-import { runSkier } from './cli';
+import { runSkier } from './cli.js';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { TaskDef } from './types';
-import { loadTasks } from './cli/loadTasks';
+import type { TaskDef } from './types.js';
+import { loadTasks } from './cli/loadTasks.js';
 
 const TEST_OUT_DIR = path.join(__dirname, 'cli_test_out');
 const TEST_TASKS_PATH = path.join(__dirname, 'skier.tasks.js');

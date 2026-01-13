@@ -1,5 +1,6 @@
 import { TaskDef } from '../../types';
 import { ensureDir, copyDir } from '../../utils/fileHelpers';
+import { throwTaskError } from '../../utils/errors';
 
 export interface CopyStaticConfig {
   from: string;
@@ -13,18 +14,18 @@ export function copyStaticTask(config: CopyStaticConfig): TaskDef<CopyStaticConf
     config,
     run: async (cfg, ctx) => {
       try {
-        if (ctx.logger) ctx.logger.debug(`Copying assets from ${cfg.from} to ${cfg.to}`);
+        ctx.logger.debug(`Copying assets from ${cfg.from} to ${cfg.to}`);
         await ensureDir(cfg.to);
         await copyDir(cfg.from, cfg.to);
-        if (ctx.logger && ctx.debug) {
-          ctx.logger.debug(`Copied assets from ${cfg.from} to ${cfg.to}`);
-        }
+        ctx.logger.debug(`Copied assets from ${cfg.from} to ${cfg.to}`);
         return {};
       } catch (err) {
-        if (ctx.logger) {
-          ctx.logger.error(`Failed to copy assets: ${err}`);
-        }
-        throw new Error(`[skier] Failed to copy assets: ${err}`);
+        throwTaskError(
+          ctx,
+          'copy-static',
+          `Failed to copy assets from ${cfg.from} to ${cfg.to}`,
+          err instanceof Error ? err : undefined,
+        );
       }
     },
   };

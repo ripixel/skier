@@ -1,8 +1,8 @@
-import type { TaskDef, TaskContext } from '../../types';
+import type { TaskDef, TaskContext, SkierGlobals } from '../../types';
 
 export interface SetGlobalsConfig {
-  values?: Record<string, any>;
-  valuesFn?: (globals: Record<string, any>) => Record<string, any> | Promise<Record<string, any>>;
+  values?: SkierGlobals;
+  valuesFn?: (globals: SkierGlobals) => SkierGlobals | Promise<SkierGlobals>;
 }
 
 /**
@@ -11,24 +11,25 @@ export interface SetGlobalsConfig {
  * Example: setGlobalsTask({ values: { noindex: '<meta name="robots" content="noindex">' } })
  * Example: setGlobalsTask({ valuesFn: globals => ({ latestVersion: extractVersion(globals.changelogHtml) }) })
  */
-export function setGlobalsTask(
-  config: SetGlobalsConfig,
-): TaskDef<SetGlobalsConfig, Record<string, any>> {
+export function setGlobalsTask(config: SetGlobalsConfig): TaskDef<SetGlobalsConfig, SkierGlobals> {
   return {
     name: 'set-globals',
     title: 'Set global template variables',
     config,
     run: async (cfg, ctx) => {
-      let out: Record<string, any> = {};
+      let out: SkierGlobals = {};
+
       if (cfg.values) {
         ctx.logger.debug(`Setting globals: ${Object.keys(cfg.values).join(', ')}`);
         out = { ...cfg.values };
       }
+
       if (cfg.valuesFn) {
         const fromFn = await cfg.valuesFn(ctx.globals || {});
         ctx.logger.debug(`Setting globals from function: ${Object.keys(fromFn).join(', ')}`);
         out = { ...out, ...fromFn };
       }
+
       return out;
     },
   };

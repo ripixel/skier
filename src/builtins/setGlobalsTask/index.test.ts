@@ -20,7 +20,7 @@ describe('setGlobalsTask', () => {
 
   it('sets globals from valuesFn', async () => {
     const config: SetGlobalsConfig = {
-      valuesFn: (globals) => ({ doubled: (globals.existing || 0) * 2 }),
+      valuesFn: (globals) => ({ doubled: (Number(globals['existing']) || 0) * 2 }),
     };
     const task = setGlobalsTask(config);
     const result = await task.run(config, ctx);

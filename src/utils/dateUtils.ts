@@ -1,7 +1,8 @@
 export function parseDateFromFilename(filename: string): Date | undefined {
   const match = filename.match(/(\d{4}-\d{2}-\d{2})/);
-  if (match) {
-    const d = new Date(match[1]);
+  const dateStr = match?.[1];
+  if (dateStr) {
+    const d = new Date(dateStr);
     if (!isNaN(d.getTime())) {
       return d;
     }

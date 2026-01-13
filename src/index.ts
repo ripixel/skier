@@ -7,4 +7,5 @@ export * from './builtins/generateItemsTask';
 export * from './builtins/generateFeedTask';
 export * from './builtins/generatePagesTask';
 export * from './builtins/generateSitemapTask';
+export * from './builtins/generatePaginatedItemsTask';
 // Add any new built-ins here as needed

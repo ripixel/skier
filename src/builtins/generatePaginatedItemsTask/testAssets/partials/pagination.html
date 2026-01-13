@@ -1,0 +1,17 @@
+{{#if pagination.totalPages}}
+<nav class="pagination">
+  {{#if pagination.hasPrev}}
+  <a href="{{pagination.prevUrl}}" class="prev">&larr; Prev</a>
+  {{else}}
+  <span class="prev disabled">&larr; Prev</span>
+  {{/if}}
+
+  <span class="page-info"> Page {{pagination.currentPage}} of {{pagination.totalPages}} </span>
+
+  {{#if pagination.hasNext}}
+  <a href="{{pagination.nextUrl}}" class="next">Next &rarr;</a>
+  {{else}}
+  <span class="next disabled">Next &rarr;</span>
+  {{/if}}
+</nav>
+{{/if}}

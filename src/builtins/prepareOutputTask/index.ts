@@ -11,19 +11,15 @@ export function prepareOutputTask(config: PrepareOutputConfig): TaskDef<PrepareO
     title: `Prepare output directory: ${config.outDir}`,
     config,
     run: async (cfg, ctx) => {
-      if (ctx.logger) ctx.logger.debug(`Cleaning output directory: ${cfg.outDir}`);
+      ctx.logger.debug(`Cleaning output directory: ${cfg.outDir}`);
       let removed = false;
       if (await pathExists(cfg.outDir)) {
         await removeDir(cfg.outDir);
         removed = true;
-        if (ctx.logger && ctx.debug) {
-          ctx.logger.debug(`Removed directory "${cfg.outDir}"`);
-        }
+        ctx.logger.debug(`Removed directory "${cfg.outDir}"`);
       }
       await ensureDir(cfg.outDir);
-      if (ctx.logger && ctx.debug) {
-        ctx.logger.debug(`Ensured directory "${cfg.outDir}" exists`);
-      }
+      ctx.logger.debug(`Ensured directory "${cfg.outDir}" exists`);
       return {};
     },
   };

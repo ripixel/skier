@@ -80,12 +80,12 @@
     --color-bg-primary: #0f172a;
     --color-bg-secondary: #1e293b;
     --color-bg-tertiary: #334155;
-    --color-bg-code: #0f172a;
+    --color-bg-code: #1e293b;
 
     --color-text-primary: #f1f5f9;
     --color-text-secondary: #cbd5e1;
     --color-text-tertiary: #94a3b8;
-    --color-text-inverse: #1e293b;
+    --color-text-inverse: #f1f5f9;
 
     --color-accent-primary: #22d3ee;
     --color-accent-secondary: #67e8f9;
@@ -187,9 +187,9 @@ body {
   color: var(--color-accent-primary);
 }
 
-.docs-header .logo img {
-  width: 32px;
-  height: 32px;
+.docs-header .logo .logo-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
 }
 
 .header-links {
@@ -449,7 +449,7 @@ body {
 .content pre code {
   background: none;
   padding: 0;
-  color: var(--color-text-inverse);
+  color: var(--color-text-secondary);
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
 }

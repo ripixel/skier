@@ -1,3 +1,9 @@
+---
+title: Templates & Partials
+section: Core Concepts
+order: 3
+---
+
 # Templates & Partials
 
 Skier uses [Handlebars](https://handlebarsjs.com/) for templating.

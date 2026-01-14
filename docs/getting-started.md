@@ -1,3 +1,9 @@
+---
+title: Quick Start
+section: Getting Started
+order: 1
+---
+
 # Getting Started
 
 Get up and running with Skier in 5 minutes.

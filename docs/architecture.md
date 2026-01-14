@@ -1,3 +1,9 @@
+---
+title: Architecture
+section: Advanced
+order: 1
+---
+
 # Architecture
 
 This guide explains how Skier works under the hood—its pipeline model, data flow, and execution lifecycle.

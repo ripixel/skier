@@ -1,3 +1,9 @@
+---
+title: setGlobalsTask
+subcategory: Globals
+order: 1
+---
+
 # setGlobalsTask
 
 Set site-wide variables accessible in all templates and subsequent tasks.

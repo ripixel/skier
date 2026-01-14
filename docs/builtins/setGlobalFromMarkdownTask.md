@@ -1,3 +1,9 @@
+---
+title: setGlobalFromMarkdownTask
+subcategory: Globals
+order: 2
+---
+
 # setGlobalFromMarkdownTask
 
 Set a global variable from a rendered Markdown file.

@@ -53,12 +53,15 @@ export interface GenerateNavDataConfig {
   defaultSection?: string;
   /** Section ordering configuration */
   sectionOrder?: Record<string, number>;
+  /** Subcategory ordering configuration (for nested groups within sections) */
+  subcategoryOrder?: Record<string, number>;
 }
 
 interface ParsedFrontmatter {
   title?: string;
   order?: number;
   section?: string;
+  subcategory?: string;
   [key: string]: unknown;
 }
 
@@ -136,11 +139,19 @@ export function generateNavDataTask(
         extensions = ['.md'],
         defaultSection = 'Docs',
         sectionOrder = {},
+        subcategoryOrder = {},
       } = cfg;
 
       ctx.logger.debug(`Scanning ${docsDir} for navigation data...`);
 
-      const sectionMap = new Map<string, NavItem[]>();
+      // Track items with their section and subcategory info
+      interface ScannedItem {
+        navItem: NavItem;
+        section: string;
+        subcategory?: string;
+      }
+
+      const scannedItems: ScannedItem[] = [];
       const allPages: NavItem[] = [];
 
       // Recursively scan directory
@@ -190,11 +201,11 @@ export function generateNavDataTask(
               order: typeof frontmatter.order === 'number' ? frontmatter.order : 999,
             };
 
-            // Add to section
-            if (!sectionMap.has(section)) {
-              sectionMap.set(section, []);
-            }
-            sectionMap.get(section)!.push(navItem);
+            scannedItems.push({
+              navItem,
+              section,
+              subcategory: frontmatter.subcategory,
+            });
             allPages.push(navItem);
           }
         }
@@ -202,19 +213,65 @@ export function generateNavDataTask(
 
       await scanDir(docsDir, '');
 
+      // Build sections with subcategory support
+      const sectionMap = new Map<
+        string,
+        { items: NavItem[]; subcategories: Map<string, NavItem[]> }
+      >();
+
+      for (const { navItem, section, subcategory } of scannedItems) {
+        let sectionData = sectionMap.get(section);
+        if (!sectionData) {
+          sectionData = { items: [], subcategories: new Map() };
+          sectionMap.set(section, sectionData);
+        }
+
+        if (subcategory) {
+          // Add to subcategory
+          let subItems = sectionData.subcategories.get(subcategory);
+          if (!subItems) {
+            subItems = [];
+            sectionData.subcategories.set(subcategory, subItems);
+          }
+          subItems.push(navItem);
+        } else {
+          // Add directly to section
+          sectionData.items.push(navItem);
+        }
+      }
+
       // Build sections array with proper ordering
       const sections: NavSection[] = [];
-      for (const [name, items] of sectionMap) {
-        // Sort items by order, then by title
+      for (const [name, { items, subcategories }] of sectionMap) {
+        // Sort direct items by order, then by title
         items.sort((a, b) => {
           if (a.order !== b.order) return a.order - b.order;
           return a.title.localeCompare(b.title);
         });
 
+        // Build children from subcategories
+        const children: NavSection[] = [];
+        for (const [subName, subItems] of subcategories) {
+          subItems.sort((a, b) => {
+            if (a.order !== b.order) return a.order - b.order;
+            return a.title.localeCompare(b.title);
+          });
+
+          children.push({
+            name: subName,
+            order: subcategoryOrder[subName] ?? 999,
+            items: subItems,
+          });
+        }
+
+        // Sort children by order
+        children.sort((a, b) => a.order - b.order);
+
         sections.push({
           name,
           order: sectionOrder[name] ?? 999,
           items,
+          ...(children.length > 0 ? { children } : {}),
         });
       }
 

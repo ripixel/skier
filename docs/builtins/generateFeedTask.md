@@ -1,3 +1,9 @@
+---
+title: generateFeedTask
+subcategory: Feeds & SEO
+order: 1
+---
+
 # generateFeedTask
 
 Generate RSS, Atom, and JSON feeds from your content.

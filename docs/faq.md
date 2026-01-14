@@ -1,3 +1,9 @@
+---
+title: FAQ
+section: Community
+order: 1
+---
+
 # FAQ & Troubleshooting
 
 Real solutions for real problems you'll encounter with Skier.

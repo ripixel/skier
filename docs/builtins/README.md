@@ -1,3 +1,8 @@
+---
+title: Overview
+order: 0
+---
+
 # Built-In Tasks
 
 Skier includes tasks for all common static site needs. Use them as building blocks for your pipeline.

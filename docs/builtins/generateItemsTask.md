@@ -1,3 +1,9 @@
+---
+title: generateItemsTask
+subcategory: Content
+order: 2
+---
+
 # generateItemsTask
 
 Generate HTML pages from a collection of Markdown files (blog posts, portfolio items, etc.).

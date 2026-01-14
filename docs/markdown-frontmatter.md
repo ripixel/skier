@@ -1,3 +1,9 @@
+---
+title: Markdown & Frontmatter
+section: Core Concepts
+order: 4
+---
+
 # Markdown & Frontmatter
 
 Write content in Markdown with YAML frontmatter for metadata.

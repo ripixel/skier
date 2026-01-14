@@ -1,3 +1,9 @@
+---
+title: copyStaticTask
+subcategory: Setup
+order: 2
+---
+
 # copyStaticTask
 
 Copy static assets to the output directory without processing.

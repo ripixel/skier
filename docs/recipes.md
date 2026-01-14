@@ -1,3 +1,9 @@
+---
+title: Recipes
+section: Advanced
+order: 2
+---
+
 # Recipes
 
 Practical, copy-pasteable examples for common Skier use cases. Each recipe is a complete, working configuration.

@@ -4,6 +4,7 @@ const {
   copyStaticTask,
   bundleCssTask,
   generateItemsTask,
+  generateNavDataTask,
   generatePagesTask,
   setGlobalsTask,
 } = require('./dist/');
@@ -34,6 +35,26 @@ exports.tasks = [
       year: new Date().getFullYear(),
       noindex:
         process.env.NODE_ENV === 'production' ? '' : '<meta name="robots" content="noindex">',
+    },
+  }),
+
+  // Generate navigation data from docs
+  generateNavDataTask({
+    docsDir: 'docs',
+    outputVar: 'navData',
+    basePath: '',
+    sectionOrder: {
+      'Getting Started': 1,
+      'Core Concepts': 2,
+      'Built-in Tasks': 3,
+      'Advanced': 4,
+      'Community': 5,
+    },
+    subcategoryOrder: {
+      'Setup': 1,
+      'Globals': 2,
+      'Content': 3,
+      'Feeds & SEO': 4,
     },
   }),
 

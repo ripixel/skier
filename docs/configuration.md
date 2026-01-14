@@ -1,3 +1,9 @@
+---
+title: Configuration
+section: Getting Started
+order: 2
+---
+
 # Configuration
 
 How to configure your Skier build pipeline.

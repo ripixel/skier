@@ -1,3 +1,9 @@
+---
+title: Migration Guide
+section: Advanced
+order: 3
+---
+
 # Migration Guide
 
 How to upgrade between Skier versions and migrate your configuration.

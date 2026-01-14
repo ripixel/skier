@@ -1,3 +1,9 @@
+---
+title: prepareOutputTask
+subcategory: Setup
+order: 1
+---
+
 # prepareOutputTask
 
 Initialize the output directory before building.

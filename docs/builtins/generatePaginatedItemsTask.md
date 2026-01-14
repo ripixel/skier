@@ -1,3 +1,9 @@
+---
+title: generatePaginatedItemsTask
+subcategory: Content
+order: 3
+---
+
 # generatePaginatedItemsTask
 
 Generate multiple HTML pages from a data array with built-in pagination controls.

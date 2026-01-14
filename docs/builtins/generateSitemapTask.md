@@ -1,3 +1,9 @@
+---
+title: generateSitemapTask
+subcategory: Feeds & SEO
+order: 2
+---
+
 # generateSitemapTask
 
 Generate a `sitemap.xml` for search engine indexing.

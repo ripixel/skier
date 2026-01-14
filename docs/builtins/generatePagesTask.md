@@ -1,3 +1,9 @@
+---
+title: generatePagesTask
+subcategory: Content
+order: 1
+---
+
 # generatePagesTask
 
 Render standalone HTML pages from Handlebars templates.

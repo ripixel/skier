@@ -1,0 +1,28 @@
+<nav class="sidebar-nav">
+  {{#each navData.sections}}
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">{{this.name}}</div>
+      <ul>
+        {{!-- Direct section items (no subcategory) --}}
+        {{#each this.items}}
+          <li><a href="{{this.url}}">{{this.title}}</a></li>
+        {{/each}}
+        {{!-- Subcategory groups --}}
+        {{#if this.children}}
+          {{#each this.children}}
+            <li>
+              <details open>
+                <summary>{{this.name}}</summary>
+                <ul class="nav-children">
+                  {{#each this.items}}
+                    <li><a href="{{this.url}}">{{this.title}}</a></li>
+                  {{/each}}
+                </ul>
+              </details>
+            </li>
+          {{/each}}
+        {{/if}}
+      </ul>
+    </div>
+  {{/each}}
+</nav>

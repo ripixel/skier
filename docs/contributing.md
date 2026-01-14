@@ -1,3 +1,9 @@
+---
+title: Contributing
+section: Community
+order: 2
+---
+
 # Contributing
 
 Thank you for your interest in contributing to Skier! We welcome issues, pull requests, and suggestions from the community.

@@ -1,3 +1,9 @@
+---
+title: Tasks
+section: Core Concepts
+order: 1
+---
+
 # Tasks
 
 Skier is built around a modular task pipeline. Each task performs one build step.

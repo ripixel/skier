@@ -8,4 +8,5 @@ export * from './builtins/generateFeedTask/index.js';
 export * from './builtins/generatePagesTask/index.js';
 export * from './builtins/generateSitemapTask/index.js';
 export * from './builtins/generatePaginatedItemsTask/index.js';
+export * from './builtins/generateNavDataTask/index.js';
 // Add any new built-ins here as needed

@@ -13,8 +13,23 @@ renderer.code = (code, infostring) => {
 };
 marked.setOptions({ renderer });
 
+/**
+ * Strips YAML frontmatter from markdown content.
+ * Frontmatter is delimited by --- at the start of the file.
+ */
+function stripFrontmatter(md: string): string {
+  // Match frontmatter at the very start of the content
+  const match = md.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n/);
+  if (match) {
+    return md.slice(match[0].length);
+  }
+  return md;
+}
+
 export async function renderMarkdown(md: string): Promise<string> {
-  let html = await marked.parse(md);
+  // Strip frontmatter before rendering
+  const content = stripFrontmatter(md);
+  let html = await marked.parse(content);
 
   return html;
 }

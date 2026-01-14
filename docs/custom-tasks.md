@@ -1,3 +1,9 @@
+---
+title: Custom Tasks
+section: Core Concepts
+order: 2
+---
+
 # Custom Tasks
 
 Extend Skier with your own build steps. This guide covers everything from basic tasks to advanced patterns.

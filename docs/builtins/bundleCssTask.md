@@ -1,3 +1,9 @@
+---
+title: bundleCssTask
+subcategory: Setup
+order: 3
+---
+
 # bundleCssTask
 
 Bundle and minify CSS files into a single optimized stylesheet.

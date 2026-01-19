@@ -22,6 +22,17 @@
 
 ---
 
+## Built With Skier
+
+Skier powers production websites across different domains:
+
+- **[Skier Documentation](https://skier.ripixel.co.uk/)** - This documentation site itself
+- **[ripixel.co.uk](https://ripixel.co.uk)** - Personal portfolio and blog
+- **[Bingham Sunday Running Club](https://binghamsundayrunningclub.co.uk/)** - Community running club website
+- **[FitGlue](https://fitglue.tech/)** - Marketing site for fitness data platform
+
+---
+
 ## Get Started
 See the [Getting Started guide](./docs/getting-started.md) for quick setup, project structure, and your first build.
 

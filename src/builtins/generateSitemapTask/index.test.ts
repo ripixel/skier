@@ -73,9 +73,7 @@ describe('generateSitemapTask', () => {
     };
     const task = generateSitemapTask(config);
     await task.run(config, ctx);
-    expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('excluded /404.html'),
-    );
+    expect(ctx.logger.info).toHaveBeenCalledWith(expect.stringContaining('excluded /404.html'));
   });
 
   it('applies custom excludes merged with defaults', async () => {

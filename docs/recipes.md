@@ -80,7 +80,7 @@ export default [
     },
   }),
 
-  generateSitemapTask({ outDir: 'public' }),
+  generateSitemapTask({ scanDir: 'public', outDir: 'public' }),
 ];
 ```
 
@@ -145,12 +145,12 @@ export default [
   generateNavDataTask({
     docsDir: 'docs',
     outputVar: 'nav',
-    order: [
-      'getting-started',
-      'configuration',
-      { section: 'builtins', order: ['README', 'generatePagesTask'] },
-      { section: 'advanced' },
-    ],
+    sectionOrder: {
+      'Getting Started': 1,
+      'Core Concepts': 2,
+      'Built-in Tasks': 3,
+      'Advanced': 4,
+    },
   }),
 
   // Render docs as pages

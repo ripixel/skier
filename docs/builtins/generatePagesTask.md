@@ -46,7 +46,7 @@ generatePagesTask({
 | `partialsDir` | string | ✅ | Directory with shared partials |
 | `outDir` | string | ✅ | Output directory |
 | `pageExt` | string | | Template extension (default: `.html`) |
-| `additionalVarsFn` | function | | Inject extra variables per page |
+| `additionalVarsFn` | function | | Inject extra variables per page (receives `HtmlRenderVars` object) |
 
 ---
 
@@ -61,14 +61,8 @@ src/pages/           →    public/
 └── contact.html     →    └── contact.html
 ```
 
-Subdirectories are preserved:
-
-```
-src/pages/           →    public/
-└── legal/           →    └── legal/
-    ├── privacy.html →        ├── privacy.html
-    └── terms.html   →        └── terms.html
-```
+> [!NOTE]
+> Only top-level files in `pagesDir` are processed. Subdirectories are not scanned recursively.
 
 ---
 
@@ -109,16 +103,13 @@ generatePagesTask({
   partialsDir: 'src/partials',
   outDir: 'public',
 
-  additionalVarsFn: (pagePath, globals) => {
-    const pageName = pagePath.replace('.html', '');
-
+  additionalVarsFn: (vars) => {
     return {
-      currentPage: pageName,
       pageTitle: {
         'index': 'Home',
         'about': 'About Us',
         'contact': 'Get in Touch',
-      }[pageName] || pageName,
+      }[vars.currentPage] || vars.currentPage,
     };
   },
 })
@@ -137,10 +128,10 @@ generatePagesTask({
   partialsDir: 'src/partials',
   outDir: 'public',
 
-  additionalVarsFn: (pagePath, globals) => {
-    if (pagePath === 'index.html') {
+  additionalVarsFn: (vars) => {
+    if (vars.currentPagePath === 'index.html') {
       return {
-        featuredPosts: (globals.posts || []).slice(0, 3),
+        featuredPosts: (vars.posts || []).slice(0, 3),
         showNewsletter: true,
       };
     }

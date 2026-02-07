@@ -134,8 +134,9 @@ export default [
   }),
 
   generateSitemapTask({
+    scanDir: 'public',
     outDir: 'public',
-    baseUrl: 'https://myblog.example.com',
+    siteUrl: 'https://myblog.example.com',
   }),
 
   // === ASSETS ===

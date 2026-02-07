@@ -173,13 +173,9 @@ If you need consistent URLs, handle it in your template:
 ```yaml
 # In your Markdown frontmatter
 date: 2024-01-15T10:00:00Z  # ISO 8601
-
-# Or in generateItemsTask, transform the date
-itemTransformFn: (item) => ({
-  ...item,
-  dateObj: new Date(item.date),
-})
 ```
+
+`generateItemsTask` automatically creates a `dateObj` field (a JavaScript `Date` object) from frontmatter dates, which `generateFeedTask` uses for feed entries.
 
 ---
 

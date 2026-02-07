@@ -6,11 +6,12 @@ import type { TaskContext } from '../../types.js';
 describe('generateSitemapTask', () => {
   const testOutDir = path.join(__dirname, 'testAssets', 'out');
   const testInputDir = path.join(__dirname, 'testAssets', 'input');
-  const ctx: TaskContext = {
+
+  const createCtx = (): TaskContext => ({
     debug: false,
     globals: {},
     logger: { warn: jest.fn(), debug: jest.fn(), error: jest.fn(), info: jest.fn() },
-  };
+  });
 
   beforeAll(async () => {
     await fs.remove(testOutDir);
@@ -21,7 +22,16 @@ describe('generateSitemapTask', () => {
     await fs.remove(testOutDir);
   });
 
-  it('generates correct sitemap.xml in the output directory', async () => {
+  afterEach(async () => {
+    // Clean generated sitemap between tests
+    const outPath = path.join(testOutDir, 'sitemap.xml');
+    if (await fs.pathExists(outPath)) {
+      await fs.remove(outPath);
+    }
+  });
+
+  it('generates correct sitemap.xml with clean URLs and default exclusions', async () => {
+    const ctx = createCtx();
     const config: GenerateSitemapConfig = {
       scanDir: testInputDir,
       outDir: testOutDir,
@@ -38,5 +48,76 @@ describe('generateSitemapTask', () => {
     // Normalize by removing all whitespace for comparison
     const normalize = (str: string) => str.replace(/\s+/g, '');
     expect(normalize(actual)).toBe(normalize(expected));
+  });
+
+  it('excludes 404.html by default', async () => {
+    const ctx = createCtx();
+    const config: GenerateSitemapConfig = {
+      scanDir: testInputDir,
+      outDir: testOutDir,
+      siteUrl: 'https://example.com',
+    };
+    const task = generateSitemapTask(config);
+    await task.run(config, ctx);
+    const outPath = path.join(testOutDir, 'sitemap.xml');
+    const actual = await fs.readFile(outPath, 'utf8');
+    expect(actual).not.toContain('/404');
+  });
+
+  it('logs excluded files at info level', async () => {
+    const ctx = createCtx();
+    const config: GenerateSitemapConfig = {
+      scanDir: testInputDir,
+      outDir: testOutDir,
+      siteUrl: 'https://example.com',
+    };
+    const task = generateSitemapTask(config);
+    await task.run(config, ctx);
+    expect(ctx.logger.info).toHaveBeenCalledWith(expect.stringContaining('excluded /404.html'));
+  });
+
+  it('applies custom excludes merged with defaults', async () => {
+    const ctx = createCtx();
+    const config: GenerateSitemapConfig = {
+      scanDir: testInputDir,
+      outDir: testOutDir,
+      siteUrl: 'https://example.com',
+      excludes: ['admin/**'],
+    };
+    const task = generateSitemapTask(config);
+    await task.run(config, ctx);
+    const outPath = path.join(testOutDir, 'sitemap.xml');
+    const actual = await fs.readFile(outPath, 'utf8');
+    // Custom exclude should remove admin pages
+    expect(actual).not.toContain('/admin');
+    // Default exclude still applies
+    expect(actual).not.toContain('/404');
+    // Other pages remain
+    expect(actual).toContain('/about');
+    expect(actual).toContain('/contact');
+  });
+
+  it('cleans URLs correctly', async () => {
+    const ctx = createCtx();
+    const config: GenerateSitemapConfig = {
+      scanDir: testInputDir,
+      outDir: testOutDir,
+      siteUrl: 'https://example.com',
+    };
+    const task = generateSitemapTask(config);
+    await task.run(config, ctx);
+    const outPath = path.join(testOutDir, 'sitemap.xml');
+    const actual = await fs.readFile(outPath, 'utf8');
+    // index.html → /
+    expect(actual).toContain('https://example.com/');
+    // about.html → /about (no .html)
+    expect(actual).toContain('https://example.com/about');
+    expect(actual).not.toContain('about.html');
+    // blog/index.html → /blog/
+    expect(actual).toContain('https://example.com/blog/');
+    expect(actual).not.toContain('blog/index.html');
+    // contact.html → /contact (no .html)
+    expect(actual).toContain('https://example.com/contact');
+    expect(actual).not.toContain('contact.html');
   });
 });

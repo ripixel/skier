@@ -17,6 +17,7 @@ A task is an object with three properties:
 ```typescript
 interface Task {
   name: string;                         // Unique identifier
+  title?: string;                       // Human-readable description
   config?: Record<string, any>;         // Your task's configuration
   run: (config, context) => Promise<Record<string, any> | void>;
 }
@@ -60,6 +61,7 @@ interface TaskContext {
     info(msg: string): void;
     warn(msg: string): void;
     error(msg: string): void;
+    debug(msg: string): void;
   };
   debug: boolean;                // True if --debug flag passed
 }

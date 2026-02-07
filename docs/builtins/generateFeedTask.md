@@ -34,9 +34,9 @@ generateFeedTask({
 ```
 
 **Output:**
-- `public/feed.xml` (RSS)
+- `public/rss.xml` (RSS)
 - `public/atom.xml` (Atom)
-- `public/feed.json` (JSON Feed)
+- `public/json.json` (JSON Feed)
 
 ---
 
@@ -65,7 +65,7 @@ generateFeedTask({
     link: 'https://example.com/about',
   },
   feedLinks: {
-    json: 'https://example.com/feed.json',
+    json: 'https://example.com/json.json',
     atom: 'https://example.com/atom.xml',
   },
 }
@@ -85,7 +85,7 @@ Each article needs these fields:
   dateObj: new Date('2024-01-15'), // Required (Date object)
 
   // Optional
-  description: 'Short summary',
+  excerpt: 'Short summary',    // Used as feed description fallback
   author: 'Jane Doe',
   image: 'https://example.com/image.jpg',
 }
@@ -119,11 +119,11 @@ Add feed discovery to your templates:
 
 ```handlebars
 <link rel="alternate" type="application/rss+xml"
-      title="RSS Feed" href="/feed.xml">
+      title="RSS Feed" href="/rss.xml">
 <link rel="alternate" type="application/atom+xml"
       title="Atom Feed" href="/atom.xml">
 <link rel="alternate" type="application/json"
-      title="JSON Feed" href="/feed.json">
+      title="JSON Feed" href="/json.json">
 ```
 
 ---

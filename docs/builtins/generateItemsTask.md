@@ -54,7 +54,11 @@ generateItemsTask({
 | `excerptFn` | function | | Custom excerpt extractor |
 | `linkFn` | function | | Custom URL generator |
 | `outputPathFn` | function | | Custom output path generator |
-| `additionalVarsFn` | function | | Inject extra template variables |
+| `additionalVarsFn` | function | | Inject extra template variables (receives `ItemisedRenderVars` object) |
+| `linkRewrite` | object | | Link rewriting config for Markdown output |
+| `frontmatterParser` | function | | Custom frontmatter parser |
+| `markdownRenderer` | function | | Custom markdown renderer |
+| `extractDate` | function | | Custom date extraction function |
 
 ---
 
@@ -79,7 +83,7 @@ sortFn: (a, b) => new Date(b.date) - new Date(a.date),
 
 ## Extracting Excerpts
 
-Default: first 150 characters.
+Default: first paragraph, capped at 200 characters.
 
 **Use a marker (`<!--more-->`):**
 ```js
@@ -140,10 +144,10 @@ generateItemsTask({
     return text.slice(0, 200) + '...';
   },
 
-  additionalVarsFn: (item, globals) => ({
-    readingTime: Math.ceil(item.content.split(' ').length / 200),
-    relatedPosts: (globals.posts || [])
-      .filter(p => p.category === item.category && p.slug !== item.slug)
+  additionalVarsFn: (vars) => ({
+    readingTime: Math.ceil(vars.content.split(' ').length / 200),
+    relatedPosts: (vars.posts || [])
+      .filter(p => p.category === vars.category && p.slug !== vars.slug)
       .slice(0, 3),
   }),
 })

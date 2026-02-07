@@ -27,13 +27,13 @@ Set a global variable from a rendered Markdown file.
 
 ```js
 setGlobalFromMarkdownTask({
-  file: 'content/about.md',
-  varName: 'aboutContent',
+  mdPath: 'content/about.md',
+  outputVar: 'aboutContent',
 })
 ```
 
 **Input:** Markdown file
-**Output:** `globals.aboutContent` containing rendered HTML
+**Output:** `globals.{outputVar}` containing rendered HTML
 
 ---
 
@@ -41,8 +41,8 @@ setGlobalFromMarkdownTask({
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `file` | string | ✅ | Path to Markdown file |
-| `varName` | string | ✅ | Global variable name for the HTML output |
+| `mdPath` | string | ✅ | Path to Markdown file |
+| `outputVar` | string | ✅ | Global variable name for the HTML output |
 
 ---
 
@@ -62,8 +62,8 @@ Footer with Markdown content:
 
 ```js
 setGlobalFromMarkdownTask({
-  file: 'content/footer-legal.md',
-  varName: 'footerLegal',
+  mdPath: 'content/footer-legal.md',
+  outputVar: 'footerLegal',
 }),
 ```
 

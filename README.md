@@ -47,6 +47,9 @@ Full documentation is in the [`/docs`](./docs) folder:
 - [Custom Tasks](./docs/custom-tasks.md)
 - [Templates & Partials](./docs/templates-partials.md)
 - [Markdown & Frontmatter](./docs/markdown-frontmatter.md)
+- [Architecture](./docs/architecture.md)
+- [Recipes](./docs/recipes.md)
+- [Migration Guide](./docs/migration.md)
 - [FAQ](./docs/faq.md)
 - [Contributing](./docs/contributing.md)
 

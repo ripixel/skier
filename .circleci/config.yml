@@ -88,25 +88,26 @@ jobs:
       - run:
           name: Post Github PR Comment
           command: |
-            sudo apt-get install jq
+            sudo apt-get install -y jq
             channels=$(./node_modules/.bin/firebase hosting:channel:list)
-            circle_branch_replaced=$(echo $CIRCLE_BRANCH | sed "s/\//-/")
+            circle_branch_replaced=$(echo "$CIRCLE_BRANCH" | sed "s/\//-/")
             regex='(https:\/\/[a-z0-9-]*--'"${circle_branch_replaced:0:39}"'-[a-z0-9-]*.web.app)'
+            url=""
             [[ $channels =~ $regex ]] && url=${BASH_REMATCH[0]}
-            if [ $(echo $url | jq length) -eq 0 ]; then
+            if [ -z "$url" ]; then
               url="Unable to get URL - check Firebase console"
             fi
-            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
-            -u $GH_USER:$GH_COMMENTS_TOKEN)
-            if [ $(echo $pr_response | jq length) -eq 0 ]; then
+            pr_response=$(curl --silent --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+            -u "$GH_USER:$GH_COMMENTS_TOKEN")
+            pr_comment_url=$(echo "${pr_response:-null}" | jq -r 'if type=="array" and length>0 then .[0]._links.comments.href else empty end' 2>/dev/null || true)
+            if [ -z "$pr_comment_url" ]; then
               echo "No PR found to update"
             else
-              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+              curl --silent --location --request POST "$pr_comment_url" \
+              -u "$GH_USER:$GH_COMMENTS_TOKEN" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{"body": "Successfully deployed to Firebase staging preview! Available at: '"$url"'"}'
             fi
-            curl --location --request POST "$pr_comment_url" \
-            -u $GH_USER:$GH_COMMENTS_TOKEN \
-            --header 'Content-Type: application/json' \
-            --data-raw '{"body": "Successfully deployed to Firebase staging preview! Available at: '"$url"'"}'
 
   deploy_docs_preview:
     executor: node-executor
@@ -118,25 +119,26 @@ jobs:
       - run:
           name: Post Github PR Comment
           command: |
-            sudo apt-get install jq
+            sudo apt-get install -y jq
             channels=$(./node_modules/.bin/firebase hosting:channel:list)
-            circle_branch_replaced=$(echo $CIRCLE_BRANCH | sed "s/\//-/")
+            circle_branch_replaced=$(echo "$CIRCLE_BRANCH" | sed "s/\//-/")
             regex='(https:\/\/[a-z0-9-]*--'"${circle_branch_replaced:0:39}"'-[a-z0-9-]*.web.app)'
+            url=""
             [[ $channels =~ $regex ]] && url=${BASH_REMATCH[0]}
-            if [ $(echo $url | jq length) -eq 0 ]; then
+            if [ -z "$url" ]; then
               url="Unable to get URL - check Firebase console"
             fi
-            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
-            -u $GH_USER:$GH_COMMENTS_TOKEN)
-            if [ $(echo $pr_response | jq length) -eq 0 ]; then
+            pr_response=$(curl --silent --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+            -u "$GH_USER:$GH_COMMENTS_TOKEN")
+            pr_comment_url=$(echo "${pr_response:-null}" | jq -r 'if type=="array" and length>0 then .[0]._links.comments.href else empty end' 2>/dev/null || true)
+            if [ -z "$pr_comment_url" ]; then
               echo "No PR found to update"
             else
-              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+              curl --silent --location --request POST "$pr_comment_url" \
+              -u "$GH_USER:$GH_COMMENTS_TOKEN" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{"body": "Successfully deployed to Firebase preview! Available at: '"$url"'"}'
             fi
-            curl --location --request POST "$pr_comment_url" \
-            -u $GH_USER:$GH_COMMENTS_TOKEN \
-            --header 'Content-Type: application/json' \
-            --data-raw '{"body": "Successfully deployed to Firebase preview! Available at: '"$url"'"}'
 
 workflows:
   version: 2

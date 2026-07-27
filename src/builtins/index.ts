@@ -23,3 +23,10 @@ export {
   NavSection,
   NavItem,
 } from './generateNavDataTask/index.js';
+export {
+  generateSearchIndexTask,
+  GenerateSearchIndexConfig,
+  SearchIndex,
+  SearchIndexEntry,
+  SearchHeading,
+} from './generateSearchIndexTask/index.js';

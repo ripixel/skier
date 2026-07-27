@@ -58,6 +58,13 @@ jobs:
             git config user.email "ci@skier.dev"
             git config user.name "CircleCI"
             git remote set-url origin git@github.com:ripixel/skier.git
+      # npm trusted publishing (OIDC) needs npm >= 11.5.1; the cimg/node
+      # image ships npm 10.x, so upgrade before publishing. The upgraded
+      # npm exchanges CircleCI's OIDC token ($CIRCLE_OIDC_TOKEN, injected
+      # automatically) for a short-lived npm credential — no NPM_TOKEN.
+      - run:
+          name: Upgrade npm for trusted publishing (OIDC)
+          command: npm install --global npm@latest
       - run: npx semantic-release
   build_docs:
     executor: node-executor

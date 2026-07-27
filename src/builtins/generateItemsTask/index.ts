@@ -1,4 +1,4 @@
-import { renderMarkdown } from '../../utils/markdown.js';
+import { renderMarkdown, renderMarkdownWithHeadings, Heading } from '../../utils/markdown.js';
 import { ensureDir, readFileUtf8, writeFileUtf8, stat } from '../../utils/fileHelpers.js';
 import { titleFromFilename, excerptFromMarkdown } from '../../utils/stringUtils.js';
 import { formatDateDisplay } from '../../utils/dateUtils.js';
@@ -49,6 +49,8 @@ export interface ItemisedRenderVars extends Record<string, unknown> {
   link: string;
   /** Rendered HTML content */
   content: string;
+  /** Ordered list of headings (level + text + slug) found while rendering, for on-page TOCs */
+  headings: Heading[];
 }
 
 /**
@@ -298,12 +300,18 @@ export function generateItemsTask(
           excerpt = await excerptFromMarkdown(rawMarkdown);
         }
 
-        // Render markdown to HTML
+        // Render markdown to HTML. The default renderer also emits slugged,
+        // collision-safe heading ids and returns the ordered heading list so
+        // templates can build deep-links and an on-page table of contents.
+        // Custom renderers are strings-only, so they surface no headings.
         let content: string;
+        let headings: Heading[] = [];
         if (typeof cfg.markdownRenderer === 'function') {
           content = await cfg.markdownRenderer(rawMarkdown);
         } else {
-          content = await renderMarkdown(rawMarkdown);
+          const rendered = await renderMarkdownWithHeadings(rawMarkdown);
+          content = rendered.html;
+          headings = rendered.headings;
         }
 
         // Apply link rewriting
@@ -343,6 +351,7 @@ export function generateItemsTask(
               ? cfg.linkFn({ section, itemName, meta: frontmatter })
               : `/${section ? section + '/' : ''}${itemName}.html`,
           content,
+          headings,
         };
 
         // Inject additional variables

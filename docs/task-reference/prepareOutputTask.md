@@ -1,5 +1,6 @@
 ---
 title: prepareOutputTask
+section: Task Reference
 subcategory: Setup
 order: 1
 ---

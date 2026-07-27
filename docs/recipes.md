@@ -1,7 +1,7 @@
 ---
 title: Recipes
-section: Advanced
-order: 2
+section: Recipes
+order: 1
 ---
 
 # Recipes
@@ -112,8 +112,8 @@ Multi-section docs with auto-generated navigation (like this site!).
 docs/
 ├── getting-started.md
 ├── configuration.md
-├── builtins/
-│   ├── README.md
+├── task-reference/
+│   ├── index.md
 │   ├── generatePagesTask.md
 │   └── generateItemsTask.md
 └── advanced/

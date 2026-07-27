@@ -1,5 +1,6 @@
 ---
 title: generateSitemapTask
+section: Task Reference
 subcategory: Feeds & SEO
 order: 2
 ---

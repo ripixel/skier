@@ -1,5 +1,6 @@
 ---
 title: setGlobalsTask
+section: Task Reference
 subcategory: Globals
 order: 1
 ---

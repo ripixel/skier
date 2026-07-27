@@ -1,6 +1,6 @@
 ---
 title: Custom Tasks
-section: Core Concepts
+section: Guides
 order: 2
 ---
 

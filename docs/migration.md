@@ -1,7 +1,7 @@
 ---
 title: Migration Guide
-section: Advanced
-order: 3
+section: Guides
+order: 6
 ---
 
 # Migration Guide

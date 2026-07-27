@@ -98,7 +98,7 @@ Your site is now in `public/` 🎉
 | [Architecture](./architecture.md) | Understand how Skier works |
 | [Recipes](./recipes.md) | Complete project examples |
 | [Configuration](./configuration.md) | Advanced config options |
-| [Built-in Tasks](./builtins/README.md) | All available tasks |
+| [Task Reference](/task-reference) | All available tasks |
 | [Custom Tasks](./custom-tasks.md) | Extend the pipeline |
 
 ---

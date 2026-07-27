@@ -1,5 +1,6 @@
 ---
 title: generateNavDataTask
+section: Task Reference
 subcategory: Content
 order: 4
 ---

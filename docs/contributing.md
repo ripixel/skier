@@ -1,7 +1,7 @@
 ---
 title: Contributing
-section: Community
-order: 2
+section: Guides
+order: 7
 ---
 
 # Contributing

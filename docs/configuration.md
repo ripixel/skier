@@ -246,4 +246,4 @@ npm run build
 
 ---
 
-**Next:** Learn about [Tasks](./tasks.md) and [Built-in Tasks](./builtins/README.md).
+**Next:** Learn about [Tasks](./tasks.md) and the [Task Reference](/task-reference).

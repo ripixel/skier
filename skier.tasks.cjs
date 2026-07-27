@@ -6,6 +6,7 @@ const {
   generateItemsTask,
   generateNavDataTask,
   generatePagesTask,
+  generateSearchIndexTask,
   setGlobalsTask,
 } = require('./dist/');
 
@@ -107,4 +108,12 @@ exports.tasks = [
       }
     },
   },
+
+  // Build the native client-side search index from the rendered pages.
+  // Runs last so it captures every generated page (including the aliased index).
+  generateSearchIndexTask({
+    scanDir: 'public',
+    outDir: 'public',
+    siteUrl: 'https://skier.ripixel.co.uk',
+  }),
 ];

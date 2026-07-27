@@ -173,6 +173,13 @@ Each item template receives:
   excerpt: "First part of content...",
   link: "/posts/hello-world/",
 
+  // Ordered list of the page's headings, in document order.
+  // Each heading in `content` also carries a matching `id` anchor.
+  headings: [
+    { level: 2, text: "Getting Started", slug: "getting-started" },
+    { level: 3, text: "Install the CLI", slug: "install-the-cli" },
+  ],
+
   // From additionalVarsFn
   readingTime: 5,
 
@@ -181,6 +188,39 @@ Each item template receives:
   posts: [/* all posts */],
 }
 ```
+
+---
+
+## Heading Anchors & On-Page TOC
+
+Every heading in rendered Markdown is emitted with a slugged `id`, so headings
+are deep-linkable (e.g. `/posts/hello-world/#getting-started`). Slugs are
+lower-cased, punctuation-stripped, and collision-safe: repeated headings get
+`-2`, `-3`, … suffixes so every anchor on a page is unique.
+
+The same headings are exposed to the template as the `headings` array (in
+document order), which you can use to build a right-rail table of contents:
+
+```handlebars
+<nav class="toc">
+  <ul>
+    {{#each headings}}
+      <li class="toc-level-{{level}}">
+        <a href="#{{slug}}">{{text}}</a>
+      </li>
+    {{/each}}
+  </ul>
+</nav>
+```
+
+Each entry carries its `level`, so a small amount of CSS (e.g. hiding
+`.toc-level-1`, indenting `.toc-level-3`) is all it takes to render only the
+levels you want. Skier's built-in Handlebars environment ships a safe `#each`
+but no comparison helpers, so filter by level in CSS rather than in the
+template.
+
+> `headings` is populated by Skier's built-in Markdown renderer. If you supply a
+> custom `markdownRenderer`, it returns HTML only, so `headings` will be empty.
 
 ---
 

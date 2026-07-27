@@ -199,6 +199,19 @@ without transcluding itself.
 
 ---
 
+## Heading Anchors & Table of Contents
+
+Every rendered heading (`##` through `######`, and `#`) is given a slugged `id`,
+so any heading is directly linkable — `.../my-page/#getting-started`. Slugs are
+lower-cased with punctuation removed, and duplicates on the same page are made
+unique with `-2`, `-3`, … suffixes.
+
+The page's headings are also exposed to templates as an ordered `headings` array
+(`{ level, text, slug }` per heading), so you can render an on-page table of
+contents. See [generateItemsTask → Heading Anchors & On-Page TOC](./builtins/generateItemsTask.md#heading-anchors-on-page-toc).
+
+---
+
 ## Excerpts
 
 For post summaries, use a marker:

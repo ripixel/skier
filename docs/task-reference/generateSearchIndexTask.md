@@ -1,5 +1,6 @@
 ---
 title: generateSearchIndexTask
+section: Task Reference
 subcategory: Feeds & SEO
 order: 3
 ---
@@ -56,6 +57,16 @@ generateSearchIndexTask({
 
 ---
 
+## Type signature
+
+The exact `GenerateSearchIndexConfig` interface, transcluded from source so it stays in step with the shipping code:
+
+@include src/builtins/generateSearchIndexTask/index.ts region="config"
+
+> Every task's config type together: [API Reference → Config Interfaces](../api-reference/config-interfaces.md).
+
+---
+
 ## What Gets Indexed
 
 For each page the task extracts:
@@ -76,27 +87,14 @@ repeated on every page.
 
 ## Output Structure
 
-```typescript
-interface SearchIndex {
-  pages: SearchIndexEntry[]; // sorted by URL for deterministic output
-}
+The real exported types, transcluded from source so this reference can't drift
+from the shipping contract:
 
-interface SearchIndexEntry {
-  url: string;               // clean page URL
-  title: string;             // page title
-  headings: SearchHeading[]; // headings in document order
-  body: string;              // plain, searchable text
-}
-
-interface SearchHeading {
-  text: string;              // heading text, HTML stripped
-  level: number;             // 1–6
-  id?: string;               // anchor slug for deep-linking, when present
-}
-```
+@include src/builtins/generateSearchIndexTask/index.ts region="searchtypes"
 
 This format is a **stable contract** consumed by the client-side search UI. Fields are added
-additively; existing fields are not renamed or repurposed.
+additively; existing fields are not renamed or repurposed. It's also documented in the
+[API Reference → Core Types](../api-reference/core-types.md#searchindex).
 
 Example entry:
 

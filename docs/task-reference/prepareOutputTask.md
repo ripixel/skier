@@ -35,6 +35,16 @@ prepareOutputTask({ outDir: 'public' })
 
 ---
 
+## Type signature
+
+The exact `PrepareOutputConfig` interface, transcluded from source so it stays in step with the shipping code:
+
+@include src/builtins/prepareOutputTask/index.ts region="config"
+
+> Every task's config type together: [API Reference → Config Interfaces](../api-reference/config-interfaces.md).
+
+---
+
 ## Why It's Important
 
 Without this task:

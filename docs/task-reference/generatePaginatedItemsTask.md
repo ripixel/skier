@@ -70,6 +70,16 @@ public/
 
 ---
 
+## Type signature
+
+The exact `GeneratePaginatedItemsConfig` interface, transcluded from source so it stays in step with the shipping code:
+
+@include src/builtins/generatePaginatedItemsTask/index.ts region="config"
+
+> Every task's config type together: [API Reference → Config Interfaces](../api-reference/config-interfaces.md).
+
+---
+
 ## Data Sources
 
 **From pipeline globals (recommended):**

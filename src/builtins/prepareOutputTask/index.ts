@@ -1,9 +1,11 @@
 import { pathExists, removeDir, ensureDir } from '../../utils/fileHelpers.js';
 import { TaskDef } from '../../types.js';
 
+// #region config
 export interface PrepareOutputConfig {
   outDir: string;
 }
+// #endregion config
 
 export function prepareOutputTask(config: PrepareOutputConfig): TaskDef<PrepareOutputConfig> {
   return {

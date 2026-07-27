@@ -2,11 +2,14 @@ import { TaskDef } from '../../types.js';
 import { ensureDir, copyDir } from '../../utils/fileHelpers.js';
 import { throwTaskError } from '../../utils/errors.js';
 
+// #region config
 export interface CopyStaticConfig {
   from: string;
   to: string;
 }
+// #endregion config
 
+// #region factory
 export function copyStaticTask(config: CopyStaticConfig): TaskDef<CopyStaticConfig> {
   return {
     name: 'copy-static',
@@ -30,3 +33,4 @@ export function copyStaticTask(config: CopyStaticConfig): TaskDef<CopyStaticConf
     },
   };
 }
+// #endregion factory

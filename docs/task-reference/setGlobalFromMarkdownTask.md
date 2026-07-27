@@ -47,6 +47,16 @@ setGlobalFromMarkdownTask({
 
 ---
 
+## Type signature
+
+The exact `SetGlobalFromMarkdownConfig` interface, transcluded from source so it stays in step with the shipping code:
+
+@include src/builtins/setGlobalFromMarkdownTask/index.ts region="config"
+
+> Every task's config type together: [API Reference → Config Interfaces](../api-reference/config-interfaces.md).
+
+---
+
 ## Using in Templates
 
 ```handlebars

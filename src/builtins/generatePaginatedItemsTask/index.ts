@@ -4,6 +4,7 @@ import type { TaskDef } from '../../types.js';
 import { throwTaskError } from '../../utils/errors.js';
 import { setupHandlebarsEnvironment } from '../../utils/handlebars.js';
 
+// #region pagination-meta
 /**
  * Pagination metadata object exposed to templates.
  */
@@ -35,10 +36,12 @@ export interface PaginationMeta {
     isCurrent: boolean;
   }>;
 }
+// #endregion pagination-meta
 
 /**
  * Configuration for generatePaginatedItemsTask.
  */
+// #region config
 export interface GeneratePaginatedItemsConfig {
   /**
    * Path to a JSON file containing the data.
@@ -107,6 +110,7 @@ export interface GeneratePaginatedItemsConfig {
     items: unknown[];
   }) => Record<string, unknown> | Promise<Record<string, unknown>>;
 }
+// #endregion config
 
 /**
  * Splits an array into chunks of the specified size.

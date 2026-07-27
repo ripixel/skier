@@ -1,5 +1,6 @@
 // Shared type for all itemised content in Skier pipelines
 
+// #region SkierItem
 export interface SkierItem {
   section?: string;
   itemName: string;
@@ -16,27 +17,36 @@ export interface SkierItem {
   excerpt?: string;
   // If you want to extend with custom fields, extend this interface in your own project.
 }
+// #endregion SkierItem
 
+// #region SkierGlobals
 export interface SkierGlobals {
   [key: string]: unknown;
 }
+// #endregion SkierGlobals
 
+// #region Logger
 export interface Logger {
   info(msg: string): void;
   warn(msg: string): void;
   error(msg: string): void;
   debug(msg: string): void;
 }
+// #endregion Logger
 
+// #region TaskContext
 export interface TaskContext {
   logger: Logger;
   debug: boolean;
   globals: SkierGlobals;
 }
+// #endregion TaskContext
 
+// #region TaskDef
 export interface TaskDef<Config = unknown, Output = unknown> {
   name: string;
   title?: string;
   config: Config;
   run: (config: Config, ctx: TaskContext) => Promise<Output>;
 }
+// #endregion TaskDef

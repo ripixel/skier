@@ -52,6 +52,16 @@ generateNavDataTask({
 
 ---
 
+## Type signature
+
+The exact `GenerateNavDataConfig` interface, transcluded from source so it stays in step with the shipping code:
+
+@include src/builtins/generateNavDataTask/index.ts region="config"
+
+> Every task's config type together: [API Reference → Config Interfaces](../api-reference/config-interfaces.md).
+
+---
+
 ## Metadata Extraction
 
 The task reads Markdown files and extracts:
@@ -82,25 +92,12 @@ order: 1
 
 ## Output Structure
 
-```typescript
-interface NavData {
-  sections: NavSection[];  // Ordered sections for sidebar
-  pages: NavItem[];        // Flat list for prev/next navigation
-}
+The task sets `globals[outputVar]` to a `NavData` object. These are the real
+exported types, transcluded from source so they never drift from the code:
 
-interface NavSection {
-  name: string;            // Section display name
-  order: number;           // Sort order
-  items: NavItem[];        // Direct items (no subcategory)
-  children?: NavSection[]; // Nested subcategory groups
-}
+@include src/builtins/generateNavDataTask/index.ts region="navtypes"
 
-interface NavItem {
-  title: string;           // Page display title
-  url: string;             // Page URL path
-  order: number;           // Sort order
-}
-```
+> Also documented in the [API Reference → Core Types](../api-reference/core-types.md#navdata).
 
 ---
 

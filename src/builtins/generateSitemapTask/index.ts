@@ -6,6 +6,7 @@ import { throwTaskError, validateRequiredConfig } from '../../utils/errors.js';
 /** Default glob patterns excluded from the sitemap */
 const DEFAULT_EXCLUDES = ['404.html', '404/**'];
 
+// #region config
 export interface GenerateSitemapConfig {
   /** Directory to scan for .html files */
   scanDir: string;
@@ -16,6 +17,7 @@ export interface GenerateSitemapConfig {
   /** (Optional) glob patterns to exclude from sitemap. Merged with defaults (404.html, 404/**). */
   excludes?: string[];
 }
+// #endregion config
 
 /**
  * Test whether a relative path matches a simple glob pattern.

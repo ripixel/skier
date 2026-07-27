@@ -47,6 +47,16 @@ setGlobalsTask({
 
 ---
 
+## Type signature
+
+The exact `SetGlobalsConfig` interface, transcluded from source so it stays in step with the shipping code:
+
+@include src/builtins/setGlobalsTask/index.ts region="config"
+
+> Every task's config type together: [API Reference → Config Interfaces](../api-reference/config-interfaces.md).
+
+---
+
 ## Static Values
 
 Simple key-value assignment:

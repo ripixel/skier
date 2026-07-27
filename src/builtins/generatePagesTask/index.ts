@@ -29,6 +29,7 @@ export interface HtmlRenderVars extends Record<string, unknown> {
   currentPagePath: string;
 }
 
+// #region config
 export interface GeneratePagesConfig {
   pagesDir: string;
   partialsDir: string;
@@ -45,6 +46,7 @@ export interface GeneratePagesConfig {
     args: HtmlRenderVars,
   ) => Record<string, unknown> | Promise<Record<string, unknown>>;
 }
+// #endregion config
 
 /**
  * Built-in HTML generation task for Skier: supports partials, variables, and per-page metadata.

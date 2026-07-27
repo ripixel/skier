@@ -62,9 +62,11 @@ jobs:
       # image ships npm 10.x, so upgrade before publishing. The upgraded
       # npm exchanges CircleCI's OIDC token ($CIRCLE_OIDC_TOKEN, injected
       # automatically) for a short-lived npm credential — no NPM_TOKEN.
+      # Pin to the 11.x line: npm 12+ requires Node >= 22.22.2, which the
+      # 22.17 executor doesn't satisfy, so an unpinned @latest fails here.
       - run:
           name: Upgrade npm for trusted publishing (OIDC)
-          command: npm install --global npm@latest
+          command: npm install --global 'npm@^11.5.1'
       - run: npx semantic-release
   build_docs:
     executor: node-executor

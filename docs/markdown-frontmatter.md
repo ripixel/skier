@@ -157,6 +157,48 @@ don't supply one.
 
 ---
 
+## Snippet transclusion (`@include`)
+
+Pull a slice of a **real** source or example file into a page at build time, so
+code examples can't drift from the code they document. Write an `@include`
+directive on its own line, starting at column 0:
+
+```markdown
+@include examples/quickstart.ts
+@include src/config.ts region="setup"
+@include src/config.ts lines="10-24"
+@include "examples/with spaces.ts" lang="ts" title="config.ts"
+```
+
+The file is read at build time and rendered as a normal syntax-highlighted code
+block (the same markup as a fenced block, so copy buttons and the filename label
+work identically).
+
+Modifiers (all optional):
+
+| Modifier | Effect |
+|----------|--------|
+| `region="name"` | Only the lines between `#region name` and `#endregion` markers (the markers are matched anywhere on a line, so any comment style works). |
+| `lines="a-b"` | A 1-indexed, inclusive line range (or a single line, `lines="12"`). |
+| `lang="ts"` | Override the highlight language (default: inferred from the file extension). |
+| `title="…"` | Override the filename label (default: the include path). |
+
+Mark a region in the source file with matching comments:
+
+```ts
+// #region setup
+const skier = createSkier({ outDir: 'public' });
+// #endregion setup
+```
+
+Paths are resolved relative to the project working directory. A missing file,
+an unknown region, or an out-of-range line span **fails the build with a clear
+error** — a broken include never silently renders nothing. `@include` lines
+inside a fenced code block are left untouched, so this page can show the syntax
+without transcluding itself.
+
+---
+
 ## Excerpts
 
 For post summaries, use a marker:

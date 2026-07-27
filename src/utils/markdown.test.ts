@@ -1,4 +1,16 @@
-import { parseCodeMeta, renderCodeBlock, renderMarkdown, resolveCalloutType } from './markdown.js';
+import * as fs from 'fs-extra';
+import os from 'os';
+import path from 'path';
+import {
+  extractLines,
+  extractRegion,
+  parseCodeMeta,
+  parseIncludeDirective,
+  renderCodeBlock,
+  renderMarkdown,
+  resolveCalloutType,
+  SnippetIncludeError,
+} from './markdown.js';
 
 describe('parseCodeMeta', () => {
   it('returns an empty language for an empty info string', () => {
@@ -195,5 +207,158 @@ describe('callout blocks', () => {
     const html = await renderMarkdown(md);
     expect(html).toContain('data-callout="note"');
     expect(html).toContain('<div class="callout-body"></div>');
+  });
+});
+
+describe('parseIncludeDirective', () => {
+  it('returns null for a non-directive line', () => {
+    expect(parseIncludeDirective('just some prose')).toBeNull();
+    expect(parseIncludeDirective('  @include indented.ts')).toBeNull(); // must be column 0
+  });
+
+  it('parses a bare path', () => {
+    expect(parseIncludeDirective('@include src/utils/markdown.ts')).toEqual({
+      path: 'src/utils/markdown.ts',
+    });
+  });
+
+  it('parses a quoted path with spaces', () => {
+    expect(parseIncludeDirective('@include "my examples/a b.ts"')).toEqual({
+      path: 'my examples/a b.ts',
+    });
+  });
+
+  it('parses region, lines, lang and title modifiers', () => {
+    expect(
+      parseIncludeDirective('@include a.ts region="setup" lines="1-3" lang="ts" title="a.ts"'),
+    ).toEqual({ path: 'a.ts', region: 'setup', lines: '1-3', lang: 'ts', title: 'a.ts' });
+  });
+});
+
+describe('extractRegion', () => {
+  const src = [
+    'const a = 1;',
+    '// #region demo',
+    'const b = 2;',
+    '// #endregion demo',
+    'const c = 3;',
+  ].join('\n');
+
+  it('returns the lines between the markers', () => {
+    expect(extractRegion(src, 'demo', 'f.ts')).toBe('const b = 2;');
+  });
+
+  it('matches a bare #endregion', () => {
+    const s = ['// #region x', 'body', '// #endregion'].join('\n');
+    expect(extractRegion(s, 'x', 'f.ts')).toBe('body');
+  });
+
+  it('throws when the region is missing', () => {
+    expect(() => extractRegion(src, 'nope', 'f.ts')).toThrow(SnippetIncludeError);
+    expect(() => extractRegion(src, 'nope', 'f.ts')).toThrow(/region "nope" not found/);
+  });
+
+  it('throws when there is no matching #endregion', () => {
+    const s = ['// #region y', 'body'].join('\n');
+    expect(() => extractRegion(s, 'y', 'f.ts')).toThrow(/no matching #endregion/);
+  });
+});
+
+describe('extractLines', () => {
+  const src = ['one', 'two', 'three', 'four'].join('\n');
+
+  it('returns a single line (1-indexed)', () => {
+    expect(extractLines(src, '2', 'f.ts')).toBe('two');
+  });
+
+  it('returns an inclusive range', () => {
+    expect(extractLines(src, '2-3', 'f.ts')).toBe('two\nthree');
+  });
+
+  it('throws on a malformed spec', () => {
+    expect(() => extractLines(src, 'abc', 'f.ts')).toThrow(/invalid lines/);
+  });
+
+  it('throws when the range runs past the end of the file', () => {
+    expect(() => extractLines(src, '3-9', 'f.ts')).toThrow(/out of range/);
+  });
+});
+
+describe('snippet transclusion (renderMarkdown @include)', () => {
+  let dir: string;
+  const sample = [
+    'export const first = 1;',
+    '// #region greet',
+    'export function greet(name: string) {',
+    '  return `hi ${name}`;',
+    '}',
+    '// #endregion greet',
+    'export const last = 2;',
+  ].join('\n');
+
+  beforeAll(async () => {
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), 'skier-snippet-'));
+    await fs.writeFile(path.join(dir, 'sample.ts'), sample + '\n', 'utf8');
+  });
+
+  afterAll(async () => {
+    await fs.remove(dir);
+  });
+
+  const render = (md: string) => renderMarkdown(md, { includeBaseDir: dir });
+  // highlight.js wraps tokens in spans; strip them to assert on the source text.
+  const plain = (html: string) =>
+    html
+      .replace(/<[^>]+>/g, '')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&amp;/g, '&');
+
+  it('includes a whole file as a highlighted code block', async () => {
+    const html = await render('@include sample.ts');
+    expect(html).toContain('<figure class="code-block"');
+    expect(html).toContain('data-language="typescript"');
+    expect(html).toContain('data-filename="sample.ts"');
+    expect(plain(html)).toContain('export const first = 1;');
+    expect(plain(html)).toContain('export const last = 2;');
+  });
+
+  it('includes only a named region', async () => {
+    const html = await render('@include sample.ts region="greet"');
+    expect(plain(html)).toContain('export function greet(name: string)');
+    expect(plain(html)).not.toContain('export const first');
+    expect(plain(html)).not.toContain('#region');
+  });
+
+  it('includes a line range', async () => {
+    const html = await render('@include sample.ts lines="1"');
+    expect(plain(html)).toContain('export const first = 1;');
+    expect(plain(html)).not.toContain('export const last');
+  });
+
+  it('honours lang and title overrides', async () => {
+    const html = await render('@include sample.ts lines="1" lang="js" title="demo.js"');
+    expect(html).toContain('data-language="js"');
+    expect(html).toContain('data-filename="demo.js"');
+  });
+
+  it('leaves @include inside a fenced code block untouched', async () => {
+    const md = ['```', '@include sample.ts', '```'].join('\n');
+    const html = await render(md);
+    expect(plain(html)).not.toContain('export const first');
+    expect(plain(html)).toContain('@include sample.ts');
+  });
+
+  it('throws a helpful error when the file is missing', async () => {
+    await expect(render('@include does-not-exist.ts')).rejects.toThrow(SnippetIncludeError);
+    await expect(render('@include does-not-exist.ts')).rejects.toThrow(/file not found/);
+  });
+
+  it('throws when the requested region is missing', async () => {
+    await expect(render('@include sample.ts region="ghost"')).rejects.toThrow(
+      /region "ghost" not found/,
+    );
   });
 });

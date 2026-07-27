@@ -1,5 +1,8 @@
 import { marked, type Tokens, type TokenizerAndRendererExtension } from 'marked';
 import hljs from 'highlight.js';
+import { isAbsolute, resolve } from 'node:path';
+import { pathExists, readFileUtf8 } from './fileHelpers.js';
+import { extname } from './pathHelpers.js';
 
 /**
  * Escapes a string for safe use inside a double-quoted HTML attribute.
@@ -68,7 +71,16 @@ export function parseCodeMeta(infostring: string | undefined): CodeMeta {
  */
 export function renderCodeBlock(code: string, infostring: string | undefined): string {
   const { lang, filename } = parseCodeMeta(infostring);
+  return buildCodeBlock(code, lang, filename);
+}
 
+/**
+ * Builds the structured `<figure class="code-block">` markup for a piece of
+ * highlighted code. Shared by fenced code blocks (`renderCodeBlock`) and by
+ * snippet transclusion, so an included file renders identically to a hand-written
+ * fenced block.
+ */
+function buildCodeBlock(code: string, lang: string, filename?: string): string {
   let highlighted: string;
   let codeClass: string;
   if (lang && hljs.getLanguage(lang)) {
@@ -174,6 +186,210 @@ const calloutExtension: TokenizerAndRendererExtension = {
   },
 };
 
+/**
+ * Snippet transclusion.
+ *
+ * A build-time include directive that pulls a slice of a real source/example
+ * file into a docs page, so examples stay correct-by-construction and can't
+ * drift from the source. The directive is a single line, at column 0:
+ *
+ *     @include path/to/file.ts
+ *     @include path/to/file.ts region="setup"
+ *     @include path/to/file.ts lines="10-24"
+ *     @include "path with spaces.ts" lang="ts" title="example.ts"
+ *
+ * The file is read at render time and emitted as a normal syntax-highlighted
+ * code block (the same markup as a fenced block). A missing file, an unknown
+ * region, or an out-of-range line span throws — a broken include fails loudly
+ * rather than silently producing empty output.
+ *
+ * Modifiers (all optional):
+ *   region="name"  only the lines between `#region name` / `#endregion` markers
+ *   lines="a-b"    a 1-indexed inclusive line range (or a single line, "a")
+ *   lang="ts"      override the highlight language (default: inferred from ext)
+ *   title="..."    override the filename label (default: the include path)
+ *
+ * Paths are resolved relative to the render base dir (the project working
+ * directory by default; see `renderMarkdown` options).
+ */
+export class SnippetIncludeError extends Error {
+  constructor(message: string) {
+    super(`[skier] snippet include: ${message}`);
+    this.name = 'SnippetIncludeError';
+  }
+}
+
+export interface IncludeDirective {
+  path: string;
+  region?: string;
+  lines?: string;
+  lang?: string;
+  title?: string;
+}
+
+// Map common file extensions to a highlight.js language; anything not listed
+// falls back to the bare extension (highlight.js resolves aliases / auto-detects).
+const EXT_LANG: Record<string, string> = {
+  ts: 'typescript',
+  tsx: 'typescript',
+  mts: 'typescript',
+  cts: 'typescript',
+  js: 'javascript',
+  jsx: 'javascript',
+  mjs: 'javascript',
+  cjs: 'javascript',
+  json: 'json',
+  md: 'markdown',
+  markdown: 'markdown',
+  yml: 'yaml',
+  yaml: 'yaml',
+  sh: 'bash',
+  bash: 'bash',
+  html: 'xml',
+  htm: 'xml',
+  py: 'python',
+  go: 'go',
+};
+
+/**
+ * Parses a single line into an include directive, or returns null if the line
+ * is not an `@include` directive. The directive must start at column 0.
+ */
+export function parseIncludeDirective(line: string): IncludeDirective | null {
+  const match = line.match(/^@include\s+(.+?)\s*$/);
+  if (!match) return null;
+  const rest = match[1] ?? '';
+
+  // Path: quoted (allowing spaces) or the first bare token.
+  const pathMatch = rest.match(/^(?:"([^"]*)"|'([^']*)'|(\S+))/);
+  if (!pathMatch) return null;
+  const path = pathMatch[1] ?? pathMatch[2] ?? pathMatch[3] ?? '';
+  if (!path) return null;
+
+  const directive: IncludeDirective = { path };
+  const attrs = rest.slice(pathMatch[0].length);
+  const attrRe = /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+))/g;
+  let attr: RegExpExecArray | null;
+  while ((attr = attrRe.exec(attrs)) !== null) {
+    const key = attr[1];
+    const value = attr[2] ?? attr[3] ?? attr[4] ?? '';
+    if (key === 'region' || key === 'lines' || key === 'lang' || key === 'title') {
+      directive[key] = value;
+    }
+  }
+  return directive;
+}
+
+/**
+ * Returns the lines between `#region <name>` and its matching `#endregion`
+ * marker (markers excluded). The comment leader is irrelevant — the markers are
+ * matched anywhere on a line — so this works across languages. Throws if the
+ * region is not found.
+ */
+export function extractRegion(content: string, name: string, source: string): string {
+  const lines = content.split(/\r?\n/);
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const startRe = new RegExp(`#region\\s+${escaped}(?:\\s|$)`);
+  const endRe = new RegExp(`#endregion(?:\\s+${escaped})?(?:\\s|$)`);
+
+  const start = lines.findIndex((l) => startRe.test(l));
+  if (start === -1) {
+    throw new SnippetIncludeError(`region "${name}" not found in ${source}`);
+  }
+  for (let i = start + 1; i < lines.length; i++) {
+    if (endRe.test(lines[i] ?? '')) {
+      return lines.slice(start + 1, i).join('\n');
+    }
+  }
+  throw new SnippetIncludeError(`region "${name}" in ${source} has no matching #endregion`);
+}
+
+/**
+ * Returns a 1-indexed, inclusive line range from `content`. `spec` is either a
+ * single line ("12") or a range ("12-20"). Throws on a malformed or
+ * out-of-bounds range.
+ */
+export function extractLines(content: string, spec: string, source: string): string {
+  const range = spec.match(/^(\d+)(?:-(\d+))?$/);
+  if (!range) {
+    throw new SnippetIncludeError(`invalid lines="${spec}" for ${source} (expected "n" or "a-b")`);
+  }
+  const start = Number(range[1]);
+  const end = range[2] ? Number(range[2]) : start;
+  const lines = content.split(/\r?\n/);
+  if (start < 1 || end < start || end > lines.length) {
+    throw new SnippetIncludeError(
+      `lines="${spec}" out of range for ${source} (file has ${String(lines.length)} lines)`,
+    );
+  }
+  return lines.slice(start - 1, end).join('\n');
+}
+
+/**
+ * Reads a file and renders the requested slice as a highlighted code block.
+ */
+async function renderIncludedSnippet(
+  directive: IncludeDirective,
+  baseDir: string,
+): Promise<string> {
+  const abs = isAbsolute(directive.path) ? directive.path : resolve(baseDir, directive.path);
+  if (!(await pathExists(abs))) {
+    throw new SnippetIncludeError(`file not found: ${directive.path} (resolved to ${abs})`);
+  }
+  const raw = await readFileUtf8(abs);
+
+  let content = raw;
+  if (directive.region !== undefined) {
+    content = extractRegion(raw, directive.region, directive.path);
+  } else if (directive.lines !== undefined) {
+    content = extractLines(raw, directive.lines, directive.path);
+  }
+  // Trim a single trailing newline so the code block has no blank last line.
+  content = content.replace(/\r?\n$/, '');
+
+  const ext = extname(directive.path).replace(/^\./, '').toLowerCase();
+  const lang = directive.lang ?? EXT_LANG[ext] ?? ext;
+  const filename = directive.title ?? directive.path;
+  return buildCodeBlock(content, lang, filename);
+}
+
+/**
+ * Preprocesses markdown, replacing `@include` directives with the rendered
+ * content of the referenced files. Directives inside fenced code blocks are
+ * left untouched, so a page can document the syntax without self-including.
+ */
+export async function transcludeSnippets(md: string, baseDir: string): Promise<string> {
+  const lines = md.split(/\r?\n/);
+  const out: string[] = [];
+  let fence: string | null = null;
+
+  for (const line of lines) {
+    const fenceMatch = line.match(/^\s*(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const marker = (fenceMatch[1] ?? '').charAt(0);
+      if (fence === null) {
+        fence = marker;
+      } else if (marker === fence) {
+        fence = null;
+      }
+      out.push(line);
+      continue;
+    }
+
+    if (fence === null) {
+      const directive = parseIncludeDirective(line);
+      if (directive) {
+        const html = await renderIncludedSnippet(directive, baseDir);
+        // Surround with blank lines so marked treats it as an HTML block.
+        out.push('', html, '');
+        continue;
+      }
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
 const renderer = new marked.Renderer();
 renderer.code = (code, infostring) => renderCodeBlock(code, infostring);
 marked.setOptions({ renderer });
@@ -192,10 +408,20 @@ function stripFrontmatter(md: string): string {
   return md;
 }
 
-export async function renderMarkdown(md: string): Promise<string> {
+export interface RenderMarkdownOptions {
+  /**
+   * Base directory for resolving `@include` snippet paths. Defaults to the
+   * project working directory (`process.cwd()`).
+   */
+  includeBaseDir?: string;
+}
+
+export async function renderMarkdown(md: string, options?: RenderMarkdownOptions): Promise<string> {
   // Strip frontmatter before rendering
-  const content = stripFrontmatter(md);
-  let html = await marked.parse(content);
+  let content = stripFrontmatter(md);
+  // Resolve @include snippet directives against real files before parsing.
+  content = await transcludeSnippets(content, options?.includeBaseDir ?? process.cwd());
+  const html = await marked.parse(content);
 
   return html;
 }

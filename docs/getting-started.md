@@ -217,7 +217,7 @@ bundleCssTask({ from: 'src/css', to: 'public/assets', output: 'site.min.css', mi
 
 **Write pages in Markdown** with `generateItemsTask`, which renders a directory
 of Markdown files (frontmatter and all) through a Handlebars template. See the
-[Task Reference](./builtins/README.md) for its full options — and for the other
+[Task Reference](./task-reference/index.md) for its full options — and for the other
 built-ins (`generateNavDataTask`, `generateFeedTask`, `generateSitemapTask`,
 `generatePaginatedItemsTask`).
 
@@ -278,7 +278,7 @@ That's install → build → preview → deploy. You now have a live site.
 
 | Guide | Why |
 |-------|-----|
-| [Task Reference](./builtins/README.md) | Every built-in task and its options |
+| [Task Reference](./task-reference/index.md) | Every built-in task and its options |
 | [Markdown & Frontmatter](./markdown-frontmatter.md) | Author content in Markdown |
 | [Templates & Partials](./templates-partials.md) | Handlebars templating and shared partials |
 | [Custom Tasks](./custom-tasks.md) | Write your own task when a built-in doesn't fit |

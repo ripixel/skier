@@ -80,6 +80,7 @@ flowchart TD
 |------|-------------|
 | [generateFeedTask](./generateFeedTask.md) | Create RSS, Atom, and JSON feeds |
 | [generateSitemapTask](./generateSitemapTask.md) | Generate sitemap.xml |
+| [generateSearchIndexTask](./generateSearchIndexTask.md) | Emit a JSON search index for client-side search |
 
 ### Asset Tasks
 

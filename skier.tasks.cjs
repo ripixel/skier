@@ -6,6 +6,7 @@ const {
   generateItemsTask,
   generateNavDataTask,
   generatePagesTask,
+  generateSearchIndexTask,
   setGlobalsTask,
 } = require('./dist/');
 
@@ -90,5 +91,35 @@ exports.tasks = [
     partialsDir: 'site/partials',
     outDir: 'public',
     pageExt: '.hbs',
+  }),
+
+  // Post-step: Alias README.html to index.html for builtins
+  {
+    name: 'aliasBuiltinsReadmeToIndex',
+    config: {},
+    run: async (cfg, ctx) => {
+      const fs = require('fs/promises');
+      const src = 'public/builtins/README.html';
+      const dest = 'public/builtins/index.html';
+      try {
+        await fs.copyFile(src, dest);
+        ctx.logger.debug(`Aliased ${src} -> ${dest}`);
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          // README.html doesn't exist, skip
+          ctx.logger.warn(`Skipping alias: ${src} not found.`);
+        } else {
+          throw err;
+        }
+      }
+    },
+  },
+
+  // Build the native client-side search index from the rendered pages.
+  // Runs last so it captures every generated page (including the aliased index).
+  generateSearchIndexTask({
+    scanDir: 'public',
+    outDir: 'public',
+    siteUrl: 'https://skier.ripixel.co.uk',
   }),
 ];

@@ -535,10 +535,7 @@ export async function renderMarkdownWithHeadings(
  * Renders markdown to HTML. Headings still receive anchor ids; callers that also
  * need the heading list should use {@link renderMarkdownWithHeadings}.
  */
-export async function renderMarkdown(
-  md: string,
-  options?: RenderMarkdownOptions,
-): Promise<string> {
+export async function renderMarkdown(md: string, options?: RenderMarkdownOptions): Promise<string> {
   const { html } = await renderMarkdownWithHeadings(md, options);
   return html;
 }

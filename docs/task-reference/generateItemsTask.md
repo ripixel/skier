@@ -63,6 +63,16 @@ generateItemsTask({
 
 ---
 
+## Type signature
+
+The exact `GenerateItemsConfig` interface, transcluded from source so it stays in step with the shipping code:
+
+@include src/builtins/generateItemsTask/index.ts region="config"
+
+> Every task's config type together: [API Reference → Config Interfaces](../api-reference/config-interfaces.md).
+
+---
+
 ## Sorting Items
 
 Default: items are sorted by `date` (newest first).

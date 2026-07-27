@@ -2,10 +2,12 @@ import { readFileUtf8 } from '../../utils/fileHelpers.js';
 import { marked } from 'marked';
 import type { TaskDef } from '../../types.js';
 
+// #region config
 export interface SetGlobalFromMarkdownConfig {
   mdPath: string; // Path to markdown file
   outputVar: string; // Variable name for output HTML
 }
+// #endregion config
 
 /**
  * Reads a markdown file, converts to HTML, and outputs it as a variable for downstream tasks.

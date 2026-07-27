@@ -12,16 +12,12 @@ Extend Skier with your own build steps. This guide covers everything from basic 
 
 ## Task Structure
 
-A task is an object with three properties:
+A task is a `TaskDef` — an object with a `name`, its `config`, and an async
+`run` function. This is the real exported type, transcluded from source:
 
-```typescript
-interface Task {
-  name: string;                         // Unique identifier
-  title?: string;                       // Human-readable description
-  config?: Record<string, any>;         // Your task's configuration
-  run: (config, context) => Promise<Record<string, any> | void>;
-}
-```
+@include src/types.ts region="TaskDef"
+
+> Full contract reference: [API Reference → Task Contract](./api-reference/task-contract.md).
 
 The `run` function receives:
 - **`config`** — Your task's configuration object
@@ -280,14 +276,14 @@ Full type definitions for custom tasks:
 
 ```typescript
 // tasks/myTask.ts
-import type { Task, TaskContext, TaskConfig } from 'skier';
+import type { TaskDef, TaskContext } from 'skier';
 
-interface MyTaskConfig extends TaskConfig {
+interface MyTaskConfig {
   prefix: string;
   maxItems?: number;
 }
 
-export const myTask = (options: MyTaskConfig): Task => ({
+export const myTask = (options: MyTaskConfig): TaskDef<MyTaskConfig> => ({
   name: 'my-task',
   config: options,
   run: async (config: MyTaskConfig, ctx: TaskContext) => {

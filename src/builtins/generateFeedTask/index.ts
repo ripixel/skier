@@ -3,6 +3,7 @@ import { ensureDir, writeFileUtf8 } from '../../utils/fileHelpers.js';
 import { join } from '../../utils/pathHelpers.js';
 import type { SkierItem, TaskDef } from '../../types.js';
 
+// #region config
 export interface GenerateFeedConfig {
   articles: SkierItem[];
   outDir: string;
@@ -25,6 +26,7 @@ export interface GenerateFeedConfig {
     };
   };
 }
+// #endregion config
 
 export function generateFeedTask(
   config: GenerateFeedConfig,

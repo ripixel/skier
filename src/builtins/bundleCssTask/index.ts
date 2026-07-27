@@ -4,12 +4,14 @@ import { extname, join } from '../../utils/pathHelpers.js';
 import { throwTaskError } from '../../utils/errors.js';
 import CleanCSS from 'clean-css';
 
+// #region config
 export interface BundleCssConfig {
   from: string; // source directory
   to: string; // output directory
   output: string; // output filename (e.g. styles.min.css)
   minify?: boolean;
 }
+// #endregion config
 
 export function bundleCssTask(config: BundleCssConfig): TaskDef<BundleCssConfig> {
   return {

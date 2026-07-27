@@ -51,6 +51,16 @@ bundleCssTask({
 
 ---
 
+## Type signature
+
+The exact `BundleCssConfig` interface, transcluded from source so it stays in step with the shipping code:
+
+@include src/builtins/bundleCssTask/index.ts region="config"
+
+> Every task's config type together: [API Reference → Config Interfaces](../api-reference/config-interfaces.md).
+
+---
+
 ## File Order
 
 Files are concatenated in **alphabetical order**. Control ordering with filename prefixes:

@@ -11,6 +11,7 @@ import { throwTaskError, validateRequiredConfig } from '../../utils/errors.js';
 /** Default glob patterns excluded from the search index (kept in step with the sitemap task). */
 const DEFAULT_EXCLUDES = ['404.html', '404/**'];
 
+// #region searchtypes
 /**
  * A single heading extracted from a page, in document order.
  *
@@ -53,7 +54,9 @@ export interface SearchIndex {
   /** All indexed pages, sorted by URL for deterministic output */
   pages: SearchIndexEntry[];
 }
+// #endregion searchtypes
 
+// #region config
 export interface GenerateSearchIndexConfig {
   /** Directory to scan for rendered `.html` pages */
   scanDir: string;
@@ -78,6 +81,7 @@ export interface GenerateSearchIndexConfig {
   /** Pretty-print the JSON (default: `false` — compact output keeps the payload lean). */
   pretty?: boolean;
 }
+// #endregion config
 
 /**
  * Test whether a relative path matches a simple glob pattern.

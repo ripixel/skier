@@ -1,9 +1,11 @@
 import type { TaskDef, TaskContext, SkierGlobals } from '../../types.js';
 
+// #region config
 export interface SetGlobalsConfig {
   values?: SkierGlobals;
   valuesFn?: (globals: SkierGlobals) => SkierGlobals | Promise<SkierGlobals>;
 }
+// #endregion config
 
 /**
  * Adds arbitrary key-value pairs to the Skier globals context for downstream use in templates and tasks.

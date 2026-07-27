@@ -75,6 +75,7 @@ export interface ItemFunctionArgs {
   fileStat: import('fs-extra').Stats;
 }
 
+// #region config
 export interface GenerateItemsConfig {
   /** Directory containing markdown/HTML items */
   itemsDir: string;
@@ -113,6 +114,7 @@ export interface GenerateItemsConfig {
     args: ItemisedRenderVars,
   ) => Record<string, unknown> | Promise<Record<string, unknown>>;
 }
+// #endregion config
 
 /**
  * Parses simple YAML frontmatter from markdown content.

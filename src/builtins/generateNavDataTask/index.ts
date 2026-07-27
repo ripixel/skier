@@ -2,6 +2,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { TaskDef, TaskContext, SkierGlobals } from '../../types.js';
 
+// #region navtypes
 /**
  * A navigation item representing a single page in the sidebar.
  */
@@ -39,7 +40,9 @@ export interface NavData {
   /** Flat list of all pages for prev/next navigation */
   pages: NavItem[];
 }
+// #endregion navtypes
 
+// #region config
 export interface GenerateNavDataConfig {
   /** Directory containing documentation files to scan */
   docsDir: string;
@@ -56,6 +59,7 @@ export interface GenerateNavDataConfig {
   /** Subcategory ordering configuration (for nested groups within sections) */
   subcategoryOrder?: Record<string, number>;
 }
+// #endregion config
 
 interface ParsedFrontmatter {
   title?: string;

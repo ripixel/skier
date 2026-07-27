@@ -278,6 +278,7 @@ That's install → build → preview → deploy. You now have a live site.
 
 | Guide | Why |
 |-------|-----|
+| [Architecture](./architecture.md) | Understand how Skier works under the hood |
 | [Task Reference](./task-reference/index.md) | Every built-in task and its options |
 | [Markdown & Frontmatter](./markdown-frontmatter.md) | Author content in Markdown |
 | [Templates & Partials](./templates-partials.md) | Handlebars templating and shared partials |

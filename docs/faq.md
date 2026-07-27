@@ -1,6 +1,6 @@
 ---
 title: FAQ
-section: Community
+section: FAQ
 order: 1
 ---
 

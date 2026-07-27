@@ -1,5 +1,6 @@
 ---
 title: generatePagesTask
+section: Task Reference
 subcategory: Content
 order: 1
 ---

@@ -1,5 +1,6 @@
 ---
 title: setGlobalFromMarkdownTask
+section: Task Reference
 subcategory: Globals
 order: 2
 ---

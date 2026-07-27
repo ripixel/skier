@@ -1,5 +1,6 @@
 ---
 title: generatePaginatedItemsTask
+section: Task Reference
 subcategory: Content
 order: 3
 ---

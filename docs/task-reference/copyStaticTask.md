@@ -1,5 +1,6 @@
 ---
 title: copyStaticTask
+section: Task Reference
 subcategory: Setup
 order: 2
 ---

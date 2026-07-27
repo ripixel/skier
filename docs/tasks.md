@@ -1,6 +1,6 @@
 ---
 title: Tasks
-section: Core Concepts
+section: Guides
 order: 1
 ---
 
@@ -61,6 +61,6 @@ const task2 = {
 
 ## Learn More
 
-- **[Built-in Tasks](./builtins/README.md)** — All built-in tasks with docs
+- **[Task Reference](/task-reference)** — All built-in tasks with docs
 - **[Custom Tasks](./custom-tasks.md)** — Write your own tasks
 - **[Architecture](./architecture.md)** — Deep dive into the pipeline

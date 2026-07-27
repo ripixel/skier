@@ -1,6 +1,6 @@
 ---
 title: Templates & Partials
-section: Core Concepts
+section: Guides
 order: 3
 ---
 
@@ -136,5 +136,5 @@ All globals and frontmatter fields are available:
 ## Learn More
 
 - [Markdown & Frontmatter](./markdown-frontmatter.md) — Content file format
-- [generatePagesTask](./builtins/generatePagesTask.md) — Rendering templates
+- [generatePagesTask](./task-reference/generatePagesTask.md) — Rendering templates
 - [Handlebars Docs](https://handlebarsjs.com/guide/) — Full syntax reference

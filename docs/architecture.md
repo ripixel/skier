@@ -1,7 +1,7 @@
 ---
 title: Architecture
-section: Advanced
-order: 1
+section: Guides
+order: 5
 ---
 
 # Architecture

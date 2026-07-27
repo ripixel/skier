@@ -43,13 +43,19 @@ exports.tasks = [
     docsDir: 'docs',
     outputVar: 'navData',
     basePath: '',
+    // Docs information architecture. Sections are declared per-page via
+    // `section:` frontmatter; this map only fixes their order in the sidebar.
+    // See docs/markdown-frontmatter.md → "Docs site navigation" for the
+    // frontmatter conventions every docs page follows.
     sectionOrder: {
       'Getting Started': 1,
-      'Core Concepts': 2,
-      'Built-in Tasks': 3,
-      Advanced: 4,
-      Community: 5,
+      Guides: 2,
+      'Task Reference': 3,
+      'API Reference': 4,
+      Recipes: 5,
+      FAQ: 6,
     },
+    // Ordering for the subcategory groups inside Task Reference.
     subcategoryOrder: {
       Setup: 1,
       Globals: 2,
@@ -85,26 +91,4 @@ exports.tasks = [
     outDir: 'public',
     pageExt: '.hbs',
   }),
-
-  // Post-step: Alias README.html to index.html for builtins
-  {
-    name: 'aliasBuiltinsReadmeToIndex',
-    config: {},
-    run: async (cfg, ctx) => {
-      const fs = require('fs/promises');
-      const src = 'public/builtins/README.html';
-      const dest = 'public/builtins/index.html';
-      try {
-        await fs.copyFile(src, dest);
-        ctx.logger.debug(`Aliased ${src} -> ${dest}`);
-      } catch (err) {
-        if (err.code === 'ENOENT') {
-          // README.html doesn't exist, skip
-          ctx.logger.warn(`Skipping alias: ${src} not found.`);
-        } else {
-          throw err;
-        }
-      }
-    },
-  },
 ];

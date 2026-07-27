@@ -1,5 +1,6 @@
 ---
 title: bundleCssTask
+section: Task Reference
 subcategory: Setup
 order: 3
 ---

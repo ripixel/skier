@@ -1,5 +1,6 @@
 ---
 title: generateItemsTask
+section: Task Reference
 subcategory: Content
 order: 2
 ---

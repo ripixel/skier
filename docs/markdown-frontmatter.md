@@ -245,6 +245,16 @@ error** — a broken include never silently renders nothing. `@include` lines
 inside a fenced code block are left untouched, so this page can show the syntax
 without transcluding itself.
 
+### Live example
+
+This page dogfoods the directive. The code block below is not hand-written — it
+is transcluded at build time from the `snippet-error` region of Skier's own
+renderer, `src/utils/markdown.ts`, which is covered by the renderer test suite.
+If that class changes or moves, this docs build fails, so the example here can
+never drift from the shipping code:
+
+@include src/utils/markdown.ts region="snippet-error"
+
 ---
 
 ## Heading Anchors & Table of Contents

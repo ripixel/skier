@@ -212,12 +212,14 @@ const calloutExtension: TokenizerAndRendererExtension = {
  * Paths are resolved relative to the render base dir (the project working
  * directory by default; see `renderMarkdown` options).
  */
+// #region snippet-error
 export class SnippetIncludeError extends Error {
   constructor(message: string) {
     super(`[skier] snippet include: ${message}`);
     this.name = 'SnippetIncludeError';
   }
 }
+// #endregion snippet-error
 
 export interface IncludeDirective {
   path: string;

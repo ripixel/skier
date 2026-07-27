@@ -441,3 +441,20 @@ describe('snippet transclusion (renderMarkdown @include)', () => {
     );
   });
 });
+
+describe('snippet transclusion (docs dogfood)', () => {
+  // The transclusion docs page (`docs/markdown-frontmatter.md`) includes the
+  // real `snippet-error` region of this renderer. This test guards that link:
+  // if the region marker is renamed, moved, or removed, the docs example would
+  // silently rot — here it fails loudly instead.
+  const repoRoot = path.resolve(__dirname, '..', '..');
+
+  it('resolves the region the docs page transcludes from real source', async () => {
+    const html = await renderMarkdown('@include src/utils/markdown.ts region="snippet-error"', {
+      includeBaseDir: repoRoot,
+    });
+    const plain = html.replace(/<[^>]+>/g, '');
+    expect(plain).toContain('class SnippetIncludeError extends Error');
+    expect(plain).not.toContain('#region');
+  });
+});

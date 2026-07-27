@@ -58,7 +58,14 @@ jobs:
             git config user.email "ci@skier.dev"
             git config user.name "CircleCI"
             git remote set-url origin git@github.com:ripixel/skier.git
-      - run: npx semantic-release
+      - run:
+          name: Publish via npm trusted publishing (OIDC)
+          command: |
+            # Exchange CircleCI's OIDC token for a short-lived npm publish token.
+            # semantic-release/npm >= 13.1 detects NPM_ID_TOKEN and uses trusted
+            # publishing instead of a long-lived NPM_TOKEN. No npm token required.
+            export NPM_ID_TOKEN="$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')"
+            npx semantic-release
   build_docs:
     executor: node-executor
     steps:

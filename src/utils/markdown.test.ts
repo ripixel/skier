@@ -1,4 +1,4 @@
-import { parseCodeMeta, renderCodeBlock, renderMarkdown } from './markdown.js';
+import { parseCodeMeta, renderCodeBlock, renderMarkdown, resolveCalloutType } from './markdown.js';
 
 describe('parseCodeMeta', () => {
   it('returns an empty language for an empty info string', () => {
@@ -113,5 +113,87 @@ describe('renderMarkdown', () => {
     expect(html).toContain('<figure class="code-block"');
     expect(html).toContain('data-language="ts"');
     expect(html).toContain('data-filename="skier.config.ts"');
+  });
+});
+
+describe('resolveCalloutType', () => {
+  it('resolves the core types case-insensitively', () => {
+    expect(resolveCalloutType('note')).toBe('note');
+    expect(resolveCalloutType('TIP')).toBe('tip');
+    expect(resolveCalloutType('Warning')).toBe('warning');
+    expect(resolveCalloutType('danger')).toBe('danger');
+    expect(resolveCalloutType('info')).toBe('info');
+  });
+
+  it('resolves common aliases to a canonical type', () => {
+    expect(resolveCalloutType('caution')).toBe('danger');
+    expect(resolveCalloutType('important')).toBe('info');
+  });
+
+  it('returns null for unknown keywords', () => {
+    expect(resolveCalloutType('banana')).toBeNull();
+    expect(resolveCalloutType('')).toBeNull();
+  });
+});
+
+describe('callout blocks', () => {
+  it('renders a note callout with class and data-attribute', async () => {
+    const md = [':::note', 'Something worth knowing.', ':::'].join('\n');
+    const html = await renderMarkdown(md);
+    expect(html).toContain('<div class="callout callout-note" data-callout="note">');
+    expect(html).toContain('<div class="callout-body">');
+    expect(html).toContain('Something worth knowing.');
+  });
+
+  it('defaults the title to a capitalised type label', async () => {
+    const md = [':::warning', 'Be careful.', ':::'].join('\n');
+    const html = await renderMarkdown(md);
+    expect(html).toContain('data-callout="warning"');
+    expect(html).toContain('<p class="callout-title">Warning</p>');
+  });
+
+  it('uses a custom title from the opening line', async () => {
+    const md = [':::tip Pro tip', 'Do this instead.', ':::'].join('\n');
+    const html = await renderMarkdown(md);
+    expect(html).toContain('data-callout="tip"');
+    expect(html).toContain('<p class="callout-title">Pro tip</p>');
+  });
+
+  it('renders inline and block markdown inside the body', async () => {
+    const md = [':::info', 'Uses **bold** and a [link](/x).', '', '- one', '- two', ':::'].join(
+      '\n',
+    );
+    const html = await renderMarkdown(md);
+    expect(html).toContain('<strong>bold</strong>');
+    expect(html).toContain('<a href="/x">link</a>');
+    expect(html).toContain('<li>one</li>');
+  });
+
+  it('maps aliases onto their canonical type', async () => {
+    const md = [':::caution', 'Danger ahead.', ':::'].join('\n');
+    const html = await renderMarkdown(md);
+    expect(html).toContain('class="callout callout-danger"');
+    expect(html).toContain('data-callout="danger"');
+  });
+
+  it('escapes HTML in a custom title', async () => {
+    const md = [':::note <script>alert(1)</script>', 'body', ':::'].join('\n');
+    const html = await renderMarkdown(md);
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).not.toContain('<script>alert(1)</script>');
+  });
+
+  it('leaves an unknown keyword as ordinary markdown', async () => {
+    const md = [':::banana', 'not a callout', ':::'].join('\n');
+    const html = await renderMarkdown(md);
+    expect(html).not.toContain('class="callout');
+    expect(html).toContain(':::banana');
+  });
+
+  it('renders an empty-body callout without throwing', async () => {
+    const md = [':::note', ':::'].join('\n');
+    const html = await renderMarkdown(md);
+    expect(html).toContain('data-callout="note"');
+    expect(html).toContain('<div class="callout-body"></div>');
   });
 });

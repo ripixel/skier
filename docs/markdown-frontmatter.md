@@ -123,6 +123,40 @@ names with spaces (`title="my notes.txt"`).
 
 ---
 
+## Callouts / admonitions
+
+Draw attention with callout blocks using a `:::` container. The keyword after
+the colons is the callout type; an optional title can follow on the same line:
+
+```markdown
+:::note
+A plain note. The body is full markdown — **bold**, links, lists, code.
+:::
+
+:::warning Heads up
+A warning with a custom title.
+:::
+```
+
+Supported types: `note`, `tip`, `info`, `warning`, `danger` (with `caution` →
+`danger` and `important` → `info` accepted as aliases). An unrecognised keyword
+is left as ordinary text, so `:::` used for anything else is untouched.
+
+Each block renders as class-driven, semantic markup for the template's CSS to
+theme per type — Skier hard-codes no colours or icons:
+
+```html
+<div class="callout callout-warning" data-callout="warning">
+  <p class="callout-title">Heads up</p>
+  <div class="callout-body">…rendered body…</div>
+</div>
+```
+
+The title defaults to the capitalised type name (`Note`, `Warning`, …) when you
+don't supply one.
+
+---
+
 ## Excerpts
 
 For post summaries, use a marker:

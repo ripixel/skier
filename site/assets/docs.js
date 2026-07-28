@@ -8,9 +8,11 @@
      - on-page TOC scroll-spy
      - active sidebar item + prev/next pager + breadcrumb from the rendered nav
      - mobile off-canvas drawer
+     - native search (A6): overlay + client-side index (B3), keyboard-driven
 
-   Search behaviour is intentionally NOT wired here — the header carries the
-   trigger slot; the A6 search UI owns the overlay + client index fetch.
+   Search reads the plain JSON index emitted by generateSearchIndexTask (B3);
+   the UI just fetches it, matches as you type, and deep-links to the B1 slugged
+   heading anchors. No framework, no external service — Skier's own search.
    ============================================================================= */
 (function () {
   'use strict';
@@ -229,6 +231,422 @@
       toggleNav(false);
     });
   });
+
+  /* =========================================================================
+     Native search (A6) — fetches the B3 index, matches as you type, deep-links
+     to B1 heading anchors. Overlay markup is built to the A5 CSS contract
+     (.sk-search-overlay / -modal / -results / .sk-result / .sk-search-group).
+     ========================================================================= */
+  (function initSearch() {
+    var searchBtn = document.getElementById('searchBtn');
+
+    // Index is fetched lazily on first open (or trigger hover) and cached.
+    var INDEX_URL = '/search-index.json';
+    var pages = null; // prepared entries, or null until loaded
+    var loadState = 'idle'; // idle | loading | ready | error
+    var loadPromise = null;
+
+    var overlay = null; // built once, attached/detached on open/close
+    var input = null;
+    var resultsEl = null;
+    var current = []; // result objects for the current query, in display order
+    var activeIdx = -1;
+
+    /* ---- load + prepare the index (precompute lowercased search fields) ---- */
+    function loadIndex() {
+      if (loadPromise) return loadPromise;
+      loadState = 'loading';
+      loadPromise = fetch(INDEX_URL, { credentials: 'same-origin' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          var list = (data && data.pages) || [];
+          pages = list.map(function (p) {
+            var headings = (p.headings || []).map(function (h) {
+              return {
+                text: h.text || '',
+                level: h.level,
+                id: h.id,
+                lc: (h.text || '').toLowerCase(),
+              };
+            });
+            return {
+              url: p.url || '/',
+              // Same-origin path (the index stores absolute URLs); keeps deep
+              // links working both locally and in production.
+              path: toPath(p.url || '/'),
+              title: p.title || 'Untitled',
+              titleLc: (p.title || '').toLowerCase(),
+              headings: headings,
+              body: p.body || '',
+              bodyLc: (p.body || '').toLowerCase(),
+            };
+          });
+          loadState = 'ready';
+          return pages;
+        })
+        .catch(function (err) {
+          loadState = 'error';
+          if (window.console && console.warn) console.warn('Search index failed to load:', err);
+          throw err;
+        });
+      return loadPromise;
+    }
+
+    function toPath(url) {
+      try {
+        return new URL(url, location.href).pathname;
+      } catch (e) {
+        return url;
+      }
+    }
+
+    /* ---- query → ranked results ---- */
+    function tokenize(q) {
+      return q
+        .toLowerCase()
+        .split(/\s+/)
+        .map(function (t) {
+          return t.trim();
+        })
+        .filter(Boolean);
+    }
+
+    function bestHeading(page, terms) {
+      var best = null;
+      var bestCount = 0;
+      page.headings.forEach(function (h) {
+        if (!h.id) return; // only anchored headings can be deep-linked
+        var count = 0;
+        terms.forEach(function (t) {
+          if (h.lc.indexOf(t) !== -1) count++;
+        });
+        if (count > bestCount) {
+          bestCount = count;
+          best = h;
+        }
+      });
+      return best;
+    }
+
+    function search(q) {
+      var terms = tokenize(q);
+      if (!pages || !terms.length) return [];
+
+      var scored = [];
+      pages.forEach(function (page) {
+        var score = 0;
+        var everyTerm = true;
+        terms.forEach(function (t) {
+          var hit = false;
+          if (page.titleLc.indexOf(t) !== -1) {
+            score += 12;
+            hit = true;
+          }
+          for (var i = 0; i < page.headings.length; i++) {
+            if (page.headings[i].lc.indexOf(t) !== -1) {
+              score += 4;
+              hit = true;
+              break;
+            }
+          }
+          if (page.bodyLc.indexOf(t) !== -1) {
+            score += 1;
+            hit = true;
+          }
+          if (!hit) everyTerm = false;
+        });
+        // Require every term to appear somewhere on the page (AND semantics).
+        if (!everyTerm) return;
+        // Small bump when the whole query is a contiguous title substring.
+        if (terms.length > 1 && page.titleLc.indexOf(q.toLowerCase().trim()) !== -1) score += 8;
+
+        var heading = bestHeading(page, terms);
+        scored.push({
+          title: page.title,
+          href: heading ? page.path + '#' + heading.id : page.path,
+          crumb: crumbHtml(page, heading),
+          snippet: snippetHtml(page.body, page.bodyLc, terms),
+          score: score,
+        });
+      });
+
+      scored.sort(function (a, b) {
+        return b.score - a.score;
+      });
+      return scored.slice(0, 20);
+    }
+
+    function crumbHtml(page, heading) {
+      var out = escapeHtml(page.path);
+      if (heading) out += ' <em>' + escapeHtml(heading.text) + '</em>';
+      return out;
+    }
+
+    /* ---- snippet: window around the first body hit, terms marked ---- */
+    function snippetHtml(body, bodyLc, terms) {
+      var first = -1;
+      terms.forEach(function (t) {
+        var idx = bodyLc.indexOf(t);
+        if (idx !== -1 && (first === -1 || idx < first)) first = idx;
+      });
+      var slice;
+      if (first === -1) {
+        // Matched only on title/heading — show the opening of the page.
+        slice = body.slice(0, 140);
+        if (body.length > 140) slice = slice.replace(/\s\S*$/, '') + '…';
+        return highlight(slice, terms);
+      }
+      var start = Math.max(0, first - 60);
+      var end = Math.min(body.length, first + 120);
+      slice = body.slice(start, end);
+      if (start > 0) slice = '…' + slice.replace(/^\S*\s/, '');
+      if (end < body.length) slice = slice.replace(/\s\S*$/, '') + '…';
+      return highlight(slice, terms);
+    }
+
+    // Escape, then wrap term occurrences in <mark>. Works on raw text via match
+    // ranges so we never split an HTML entity.
+    function highlight(text, terms) {
+      var lc = text.toLowerCase();
+      var ranges = [];
+      terms.forEach(function (t) {
+        if (!t) return;
+        var from = 0;
+        var idx;
+        while ((idx = lc.indexOf(t, from)) !== -1) {
+          ranges.push([idx, idx + t.length]);
+          from = idx + t.length;
+        }
+      });
+      if (!ranges.length) return escapeHtml(text);
+      ranges.sort(function (a, b) {
+        return a[0] - b[0];
+      });
+      var merged = [ranges[0].slice()];
+      for (var i = 1; i < ranges.length; i++) {
+        var last = merged[merged.length - 1];
+        if (ranges[i][0] <= last[1]) last[1] = Math.max(last[1], ranges[i][1]);
+        else merged.push(ranges[i].slice());
+      }
+      var out = '';
+      var pos = 0;
+      merged.forEach(function (r) {
+        out += escapeHtml(text.slice(pos, r[0]));
+        out += '<mark>' + escapeHtml(text.slice(r[0], r[1])) + '</mark>';
+        pos = r[1];
+      });
+      out += escapeHtml(text.slice(pos));
+      return out;
+    }
+
+    /* ---- overlay construction (to the A5 markup contract) ---- */
+    var SEARCH_ICON =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+      '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>';
+
+    function buildOverlay() {
+      overlay = document.createElement('div');
+      overlay.className = 'sk-search-overlay';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', 'Search docs');
+      overlay.innerHTML =
+        '<div class="sk-search-modal">' +
+        '<div class="sk-search-input-row">' +
+        SEARCH_ICON +
+        '<input class="sk-search-input" type="text" autocomplete="off" autocorrect="off" ' +
+        'autocapitalize="off" spellcheck="false" placeholder="Search the docs…" ' +
+        'aria-label="Search docs" aria-controls="skSearchResults" />' +
+        '<span class="sk-search-esc"><span class="sk-kbd">Esc</span></span>' +
+        '</div>' +
+        '<div class="sk-search-results" id="skSearchResults" role="listbox"></div>' +
+        '<div class="sk-search-foot">' +
+        '<span class="hint"><span class="sk-kbd">↑</span><span class="sk-kbd">↓</span> to navigate</span>' +
+        '<span class="hint"><span class="sk-kbd">↵</span> to open</span>' +
+        '<span class="hint"><span class="sk-kbd">esc</span> to close</span>' +
+        '</div>' +
+        '</div>';
+
+      input = overlay.querySelector('.sk-search-input');
+      resultsEl = overlay.querySelector('#skSearchResults');
+
+      // Backdrop click closes; clicks inside the modal don't.
+      overlay.addEventListener('mousedown', function (e) {
+        if (e.target === overlay) close();
+      });
+      input.addEventListener('input', function () {
+        runQuery();
+      });
+      input.addEventListener('keydown', onInputKeydown);
+      // Delegate result hover/click.
+      resultsEl.addEventListener('mousemove', function (e) {
+        var el = e.target.closest ? e.target.closest('.sk-result') : null;
+        if (el && el.dataset.idx) setActive(parseInt(el.dataset.idx, 10), false);
+      });
+      resultsEl.addEventListener('click', function (e) {
+        var el = e.target.closest ? e.target.closest('.sk-result') : null;
+        if (el) {
+          e.preventDefault();
+          go(parseInt(el.dataset.idx, 10));
+        }
+      });
+    }
+
+    /* ---- rendering ---- */
+    function runQuery() {
+      var q = input.value.trim();
+      if (loadState === 'error') {
+        current = [];
+        resultsEl.innerHTML =
+          '<div class="sk-search-group">Search unavailable</div>' +
+          '<div class="sk-result"><div class="r-snippet">Could not load the search index. ' +
+          'Please refresh and try again.</div></div>';
+        return;
+      }
+      if (loadState !== 'ready') {
+        current = [];
+        resultsEl.innerHTML = '<div class="sk-search-group">Loading…</div>';
+        return;
+      }
+      if (!q) {
+        current = [];
+        activeIdx = -1;
+        resultsEl.innerHTML =
+          '<div class="sk-search-group">Start typing to search ' + pages.length + ' pages</div>';
+        return;
+      }
+      current = search(q);
+      render(q);
+    }
+
+    function render(q) {
+      if (!current.length) {
+        activeIdx = -1;
+        resultsEl.innerHTML =
+          '<div class="sk-search-group">No results</div>' +
+          '<div class="sk-result"><div class="r-snippet">Nothing matched “' +
+          escapeHtml(q) +
+          '”.</div></div>';
+        return;
+      }
+      var html =
+        '<div class="sk-search-group">' +
+        current.length +
+        (current.length === 1 ? ' result' : ' results') +
+        '</div>';
+      current.forEach(function (r, i) {
+        html +=
+          '<a class="sk-result" role="option" data-idx="' +
+          i +
+          '" href="' +
+          escapeHtml(r.href) +
+          '">' +
+          '<div class="r-title">' +
+          escapeHtml(r.title) +
+          '</div>' +
+          '<div class="r-crumb">' +
+          r.crumb +
+          '</div>' +
+          '<div class="r-snippet">' +
+          r.snippet +
+          '</div>' +
+          '</a>';
+      });
+      resultsEl.innerHTML = html;
+      setActive(0, false);
+    }
+
+    function resultEls() {
+      return Array.prototype.slice.call(resultsEl.querySelectorAll('.sk-result[data-idx]'));
+    }
+
+    function setActive(idx, scroll) {
+      var els = resultEls();
+      if (!els.length) {
+        activeIdx = -1;
+        return;
+      }
+      activeIdx = ((idx % els.length) + els.length) % els.length;
+      els.forEach(function (el, i) {
+        var on = i === activeIdx;
+        el.classList.toggle('is-active', on);
+        el.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on && scroll) el.scrollIntoView({ block: 'nearest' });
+      });
+    }
+
+    function go(idx) {
+      var r = current[idx];
+      if (r) location.assign(r.href);
+    }
+
+    /* ---- keyboard ---- */
+    function onInputKeydown(e) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActive(activeIdx + 1, true);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActive(activeIdx - 1, true);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (activeIdx > -1) go(activeIdx);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+      }
+    }
+
+    /* ---- open / close ---- */
+    function isOpen() {
+      return !!(overlay && overlay.parentNode);
+    }
+
+    function open() {
+      if (isOpen()) return;
+      if (!overlay) buildOverlay();
+      document.body.appendChild(overlay);
+      input.value = '';
+      loadIndex().then(runQuery, runQuery); // refresh state once loaded
+      runQuery(); // immediate (loading / ready) state
+      input.focus();
+    }
+
+    function close() {
+      if (!isOpen()) return;
+      overlay.parentNode.removeChild(overlay);
+      if (searchBtn) searchBtn.focus();
+    }
+
+    /* ---- wire the trigger + global shortcuts ---- */
+    if (searchBtn) {
+      searchBtn.addEventListener('click', open);
+      // Warm the index on intent so the first open feels instant.
+      searchBtn.addEventListener('mouseenter', loadIndex);
+      searchBtn.addEventListener('focus', loadIndex);
+    }
+
+    document.addEventListener('keydown', function (e) {
+      // Cmd/Ctrl+K toggles the palette from anywhere.
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        isOpen() ? close() : open();
+        return;
+      }
+      // "/" opens when not already typing into a field.
+      if (e.key === '/' && !isOpen()) {
+        var t = e.target;
+        var tag = t && t.tagName ? t.tagName.toLowerCase() : '';
+        if (tag !== 'input' && tag !== 'textarea' && !(t && t.isContentEditable)) {
+          e.preventDefault();
+          open();
+        }
+      }
+    });
+  })();
 
   function escapeHtml(s) {
     return String(s)

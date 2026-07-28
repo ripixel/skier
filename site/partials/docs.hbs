@@ -1,49 +1,45 @@
-{{! Main docs site template }}
+{{! Main docs site template — three-column shell (sidebar | prose | on-page TOC) }}
 <!DOCTYPE html>
 <html lang="en">
   {{> head }}
 
-  <body class="docs-layout">
+  <body>
     {{> header }}
 
-    <div class="docs-container">
-      <aside class="sidebar">
+    <div class="sk-scrim" id="scrim"></div>
+
+    <div class="sk-shell">
+      <aside class="sk-sidebar" id="sidebar">
         {{> dynamic-sidebar }}
       </aside>
-      <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('open')"></div>
 
-      <main class="content">
-        {{#if breadcrumb}}
-          <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <main class="sk-main">
+        <article class="sk-content sk-prose">
+          {{!-- Breadcrumb is enriched by docs.js from the active nav item; this is
+                the no-JS fallback (Docs / <title>). --}}
+          <nav class="sk-breadcrumb" id="breadcrumb" data-title="{{title}}" aria-label="Breadcrumb">
             <a href="/">Docs</a>
-            <span class="breadcrumbs-separator">›</span>
-            {{#if section}}
-              <a href="/{{sectionSlug}}">{{section}}</a>
-              <span class="breadcrumbs-separator">›</span>
-            {{/if}}
+            <span class="sep">/</span>
             <span>{{title}}</span>
           </nav>
-        {{/if}}
 
-        {{{content}}}
+          {{{content}}}
 
-        {{#if prevPage}}
-          <nav class="page-nav">
-            {{#if prevPage}}
-              <a href="{{prevPage.url}}" class="page-nav-link prev">
-                <span class="page-nav-label">← Previous</span>
-                <span class="page-nav-title">{{prevPage.title}}</span>
-              </a>
-            {{/if}}
-            {{#if nextPage}}
-              <a href="{{nextPage.url}}" class="page-nav-link next">
-                <span class="page-nav-label">Next →</span>
-                <span class="page-nav-title">{{nextPage.title}}</span>
-              </a>
-            {{/if}}
-          </nav>
-        {{/if}}
+          {{!-- Prev/next pager is populated by docs.js from the sidebar sequence. --}}
+          <nav class="sk-pager" id="pager" aria-label="Pagination" hidden></nav>
+        </article>
       </main>
+
+      <aside class="sk-toc">
+        {{#if headings}}
+          <div class="sk-toc-label">On this page</div>
+          <ul id="tocList">
+            {{#each headings}}
+              <li><a href="#{{this.slug}}" class="lvl-{{this.level}}">{{this.text}}</a></li>
+            {{/each}}
+          </ul>
+        {{/if}}
+      </aside>
     </div>
 
     {{> footer }}
@@ -52,75 +48,17 @@
     <script type="module">
       import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
+      // Follow the docs theme (deep graphite dark / clean light).
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
       mermaid.initialize({
         startOnLoad: false,
-        theme: 'base',
-        themeVariables: {
-          // Use dark background
-          background: '#1e293b',
-
-          // Font color - white for all text
-          fontFamily: 'Inter, system-ui, sans-serif',
-
-          // Node colors - blue with white text
-          primaryColor: '#1e40af',
-          primaryTextColor: '#ffffff',
-          primaryBorderColor: '#3b82f6',
-
-          // Secondary elements
-          secondaryColor: '#334155',
-          secondaryTextColor: '#ffffff',
-          secondaryBorderColor: '#64748b',
-
-          // Tertiary elements
-          tertiaryColor: '#475569',
-          tertiaryTextColor: '#ffffff',
-          tertiaryBorderColor: '#64748b',
-
-          // Lines and edges
-          lineColor: '#94a3b8',
-
-          // Main backgrounds
-          mainBkg: '#1e40af',
-          nodeBorder: '#3b82f6',
-
-          // Clusters/subgraphs - lighter background with WHITE text
-          clusterBkg: '#334155',
-          clusterBorder: '#64748b',
-
-          // Text colors - ALL WHITE for dark theme
-          titleColor: '#ffffff',
-          textColor: '#ffffff',
-
-          // Labels
-          edgeLabelBackground: '#334155',
-          nodeTextColor: '#ffffff',
-
-          // Actor colors for sequence diagrams
-          actorTextColor: '#ffffff',
-          actorBkg: '#1e40af',
-          actorBorder: '#3b82f6',
-          actorLineColor: '#cbd5e1',
-          signalColor: '#cbd5e1',
-          signalTextColor: '#f1f5f9',
-          labelBoxBkgColor: '#334155',
-          labelBoxBorderColor: '#64748b',
-          labelTextColor: '#ffffff',
-          loopTextColor: '#f1f5f9',
-          noteBkgColor: '#334155',
-          noteTextColor: '#ffffff',
-          noteBorderColor: '#64748b',
-
-          // Activation boxes
-          activationBkgColor: '#475569',
-          activationBorderColor: '#94a3b8',
-        }
+        theme: dark ? 'dark' : 'neutral',
+        fontFamily: 'IBM Plex Sans, system-ui, sans-serif',
       });
 
       // Find all code blocks that contain mermaid diagrams
       document.querySelectorAll('pre > code').forEach(async (codeBlock, index) => {
         const text = codeBlock.textContent.trim();
-        // Check if content starts with common mermaid keywords
         const mermaidKeywords = ['flowchart', 'sequenceDiagram', 'classDiagram', 'stateDiagram', 'erDiagram', 'gantt', 'pie', 'graph'];
         const isMermaid = mermaidKeywords.some(keyword => text.startsWith(keyword));
 

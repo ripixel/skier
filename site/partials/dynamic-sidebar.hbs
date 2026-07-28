@@ -1,28 +1,27 @@
-<nav class="sidebar-nav">
-  {{#each navData.sections}}
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">{{this.name}}</div>
-      <ul>
-        {{!-- Direct section items (no subcategory) --}}
+{{!-- Sidebar nav, rendered from the merged generateNavDataTask output
+      (navData.sections → NavSection{ name, items, children }). The active item,
+      breadcrumb and prev/next pager are derived client-side in docs.js from the
+      current path, so no active flag is needed at render time. --}}
+{{#each navData.sections}}
+  <div class="sk-nav-section">
+    <div class="sk-nav-label">{{this.name}}</div>
+    {{#if this.items.length}}
+      <ul class="sk-nav-list">
         {{#each this.items}}
           <li><a href="{{this.url}}">{{this.title}}</a></li>
         {{/each}}
-        {{!-- Subcategory groups --}}
-        {{#if this.children}}
-          {{#each this.children}}
-            <li>
-              <details open>
-                <summary>{{this.name}}</summary>
-                <ul class="nav-children">
-                  {{#each this.items}}
-                    <li><a href="{{this.url}}">{{this.title}}</a></li>
-                  {{/each}}
-                </ul>
-              </details>
-            </li>
-          {{/each}}
-        {{/if}}
       </ul>
-    </div>
-  {{/each}}
-</nav>
+    {{/if}}
+    {{!-- Subcategory groups (e.g. Task Reference → Setup / Content / Feeds & SEO) --}}
+    {{#if this.children}}
+      {{#each this.children}}
+        <div class="sk-nav-label sk-nav-sublabel">{{this.name}}</div>
+        <ul class="sk-nav-list">
+          {{#each this.items}}
+            <li><a href="{{this.url}}">{{this.title}}</a></li>
+          {{/each}}
+        </ul>
+      {{/each}}
+    {{/if}}
+  </div>
+{{/each}}

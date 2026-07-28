@@ -32,7 +32,11 @@
     themeBtn.addEventListener('click', function () {
       var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       root.setAttribute('data-theme', next);
-      try { localStorage.setItem('sk-theme', next); } catch (e) { /* ignore */ }
+      try {
+        localStorage.setItem('sk-theme', next);
+      } catch (e) {
+        /* ignore */
+      }
       syncThemeIcons();
     });
   }
@@ -58,7 +62,9 @@
       '<span class="sk-code-file"><span class="sk-lang-dot"></span>' +
       escapeHtml(label) +
       '</span><span class="spacer"></span>' +
-      '<button class="sk-copy" type="button" data-copy>' + COPY_ICON + '<span>Copy</span></button>';
+      '<button class="sk-copy" type="button" data-copy>' +
+      COPY_ICON +
+      '<span>Copy</span></button>';
     fig.insertBefore(head, pre);
 
     var btn = head.querySelector('[data-copy]');
@@ -78,29 +84,37 @@
   });
 
   /* ---- hover anchors on slugged headings (B1) ---- */
-  document.querySelectorAll('.sk-prose h2[id], .sk-prose h3[id], .sk-prose h4[id]').forEach(function (h) {
-    if (h.querySelector('.sk-anchor')) return;
-    var a = document.createElement('a');
-    a.className = 'sk-anchor';
-    a.href = '#' + h.id;
-    a.setAttribute('aria-label', 'Link to ' + h.textContent);
-    a.textContent = '#';
-    h.appendChild(a);
-  });
+  document
+    .querySelectorAll('.sk-prose h2[id], .sk-prose h3[id], .sk-prose h4[id]')
+    .forEach(function (h) {
+      if (h.querySelector('.sk-anchor')) return;
+      var a = document.createElement('a');
+      a.className = 'sk-anchor';
+      a.href = '#' + h.id;
+      a.setAttribute('aria-label', 'Link to ' + h.textContent);
+      a.textContent = '#';
+      h.appendChild(a);
+    });
 
   /* ---- active sidebar item, breadcrumb, prev/next pager ---- */
   function normalizePath(p) {
     if (!p) return '/';
-    try { p = decodeURIComponent(p); } catch (e) { /* keep raw */ }
-    p = p.replace(/[?#].*$/, '');           // drop query/hash
-    p = p.replace(/\.html$/, '');           // clean-url form
-    p = p.replace(/\/index$/, '');          // index === directory root
-    p = p.replace(/\/+$/, '');              // no trailing slash
+    try {
+      p = decodeURIComponent(p);
+    } catch (e) {
+      /* keep raw */
+    }
+    p = p.replace(/[?#].*$/, ''); // drop query/hash
+    p = p.replace(/\.html$/, ''); // clean-url form
+    p = p.replace(/\/index$/, ''); // index === directory root
+    p = p.replace(/\/+$/, ''); // no trailing slash
     return p === '' ? '/' : p;
   }
 
   var here = normalizePath(location.pathname);
-  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.sk-sidebar .sk-nav-list a'));
+  var navLinks = Array.prototype.slice.call(
+    document.querySelectorAll('.sk-sidebar .sk-nav-list a'),
+  );
   var activeLink = null;
   navLinks.forEach(function (a) {
     if (normalizePath(a.getAttribute('href')) === here) {
@@ -116,7 +130,8 @@
     var section = activeLink.closest('.sk-nav-section');
     var sectionLabel = section ? section.querySelector('.sk-nav-label') : null;
     var parts = ['<a href="/">Docs</a>'];
-    if (sectionLabel) parts.push('<span>' + escapeHtml(sectionLabel.textContent.trim()) + '</span>');
+    if (sectionLabel)
+      parts.push('<span>' + escapeHtml(sectionLabel.textContent.trim()) + '</span>');
     var pageTitle = crumbEl.getAttribute('data-title');
     if (pageTitle) parts.push('<span>' + escapeHtml(pageTitle) + '</span>');
     crumbEl.innerHTML = parts.join('<span class="sep">/</span>');
@@ -131,12 +146,20 @@
     if (prev || next) {
       var html = '';
       html += prev
-        ? '<a class="prev" href="' + prev.getAttribute('href') + '"><span class="dir">← Previous</span>' +
-          '<span class="ttl">' + escapeHtml(prev.textContent.trim()) + '</span></a>'
+        ? '<a class="prev" href="' +
+          prev.getAttribute('href') +
+          '"><span class="dir">← Previous</span>' +
+          '<span class="ttl">' +
+          escapeHtml(prev.textContent.trim()) +
+          '</span></a>'
         : '<span></span>';
       html += next
-        ? '<a class="next" href="' + next.getAttribute('href') + '"><span class="dir">Next →</span>' +
-          '<span class="ttl">' + escapeHtml(next.textContent.trim()) + '</span></a>'
+        ? '<a class="next" href="' +
+          next.getAttribute('href') +
+          '"><span class="dir">Next →</span>' +
+          '<span class="ttl">' +
+          escapeHtml(next.textContent.trim()) +
+          '</span></a>'
         : '<span></span>';
       pagerEl.innerHTML = html;
       pagerEl.hidden = false;
@@ -148,8 +171,11 @@
   var tocList = document.getElementById('tocList');
   if (toc && tocList) {
     // A TOC that shows nothing (page has only an h1, or only h4+) is noise.
-    var visibleLinks = Array.prototype.slice.call(tocList.querySelectorAll('a'))
-      .filter(function (a) { return getComputedStyle(a).display !== 'none'; });
+    var visibleLinks = Array.prototype.slice
+      .call(tocList.querySelectorAll('a'))
+      .filter(function (a) {
+        return getComputedStyle(a).display !== 'none';
+      });
     if (visibleLinks.length === 0) {
       toc.style.display = 'none';
     } else {
@@ -159,16 +185,23 @@
       });
       var observed = document.querySelectorAll('.sk-prose h2[id], .sk-prose h3[id]');
       if ('IntersectionObserver' in window && observed.length) {
-        var spy = new IntersectionObserver(function (entries) {
-          entries.forEach(function (en) {
-            if (en.isIntersecting) {
-              Object.keys(linkById).forEach(function (id) { linkById[id].classList.remove('is-active'); });
-              var link = linkById[en.target.id];
-              if (link) link.classList.add('is-active');
-            }
-          });
-        }, { rootMargin: '-64px 0px -70% 0px' });
-        observed.forEach(function (h) { spy.observe(h); });
+        var spy = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (en) {
+              if (en.isIntersecting) {
+                Object.keys(linkById).forEach(function (id) {
+                  linkById[id].classList.remove('is-active');
+                });
+                var link = linkById[en.target.id];
+                if (link) link.classList.add('is-active');
+              }
+            });
+          },
+          { rootMargin: '-64px 0px -70% 0px' },
+        );
+        observed.forEach(function (h) {
+          spy.observe(h);
+        });
       }
     }
   }
@@ -186,13 +219,23 @@
       toggleNav(!(sidebar && sidebar.classList.contains('is-open')));
     });
   }
-  if (scrim) scrim.addEventListener('click', function () { toggleNav(false); });
+  if (scrim)
+    scrim.addEventListener('click', function () {
+      toggleNav(false);
+    });
   // Close the drawer after navigating within it.
-  navLinks.forEach(function (a) { a.addEventListener('click', function () { toggleNav(false); }); });
+  navLinks.forEach(function (a) {
+    a.addEventListener('click', function () {
+      toggleNav(false);
+    });
+  });
 
   function escapeHtml(s) {
     return String(s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 })();

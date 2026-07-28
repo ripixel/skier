@@ -17,8 +17,8 @@
     "prepare": "npm run build",
     "test": "jest",
     "release": "semantic-release",
-    "docs:build": "node dist/bin/skier.js",
-    "docs:build:debug": "node dist/bin/skier.js --debug",
+    "docs:build": "npm run build && node dist/bin/skier.js",
+    "docs:build:debug": "npm run build && node dist/bin/skier.js --debug",
     "docs:serve": "npm run docs:build && npx serve public -p 3333"
   },
   "author": "James King",

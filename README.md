@@ -55,5 +55,30 @@ Full documentation is in the [`/docs`](./docs) folder:
 
 ---
 
+## Deploying the docs site
+
+The documentation at [skier.ripixel.co.uk](https://skier.ripixel.co.uk/) is
+itself built **by Skier** (dogfooded) and hosted on Firebase. The deploy flow is:
+
+```sh
+npm ci                # install deps; the prepare hook compiles the CLI (tsc)
+npm run docs:build    # compile the CLI, then run it to render docs/ -> ./public
+firebase deploy --only hosting:production --non-interactive
+```
+
+`npm run docs:build` is the single command that produces a deployable site. It
+runs the compiled Skier CLI against `skier.tasks.cjs`, which renders every page,
+bundles the CSS/JS, and writes the client-side `search-index.json` into `./public`
+— the exact directory `firebase.json` serves (`hosting.public`). Running `npm run
+build` on its own only runs `tsc` (it compiles the CLI **package**, not the site),
+so `./public` is never generated and the deploy fails with
+`Directory './public' for Hosting does not exist.`
+
+Firebase hosting targets (`.firebaserc`): `production` → `skier-52135`
+(skier.ripixel.co.uk), `staging` → `skier-staging`. CI (`.circleci/config.yml`)
+runs this same flow automatically on `main`.
+
+---
+
 ## License
 MIT

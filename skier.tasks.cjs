@@ -34,6 +34,9 @@ exports.tasks = [
   setGlobalsTask({
     values: {
       year: new Date().getFullYear(),
+      // Package version drives the topbar version pill (dogfooded from our own
+      // published version rather than hardcoded in the template).
+      version: require('./package.json').version,
       noindex:
         process.env.NODE_ENV === 'production' ? '' : '<meta name="robots" content="noindex">',
     },

@@ -11,18 +11,37 @@
     content="Skier is a minimal, modular static site generator for modern web projects." />
   <meta property="og:type" content="website" />
 
+  <!-- Set the theme before first paint so there's no light->dark flash. Honours a
+       stored preference, then the OS setting, defaulting to light. -->
+  <script>
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search).get('theme');
+        var stored = localStorage.getItem('sk-theme');
+        var theme = (q === 'dark' || q === 'light') ? q : (stored ||
+          (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
 
-  <!-- Fonts -->
+  <!-- Fonts: Space Grotesk (display) . IBM Plex Sans (body) . IBM Plex Mono (code) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="/assets/docs.min.css" />
+
+  <!-- Client behaviour (theme toggle, copy buttons, TOC scroll-spy, drawer) -->
+  <script src="/assets/docs.js" defer></script>
 
   {{{noindex}}}
 </head>

@@ -1,5 +1,5 @@
 {
-  "branches": ["main"],
+  "branches": ["main", "next"],
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -13,7 +13,7 @@
     [
       "@semantic-release/exec",
       {
-        "publishCmd": "export NPM_ID_TOKEN=$(circleci run oidc get --claims '{\"aud\": \"npm:registry.npmjs.org\"}') && npm publish --no-provenance --tag ${nextRelease.channel || 'latest'}"
+        "publishCmd": "export NPM_ID_TOKEN=$(circleci run oidc get --claims '{\"aud\": \"npm:registry.npmjs.org\"}') && npx -y npm@latest publish --no-provenance --tag ${nextRelease.channel || 'latest'}"
       }
     ],
     "@semantic-release/github",

@@ -57,7 +57,13 @@ jobs:
           command: |
             git config user.email "ci@skier.dev"
             git config user.name "CircleCI"
-            git remote set-url origin git@github.com:ripixel/skier.git
+            # Point the release remote at the canonical repository. CI runs on
+            # Ripixel-Studio/skier; the old ripixel/skier path is a stale personal
+            # remote. semantic-release has no `repository` field in package.json,
+            # so it derives its git-tag push target AND the @semantic-release/github
+            # release/permission-check target from this remote — it must match the
+            # repo CI actually operates on.
+            git remote set-url origin git@github.com:Ripixel-Studio/skier.git
       - run:
           name: Publish via semantic-release
           command: |
